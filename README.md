@@ -159,8 +159,16 @@ Sentry can be configured via environment variables:
 
 - `SENTRY_DSN` - Your Sentry DSN (required to enable Sentry)
 - `SENTRY_TRACES_SAMPLE_RATE` - Sample rate for performance traces (default: `1.0` = 100%)
-- `SENTRY_SEND_DEFAULT_PII` - Include tool inputs/outputs in Sentry (default: `false`)
-- `ENVIRONMENT` - Environment name (default: `production`)
+- `SENTRY_SEND_DEFAULT_PII` - Include tool inputs/outputs in Sentry (default: `true`)
+- `SENTRY_ENABLE_LOGS` - Enable sending logs to Sentry (default: `true`)
+- `SENTRY_PROFILE_SESSION_SAMPLE_RATE` - Sample rate for profiling sessions (default: `1.0` = 100%)
+- `SENTRY_PROFILE_LIFECYCLE` - Profiler lifecycle mode (default: `trace` - auto-run when transaction active)
+- `ENVIRONMENT` - Environment name (default: `local`)
+
+**Performance Monitoring:**
+- **Tracing**: Captures 100% of transactions by default (`traces_sample_rate=1.0`)
+- **Profiling**: Profiles 100% of sessions by default (`profile_session_sample_rate=1.0`)
+- **Logs**: Enabled by default (`enable_logs=True`)
 
 ### What Gets Tracked
 

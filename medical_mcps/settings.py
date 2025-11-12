@@ -19,8 +19,11 @@ class ServerSettings(BaseSettings):
 
     # Sentry configuration (optional)
     sentry_dsn: str | None = None
-    sentry_traces_sample_rate: float = 1.0
+    sentry_traces_sample_rate: float = 1.0  # Capture 100% of transactions for tracing
     sentry_send_default_pii: bool = True  # Set to True to include tool inputs/outputs
+    sentry_enable_logs: bool = True  # Enable sending logs to Sentry
+    sentry_profile_session_sample_rate: float = 1.0  # Profile 100% of profile sessions
+    sentry_profile_lifecycle: str = "trace"  # Automatically run profiler when there's an active transaction
 
     def get_port(self) -> int:
         """Get port from PORT env var (Railway) or mcp_port setting"""
