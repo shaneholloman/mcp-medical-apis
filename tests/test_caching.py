@@ -2,11 +2,11 @@
 Test HTTP caching implementation with hishel
 """
 
-import pytest
 from pathlib import Path
 
-from medical_mcps.api_clients.reactome_client import ReactomeClient
+import pytest
 from medical_mcps.api_clients.ctg_client import CTGClient
+from medical_mcps.api_clients.reactome_client import ReactomeClient
 
 
 @pytest.fixture
@@ -52,18 +52,18 @@ async def test_reactome_cache_creation(clean_reactome_cache, cache_dir):
     """Test that cache file is created after first request"""
     client = ReactomeClient()
     cache_file = cache_dir / "reactome.db"
-    
+
     # Cache file should not exist initially
     assert not cache_file.exists()
-    
+
     async with client:
         # Make first request
         result1 = await client.get_pathway("R-HSA-1640170")
-        
+
         # Cache file should be created
         assert cache_file.exists(), "Cache file should be created after first request"
         assert cache_file.stat().st_size > 0, "Cache file should not be empty"
-        
+
         # Verify response is valid
         assert isinstance(result1, dict)
         # Reactome returns data directly or wrapped in format_response
@@ -75,18 +75,18 @@ async def test_reactome_cache_hit(clean_reactome_cache, cache_dir):
     """Test that second request uses cache (revalidated)"""
     client = ReactomeClient()
     cache_file = cache_dir / "reactome.db"
-    
+
     async with client:
         # First request - should store in cache
         result1 = await client.get_pathway("R-HSA-1640170")
         assert cache_file.exists()
-        
+
         # Second request - should use cache (may revalidate)
         result2 = await client.get_pathway("R-HSA-1640170")
-        
+
         # Results should match
         assert result1 == result2, "Cached response should match original"
-        
+
         # Verify cache file still exists and may have grown
         assert cache_file.exists()
 
@@ -95,18 +95,18 @@ async def test_reactome_cache_hit(clean_reactome_cache, cache_dir):
 async def test_reactome_cache_extensions(clean_reactome_cache):
     """Test that hishel extensions are present in responses"""
     client = ReactomeClient()
-    
+
     async with client:
         # Make a request
         response = await client.client.get(
             "https://reactome.org/ContentService/data/query/R-HSA-1640170"
         )
-        
+
         # Check for hishel extensions
         assert "hishel_from_cache" in response.extensions
         assert "hishel_stored" in response.extensions
         assert "hishel_revalidated" in response.extensions
-        
+
         # First request should store in cache
         assert response.extensions.get("hishel_stored") is True
 
@@ -119,7 +119,7 @@ async def test_reactome_cache_disabled():
     # For now, just verify the client works with caching enabled
     client = ReactomeClient()
     assert client.enable_cache is True  # Default is True
-    
+
     async with client:
         # The client should work
         result = await client.get_pathway("R-HSA-1640170")
@@ -130,22 +130,26 @@ async def test_reactome_cache_disabled():
 async def test_ctg_cache_adapter(clean_ctg_cache):
     """Test that CTG client uses CacheAdapter for requests"""
     client = CTGClient()
-    
+
     # Verify session has adapters mounted (CacheAdapter should be present)
     assert len(client._session.adapters) > 0
     # Check that https:// is in the adapters keys
     assert "https://" in client._session.adapters
-    
+
     async with client:
         # Make a request
-        result1 = await client.search_studies(condition="multiple sclerosis", page_size=5)
-        
+        result1 = await client.search_studies(
+            condition="multiple sclerosis", page_size=5
+        )
+
         # Verify response is valid
         assert isinstance(result1, dict)
-        
+
         # Make second request - should use cache
-        result2 = await client.search_studies(condition="multiple sclerosis", page_size=5)
-        
+        result2 = await client.search_studies(
+            condition="multiple sclerosis", page_size=5
+        )
+
         # Results should match
         assert result1 == result2, "Cached response should match original"
 
@@ -154,7 +158,7 @@ async def test_ctg_cache_adapter(clean_ctg_cache):
 async def test_ctg_cache_header(clean_ctg_cache):
     """Test that CTG responses include cache header"""
     client = CTGClient()
-    
+
     async with client:
         # First request
         response1 = await client._run_sync(
@@ -162,19 +166,19 @@ async def test_ctg_cache_header(clean_ctg_cache):
             "https://clinicaltrials.gov/api/v2/studies",
             params={"format": "json", "pageSize": 1},
         )
-        
+
         # Second request (should be cached)
         response2 = await client._run_sync(
             client._session.get,
             "https://clinicaltrials.gov/api/v2/studies",
             params={"format": "json", "pageSize": 1},
         )
-        
+
         # Check for cache header (may be present on cached responses)
         # Note: hishel may add X-Hishel-From-Cache header
         headers1 = dict(response1.headers)
         headers2 = dict(response2.headers)
-        
+
         # Both requests should succeed
         assert response1.status_code == 200
         assert response2.status_code == 200
@@ -194,13 +198,12 @@ async def test_multiple_api_caches(cache_dir):
     reactome_client = ReactomeClient()
     # Note: We can't easily test CTG cache file name without making requests
     # But we can verify the pattern
-    
+
     assert reactome_client.cache_dir == cache_dir
-    
+
     # Reactome should use reactome.db
     reactome_cache_file = cache_dir / "reactome.db"
-    
+
     async with reactome_client:
         await reactome_client.get_pathway("R-HSA-1640170")
         assert reactome_cache_file.exists(), "Reactome cache file should exist"
-

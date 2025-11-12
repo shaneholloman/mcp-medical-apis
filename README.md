@@ -13,7 +13,8 @@ MCP server that integrates multiple biological and medical databases for researc
 - **GWAS Catalog API** - Genetic associations, variant information, study metadata
 - **Pathway Commons API** - Integrated pathway data, pathway interactions, gene/protein networks
 - **Node Normalization API** - CURIE normalization, identifier mapping across databases
-- **ChEMBL API** - Drug-target interactions, bioactivity data, mechanisms of action, drug indications
+- **ChEMBL API** - Drug-target interactions, bioactivity data, mechanisms of action, drug
+  indications
 - **ClinicalTrials.gov API** - Clinical trial search, study metadata, trial status
 
 See [API_PLAN.md](./API_PLAN.md) for detailed information. See
@@ -65,9 +66,26 @@ The server uses the MCP SDK's Streamable HTTP transport mounted as an ASGI app o
 endpoint is available at `/mcp` and supports both POST (for sending JSON-RPC messages) and GET (for
 optional SSE streams).
 
-**Configure in MCP client (e.g., Cursor):**
+## Connecting to Production
 
-Each API is available at its own endpoint:
+The MCP servers are deployed and available at:
+
+**Production URL:** `https://medical-mcps-production.up.railway.app`
+
+### Configuring MCP Clients
+
+Each API is available at its own endpoint. Configure your MCP client (e.g., Cursor) to use either
+the production deployment or a local instance:
+
+**Production (Recommended):**
+
+```json
+{
+  "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
+}
+```
+
+**Local Development:**
 
 ```json
 {
@@ -75,7 +93,9 @@ Each API is available at its own endpoint:
 }
 ```
 
-Available endpoints:
+### Available Endpoints
+
+All endpoints are available at both production and local URLs:
 
 - `/tools/reactome/mcp` - Reactome API
 - `/tools/kegg/mcp` - KEGG API
@@ -87,9 +107,45 @@ Available endpoints:
 - `/tools/chembl/mcp` - ChEMBL API
 - `/tools/ctg/mcp` - ClinicalTrials.gov API
 
+### Example: Configuring Multiple APIs in Cursor
+
+To use multiple APIs, add separate MCP server entries in your Cursor configuration
+(`.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "reactome": {
+      "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
+    },
+    "chembl": {
+      "url": "https://medical-mcps-production.up.railway.app/tools/chembl/mcp"
+    },
+    "kegg": {
+      "url": "https://medical-mcps-production.up.railway.app/tools/kegg/mcp"
+    }
+  }
+}
+```
+
+### Testing the Connection
+
+You can test if the production server is accessible by making a simple HTTP request:
+
+```bash
+# Test Reactome endpoint
+curl https://medical-mcps-production.up.railway.app/tools/reactome/mcp \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "method": "initialize", "params": {}, "id": 1}'
+```
+
+A successful response indicates the server is running and accessible.
+
 ## HTTP Caching
 
-All API clients use **hishel** (RFC 9111 compliant HTTP caching) to transparently cache responses to disk. This reduces redundant API calls and improves performance.
+All API clients use **hishel** (RFC 9111 compliant HTTP caching) to transparently cache responses to
+disk. This reduces redundant API calls and improves performance.
 
 ### Cache Configuration
 
@@ -130,6 +186,7 @@ rm ~/.cache/medical-mcps/api_cache/reactome.db
 ### Supported APIs
 
 All HTTP-based APIs support caching:
+
 - Reactome (httpx)
 - KEGG (httpx)
 - UniProt (httpx)
@@ -142,7 +199,9 @@ All HTTP-based APIs support caching:
 
 ## Monitoring with Sentry
 
-The server includes optional [Sentry](https://sentry.io) integration for error tracking and performance monitoring. Sentry automatically instruments MCP tool executions, prompt requests, and resource access.
+The server includes optional [Sentry](https://sentry.io) integration for error tracking and
+performance monitoring. Sentry automatically instruments MCP tool executions, prompt requests, and
+resource access.
 
 ### Setup
 
@@ -162,10 +221,12 @@ Sentry can be configured via environment variables:
 - `SENTRY_SEND_DEFAULT_PII` - Include tool inputs/outputs in Sentry (default: `true`)
 - `SENTRY_ENABLE_LOGS` - Enable sending logs to Sentry (default: `true`)
 - `SENTRY_PROFILE_SESSION_SAMPLE_RATE` - Sample rate for profiling sessions (default: `1.0` = 100%)
-- `SENTRY_PROFILE_LIFECYCLE` - Profiler lifecycle mode (default: `trace` - auto-run when transaction active)
+- `SENTRY_PROFILE_LIFECYCLE` - Profiler lifecycle mode (default: `trace` - auto-run when transaction
+  active)
 - `ENVIRONMENT` - Environment name (default: `local`)
 
 **Performance Monitoring:**
+
 - **Tracing**: Captures 100% of transactions by default (`traces_sample_rate=1.0`)
 - **Profiling**: Profiles 100% of sessions by default (`profile_session_sample_rate=1.0`)
 - **Logs**: Enabled by default (`enable_logs=True`)
@@ -175,6 +236,7 @@ Sentry can be configured via environment variables:
 Sentry automatically collects:
 
 **MCP Integration:**
+
 - **Tool executions**: Tool name, arguments, results, and execution errors
 - **Prompt requests**: Prompt name, arguments, and content
 - **Resource access**: Resource URI and access patterns
@@ -182,25 +244,31 @@ Sentry automatically collects:
 - **Execution spans**: Timing information for all handler invocations
 
 **Starlette Integration:**
+
 - **HTTP requests**: Method, URL, headers, form data, JSON payloads
 - **Errors**: All exceptions leading to Internal Server Error (5xx status codes)
 - **Performance**: Request timing and transaction data
 - **Request data**: Attached to all events (excludes PII unless `send_default_pii=True`)
 
 **HTTPX Integration:**
+
 - **Outgoing HTTP requests**: All HTTP requests made by API clients (Reactome, KEGG, UniProt, etc.)
 - **Request spans**: Creates spans for each outgoing HTTP request
 - **Trace propagation**: Ensures traces are properly propagated to downstream services
 
 **Asyncio Integration:**
+
 - **Async operations**: Tracks async context and operations
 - **Async errors**: Captures errors in async functions and tasks
 
 ### Privacy
 
-By default, Sentry does **not** include tool inputs/outputs or prompt content (considered PII). To include this data, set `SENTRY_SEND_DEFAULT_PII=true`.
+By default, Sentry does **not** include tool inputs/outputs or prompt content (considered PII). To
+include this data, set `SENTRY_SEND_DEFAULT_PII=true`.
 
-See the [Sentry MCP integration documentation](https://docs.sentry.io/platforms/python/integrations/mcp/) for more details.
+See the
+[Sentry MCP integration documentation](https://docs.sentry.io/platforms/python/integrations/mcp/)
+for more details.
 
 ## API Key Handling
 
@@ -231,7 +299,8 @@ as a parameter with each tool call:
 
 **APIs not requiring API keys:**
 
-- Reactome, KEGG, UniProt, GWAS Catalog, Pathway Commons, Node Normalization, ChEMBL, ClinicalTrials.gov
+- Reactome, KEGG, UniProt, GWAS Catalog, Pathway Commons, Node Normalization, ChEMBL,
+  ClinicalTrials.gov
 
 ### Pattern for Future APIs
 

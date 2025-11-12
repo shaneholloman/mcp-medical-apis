@@ -24,6 +24,7 @@ from .servers import (
     omim_server,
     pathwaycommons_server,
     reactome_server,
+    unified_server,
     uniprot_server,
 )
 from .settings import settings
@@ -73,8 +74,8 @@ if settings.sentry_dsn:
     )
     log.info(
         "Sentry initialized with MCP, Starlette, HTTPX, and asyncio integrations. "
-        f"Tracing: {settings.sentry_traces_sample_rate*100}%, "
-        f"Profiling: {settings.sentry_profile_session_sample_rate*100}%, "
+        f"Tracing: {settings.sentry_traces_sample_rate * 100}%, "
+        f"Profiling: {settings.sentry_profile_session_sample_rate * 100}%, "
         f"Logs: {'enabled' if settings.sentry_enable_logs else 'disabled'}"
     )
 
@@ -103,6 +104,7 @@ async def lifespan(app: Starlette):
     """Manage application lifespan - initialize all MCP server session managers"""
     logger.info("Starting Biological APIs MCP Server...")
     logger.info("Available API servers:")
+    logger.info("  - Unified (all APIs): /tools/unified/mcp")
     logger.info("  - Reactome: /tools/reactome/mcp")
     logger.info("  - KEGG: /tools/kegg/mcp")
     logger.info("  - UniProt: /tools/uniprot/mcp")
@@ -128,6 +130,9 @@ async def lifespan(app: Starlette):
         )
         await stack.enter_async_context(chembl_server.chembl_mcp.session_manager.run())
         await stack.enter_async_context(ctg_server.ctg_mcp.session_manager.run())
+        await stack.enter_async_context(
+            unified_server.unified_mcp.session_manager.run()
+        )
         yield
 
     logger.info("Shutting down Biological APIs MCP Server...")
@@ -139,6 +144,7 @@ async def lifespan(app: Starlette):
 
 app = Starlette(
     routes=[
+        Mount("/tools/unified", app=unified_server.unified_mcp.streamable_http_app()),
         Mount(
             "/tools/reactome", app=reactome_server.reactome_mcp.streamable_http_app()
         ),
@@ -181,9 +187,12 @@ def entry_point():
     chembl_server.chembl_mcp.settings.port = port
     ctg_server.ctg_mcp.settings.host = host
     ctg_server.ctg_mcp.settings.port = port
+    unified_server.unified_mcp.settings.host = host
+    unified_server.unified_mcp.settings.port = port
 
     logger.info(f"Starting server on http://{host}:{port}")
     logger.info("MCP endpoints:")
+    logger.info(f"  - Unified (all APIs): http://{host}:{port}/tools/unified/mcp")
     logger.info(f"  - Reactome: http://{host}:{port}/tools/reactome/mcp")
     logger.info(f"  - KEGG: http://{host}:{port}/tools/kegg/mcp")
     logger.info(f"  - UniProt: http://{host}:{port}/tools/uniprot/mcp")

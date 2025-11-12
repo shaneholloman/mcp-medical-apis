@@ -27,3 +27,5 @@ test-watch:
 test:
 	uv run pytest tests/
 
+inspector: 
+	npx @modelcontextprotocol/inspector@latest
