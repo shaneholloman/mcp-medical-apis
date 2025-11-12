@@ -17,6 +17,8 @@ MCP server that integrates multiple biological and medical databases for researc
   indications
 - **ClinicalTrials.gov API** - Clinical trial search, study metadata, trial status
 
+![](./agent-usage.png)
+
 See [API_PLAN.md](./API_PLAN.md) for detailed information.
 
 ## Installation
