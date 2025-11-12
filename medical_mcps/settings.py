@@ -20,7 +20,7 @@ class ServerSettings(BaseSettings):
     # Sentry configuration (optional)
     sentry_dsn: str | None = None
     sentry_traces_sample_rate: float = 1.0
-    sentry_send_default_pii: bool = False  # Set to True to include tool inputs/outputs
+    sentry_send_default_pii: bool = True  # Set to True to include tool inputs/outputs
 
     def get_port(self) -> int:
         """Get port from PORT env var (Railway) or mcp_port setting"""

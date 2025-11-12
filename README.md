@@ -166,11 +166,27 @@ Sentry can be configured via environment variables:
 
 Sentry automatically collects:
 
+**MCP Integration:**
 - **Tool executions**: Tool name, arguments, results, and execution errors
 - **Prompt requests**: Prompt name, arguments, and content
 - **Resource access**: Resource URI and access patterns
 - **Request context**: Request IDs, session IDs, and transport types
 - **Execution spans**: Timing information for all handler invocations
+
+**Starlette Integration:**
+- **HTTP requests**: Method, URL, headers, form data, JSON payloads
+- **Errors**: All exceptions leading to Internal Server Error (5xx status codes)
+- **Performance**: Request timing and transaction data
+- **Request data**: Attached to all events (excludes PII unless `send_default_pii=True`)
+
+**HTTPX Integration:**
+- **Outgoing HTTP requests**: All HTTP requests made by API clients (Reactome, KEGG, UniProt, etc.)
+- **Request spans**: Creates spans for each outgoing HTTP request
+- **Trace propagation**: Ensures traces are properly propagated to downstream services
+
+**Asyncio Integration:**
+- **Async operations**: Tracks async context and operations
+- **Async errors**: Captures errors in async functions and tasks
 
 ### Privacy
 

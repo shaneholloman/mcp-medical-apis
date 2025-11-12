@@ -9,7 +9,10 @@ import logging
 import os
 
 import sentry_sdk
+from sentry_sdk.integrations.asyncio import AsyncioIntegration
+from sentry_sdk.integrations.httpx import HttpxIntegration
 from sentry_sdk.integrations.mcp import MCPIntegration
+from sentry_sdk.integrations.starlette import StarletteIntegration
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
@@ -25,27 +28,40 @@ from .servers import (
 )
 from .settings import settings
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+)
+log = logging.getLogger(__name__)
+
 # Initialize Sentry if DSN is provided
-# The MCP integration is automatically enabled when mcp package is in dependencies
+# Starlette and HTTPX integrations are auto-enabled, but we include them explicitly
+# for better control and to ensure proper configuration
 if settings.sentry_dsn:
     sentry_sdk.init(
         dsn=settings.sentry_dsn,
         traces_sample_rate=settings.sentry_traces_sample_rate,
         send_default_pii=settings.sentry_send_default_pii,
         integrations=[
+            # MCP integration - tracks tool executions, prompts, resources
             MCPIntegration(
                 include_prompts=settings.sentry_send_default_pii,
             ),
+            # Starlette integration - tracks HTTP requests, errors, performance
+            StarletteIntegration(
+                transaction_style="url",  # Use URL path as transaction name
+                failed_request_status_codes={*range(500, 600)},  # Report 5xx errors
+            ),
+            # HTTPX integration - tracks outgoing HTTP requests from API clients
+            HttpxIntegration(),
+            # Asyncio integration - tracks async operations and context
+            AsyncioIntegration(),
         ],
         # Set environment based on common env vars
-        environment=os.getenv("ENVIRONMENT", "production"),
+        environment=os.getenv("ENVIRONMENT", "local"),
     )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
+    log.info("Sentry initialized with MCP, Starlette, HTTPX, and asyncio integrations")
 
 
 # Suppress anyio.ClosedResourceError from FastMCP streamable HTTP transport
