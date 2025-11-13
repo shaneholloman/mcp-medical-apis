@@ -29,6 +29,8 @@ log = logging.getLogger(__name__)
 
 # Import server modules - their @medmcps_tool decorators automatically register tools with unified_mcp
 # Note: Sentry must be initialized before server imports
+# Import unified_mcp after server imports so tools are registered
+from .med_mcp_server import unified_mcp  # noqa: E402
 from .servers import (  # noqa: E402
     biothings_server,
     chembl_server,
@@ -118,12 +120,11 @@ async def lifespan(app: Starlette):
         await stack.enter_async_context(
             playbook_server.playbook_mcp.session_manager.run()
         )
+        await stack.enter_async_context(unified_mcp.session_manager.run())
         yield
 
     logger.info("Shutting down Biological APIs MCP Server...")
 
-
-from .med_mcp_server import unified_mcp  # noqa: E402
 
 # Create Starlette app and mount all API servers
 

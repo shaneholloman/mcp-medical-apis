@@ -5,6 +5,7 @@ Test HTTP caching implementation with hishel
 from pathlib import Path
 
 import pytest
+
 from medical_mcps.api_clients.ctg_client import CTGClient
 from medical_mcps.api_clients.reactome_client import ReactomeClient
 
@@ -19,8 +20,11 @@ def cache_dir():
 def get_cache_file_path():
     """Get the actual cache file path for current process"""
     import os
+
     process_id = os.getpid()
-    proc_cache_dir = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{process_id}"
+    proc_cache_dir = (
+        Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{process_id}"
+    )
     return lambda api_name: proc_cache_dir / f"{api_name.lower()}.db"
 
 
@@ -210,7 +214,10 @@ async def test_multiple_api_caches(cache_dir, get_cache_file_path):
     # But we can verify the pattern
 
     # Cache dir is per-process, so it should be a subdirectory of cache_dir
-    assert cache_dir in reactome_client.cache_dir.parents or reactome_client.cache_dir == cache_dir
+    assert (
+        cache_dir in reactome_client.cache_dir.parents
+        or reactome_client.cache_dir == cache_dir
+    )
 
     # Reactome should use reactome.db in per-process directory
     reactome_cache_file = get_cache_file_path("reactome")
