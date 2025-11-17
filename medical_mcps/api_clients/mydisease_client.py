@@ -89,3 +89,5 @@ class MyDiseaseClient(BaseAPIClient):
             return self.format_response(
                 None, {"error": f"MyDisease API error: {str(e)}"}
             )
+
+

@@ -88,3 +88,5 @@ class MyGeneClient(BaseAPIClient):
                 f"Failed to fetch gene {gene_id_or_symbol}: {e}", exc_info=True
             )
             return self.format_response(None, {"error": f"MyGene API error: {str(e)}"})
+
+

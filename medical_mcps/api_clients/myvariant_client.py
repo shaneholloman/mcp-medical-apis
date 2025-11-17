@@ -159,3 +159,5 @@ class MyVariantClient(BaseAPIClient):
             return self.format_response(
                 None, {"error": f"MyVariant API error: {str(e)}"}
             )
+
+

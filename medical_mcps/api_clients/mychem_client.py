@@ -87,3 +87,5 @@ class MyChemClient(BaseAPIClient):
         except Exception as e:
             logger.error(f"Failed to fetch drug {drug_id_or_name}: {e}", exc_info=True)
             return self.format_response(None, {"error": f"MyChem API error: {str(e)}"})
+
+

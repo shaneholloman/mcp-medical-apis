@@ -1,11 +1,25 @@
 playbook_id: individualized_centric
 name: Individualized Discovery (Patient-Led)
 description: |
-  Start with individual symptoms, clinical presentation, and lab results.
-  Systematically rule out diseases to identify the underlying dysfunction.
-  Focus on WHAT is actually wrong mechanistically, not disease labels.
-  Inspired by cases like David Fajgenbaum who identified mTOR overactivation
-  behind his Castleman disease diagnosis.
+  ⚠️ REQUIREMENT: This playbook REQUIRES comprehensive individual patient data including:
+  - Detailed symptoms, signs, and clinical presentation
+  - Complete lab values and test results
+  - Imaging findings
+  - Clinical history, timing, triggers, treatment responses
+  - Family history and environmental exposures
+  
+  DO NOT use this playbook without actual individual patient data. This is a companion
+  tool designed to help over weeks/months work with a patient and their clinicians to:
+  (1) Document comprehensive phenotype, (2) Generate differential diagnosis,
+  (3) Systematically rule out diseases, (4) Identify underlying dysfunction,
+  (5) Determine diagnostic tests needed, (6) Find drugs targeting dysfunction.
+  
+  This playbook enables patient-led research where individuals work systematically with
+  clinicians to identify underlying dysfunctions (pathway overactivation, protein misfolding,
+  metabolic derangement) rather than accepting disease labels.
+  
+  If you do not have individual patient data, use disease-centric, pathway-centric, or target-centric
+  playbooks instead.
 starting_point: individual_symptoms
 first_principles_framework: |
   Phenotype-to-Mechanism Discovery / Patient-Led Research:
@@ -13,17 +27,26 @@ first_principles_framework: |
   Focus on identifying the actual dysfunction (pathway overactivation, protein misfolding,
   metabolic derangement) rather than accepting disease labels.
   The cure addresses the dysfunction, not the label.
+  
+  This approach works iteratively over time as more diagnostic tests are run and results
+  become available. It is a collaborative process between patient, AI agent, and clinicians.
 steps:
   - step_id: 1_document_comprehensive_phenotype
     step_type: query
     description: |
-      Document ALL symptoms, signs, lab values, imaging findings, and clinical history.
-      Be exhaustive - every detail matters. Include: symptoms, timing, triggers,
-      response to treatments, family history, environmental exposures.
+      ⚠️ REQUIRES ACTUAL PATIENT DATA: Document ALL symptoms, signs, lab values, imaging findings,
+      and clinical history from an actual individual patient. Be exhaustive - every detail matters.
+      Include: symptoms, timing, triggers, response to treatments, family history, environmental exposures.
+      
+      This step CANNOT be completed with general disease knowledge or literature. You must have
+      access to actual patient records, lab reports, imaging studies, and clinical notes.
+      
+      If you do not have individual patient data, STOP and use a different playbook.
     tool_suggestions: []
     criteria:
       require_comprehensive_documentation: true
       include_negative_findings: true
+      require_actual_patient_data: true  # Cannot use general disease knowledge
     outputs:
       - comprehensive_phenotype
       - clinical_timeline
@@ -71,7 +94,8 @@ steps:
       For remaining disease candidates, identify the ACTUAL dysfunction:
       What pathway is overactive/underactive? What protein is misfolded?
       What metabolic process is deranged? Focus on mechanism, not label.
-      Example: 'mTOR overactivation' not 'Castleman disease'.
+      Example: If a disease involves excessive inflammation, identify the specific pathway
+      (e.g., 'mTOR overactivation' or 'IL-6 overproduction') rather than just the disease name.
     tool_suggestions:
       - reactome_get_disease_pathways
       - kegg_get_disease
@@ -91,6 +115,10 @@ steps:
       Determine what additional tests/evidence would confirm the dysfunction:
       Biomarkers? Genetic tests? Functional assays? Imaging?
       What would definitively prove the mechanism?
+      
+      This step helps guide the patient and their clinicians on which tests to run next.
+      The results from these tests will inform subsequent iterations of this playbook.
+      This is an iterative process that unfolds over weeks/months as test results become available.
     tool_suggestions:
       - uniprot_get_protein
       - myvariant_search_variants

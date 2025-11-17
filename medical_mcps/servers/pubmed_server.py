@@ -5,6 +5,7 @@ Exposes PubMed article search and retrieval tools via MCP at /tools/pubmed/mcp
 """
 
 import logging
+from typing import List, Optional
 
 from mcp.server.fastmcp import FastMCP
 from ..med_mcp_server import unified_mcp, tool as medmcps_tool
@@ -26,11 +27,11 @@ pubmed_mcp = FastMCP(
 
 @medmcps_tool(name="pubmed_search_articles", servers=[pubmed_mcp, unified_mcp])
 async def search_articles(
-    genes: list[str] | None = None,
-    diseases: list[str] | None = None,
-    chemicals: list[str] | None = None,
-    keywords: list[str] | None = None,
-    variants: list[str] | None = None,
+    genes: Optional[List[str]] = None,
+    diseases: Optional[List[str]] = None,
+    chemicals: Optional[List[str]] = None,
+    keywords: Optional[List[str]] = None,
+    variants: Optional[List[str]] = None,
     limit: int = 50,
     page: int = 1,
 ) -> dict:
