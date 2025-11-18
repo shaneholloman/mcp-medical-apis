@@ -48,6 +48,11 @@ class ServerSettings(BaseSettings):
         "trace"  # Automatically run profiler when there's an active transaction
     )
 
+    # Cache configuration
+    enable_cache: bool = (
+        True  # Enable HTTP caching (set to False in cloud environments)
+    )
+
     def get_port(self) -> int:
         """Get port from PORT env var (Railway) or mcp_port setting"""
         import os

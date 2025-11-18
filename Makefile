@@ -1,4 +1,4 @@
-.PHONY: server server-no-reload help test-watch test
+.PHONY: server server-no-reload help test-watch test docker
 
 export SENTRY_DSN=https://14d9c0d3d267359f2f8e3f1513f019c0@o4510353175085056.ingest.de.sentry.io/4510353181769808
 
@@ -30,3 +30,7 @@ test-all: install
 
 inspector: 
 	npx @modelcontextprotocol/inspector@latest
+
+# Docker Compose - start services with watch and build
+docker:
+	docker-compose watch

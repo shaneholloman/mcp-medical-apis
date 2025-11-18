@@ -64,7 +64,9 @@ If you prefer to use individual APIs separately, each API has its own endpoint:
 
 ### Local Development
 
-To run your own instance locally, see [Running the Server](#running-the-server) below.
+To run your own instance locally, you can either:
+- Use Docker Compose (recommended for quick setup) - see [Docker Compose Setup](#docker-compose-setup)
+- Run directly with Python/uv - see [Running the Server](#running-the-server) below
 
 ## APIs Integrated
 
@@ -93,6 +95,30 @@ To run your own instance locally, see [Running the Server](#running-the-server) 
 ![](./agent-usage.png)
 
 ## Installation
+
+### Option 1: Docker Compose (Recommended)
+
+The easiest way to run both the MCP backend and SearXNG search engine:
+
+```bash
+# Start all services with auto-rebuild
+make docker-watch
+
+# Or start in background
+make docker-up
+
+# View logs
+make docker-logs
+
+# Stop services
+make docker-down
+```
+
+Services will be available at:
+- **MCP Backend**: http://localhost:8000
+- **SearXNG**: http://localhost:8888
+
+### Option 2: Local Python Installation
 
 ```bash
 # Install dependencies using uv

@@ -16,6 +16,8 @@ from hishel import AsyncSqliteStorage
 from hishel.httpx import AsyncCacheClient
 from tenacity import retry, stop_after_attempt, wait_fixed
 
+from ..settings import settings
+
 logger = logging.getLogger(__name__)
 
 # Default cache directory - use per-process subdirectory to avoid SQLite locking issues
@@ -57,7 +59,7 @@ class BaseAPIClient(ABC):
         api_name: str,
         timeout: float = 30.0,
         rate_limit_delay: float | None = None,
-        enable_cache: bool = True,
+        enable_cache: bool | None = None,
         cache_dir: Path | None = None,
     ):
         """Initialize base API client."""
@@ -65,7 +67,10 @@ class BaseAPIClient(ABC):
         self.api_name = api_name
         self.timeout = timeout
         self.rate_limit_delay = rate_limit_delay
-        self.enable_cache = enable_cache
+        # Use settings.enable_cache if enable_cache is not explicitly provided
+        self.enable_cache = (
+            enable_cache if enable_cache is not None else settings.enable_cache
+        )
         self.cache_dir = cache_dir or CACHE_DIR
         self._client: httpx.AsyncClient | None = None
 
