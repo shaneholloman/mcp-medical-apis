@@ -2,7 +2,7 @@ services:
   mcp-backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     container_name: medical-mcps-backend
     ports:
       - "8000:8000"
@@ -18,7 +18,7 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: Dockerfile
+          path: Dockerfile.local
         - action: rebuild
           path: pyproject.toml
         - action: rebuild
