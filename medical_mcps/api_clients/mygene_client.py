@@ -90,3 +90,4 @@ class MyGeneClient(BaseAPIClient):
             return self.format_response(None, {"error": f"MyGene API error: {str(e)}"})
 
 
+

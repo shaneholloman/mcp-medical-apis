@@ -50,7 +50,8 @@ class ServerSettings(BaseSettings):
 
     # Cache configuration
     enable_cache: bool = (
-        True  # Enable HTTP caching (set to False in cloud environments)
+        False  # Disabled by default due to SQLite threading issues with CTG client
+        # See: https://github.com/pascalwhoop/medical-mcps/issues/1
     )
 
     def get_port(self) -> int:

@@ -29,7 +29,7 @@ async def search_studies(
     condition: str = None,
     intervention: str = None,
     status: str = None,
-    page_size: int = 20,
+    page_size: int = 10,
 ) -> dict:
     """Search clinical trials from ClinicalTrials.gov.
 
@@ -39,9 +39,9 @@ async def search_studies(
     Args:
         condition: Condition/disease query (e.g., 'multiple sclerosis')
         intervention: Intervention/treatment query (e.g., 'ocrelizumab')
-        status: Comma-separated list of statuses (e.g., 'RECRUITING,COMPLETED'). 
+        status: Comma-separated list of statuses (e.g., 'RECRUITING,COMPLETED').
                 Common values: RECRUITING, NOT_YET_RECRUITING, COMPLETED, TERMINATED, SUSPENDED
-        page_size: Number of results per page (default: 20, max recommended: 100)
+        page_size: Number of results per page (default: 10, max recommended: 100)
 
     Returns:
         JSON with study results and pagination info (use nextPageToken for next page)
@@ -93,14 +93,14 @@ async def get_study(nct_id: str) -> dict:
 
 @medmcps_tool(name="ctg_search_by_condition", servers=[ctg_mcp, unified_mcp])
 async def search_by_condition(
-    condition_query: str, status: str = None, page_size: int = 20
+    condition_query: str, status: str = None, page_size: int = 10
 ) -> dict:
     """Search clinical trials by condition/disease.
 
     Args:
         condition_query: Condition or disease name (e.g., 'multiple sclerosis')
         status: Comma-separated list of statuses to filter (optional)
-        page_size: Number of results per page (default: 20)
+        page_size: Number of results per page (default: 10)
 
     Returns:
         JSON with study results matching the condition
@@ -118,7 +118,9 @@ async def search_by_condition(
         result = await ctg_client.search_by_condition(
             condition_query, status=status_list, page_size=page_size
         )
-        logger.info(f"Tool succeeded: search_by_condition(condition_query='{condition_query}')")
+        logger.info(
+            f"Tool succeeded: search_by_condition(condition_query='{condition_query}')"
+        )
         return result
     except Exception as e:
         logger.error(
@@ -130,14 +132,14 @@ async def search_by_condition(
 
 @medmcps_tool(name="ctg_search_by_intervention", servers=[ctg_mcp, unified_mcp])
 async def search_by_intervention(
-    intervention_query: str, status: str = None, page_size: int = 20
+    intervention_query: str, status: str = None, page_size: int = 10
 ) -> dict:
     """Search clinical trials by intervention/treatment.
 
     Args:
         intervention_query: Intervention or treatment name (e.g., 'ocrelizumab')
         status: Comma-separated list of statuses to filter (optional)
-        page_size: Number of results per page (default: 20)
+        page_size: Number of results per page (default: 10)
 
     Returns:
         JSON with study results matching the intervention
@@ -182,4 +184,3 @@ async def get_study_metadata() -> dict:
     except Exception as e:
         logger.error(f"Tool failed: get_study_metadata() - {e}", exc_info=True)
         return f"Error calling ClinicalTrials.gov API: {str(e)}"
-

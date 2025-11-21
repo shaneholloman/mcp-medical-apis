@@ -8,9 +8,10 @@ import logging
 from typing import List, Optional
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.pubmed_client import PubMedClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ async def search_articles(
     chemicals: Optional[List[str]] = None,
     keywords: Optional[List[str]] = None,
     variants: Optional[List[str]] = None,
-    limit: int = 50,
+    limit: int = 10,
     page: int = 1,
 ) -> dict:
     """Search biomedical articles from PubMed/PubTator3.
@@ -43,7 +44,7 @@ async def search_articles(
         chemicals: List of chemical/drug names (e.g., ['ocrelizumab'])
         keywords: List of keywords for filtering results. Supports OR logic with pipe separator (e.g., ['R173|Arg173|p.R173'])
         variants: List of variant names (e.g., ['V600E'])
-        limit: Maximum number of results per page (default: 50)
+        limit: Maximum number of results per page (default: 10)
         page: Page number (1-based, default: 1)
 
     Returns:
@@ -102,12 +103,12 @@ async def get_article(pmid_or_doi: str, full: bool = False) -> dict:
 
 
 @medmcps_tool(name="pubmed_search_preprints", servers=[pubmed_mcp, unified_mcp])
-async def search_preprints(query: str, limit: int = 25) -> dict:
+async def search_preprints(query: str, limit: int = 10) -> dict:
     """Search preprint articles from bioRxiv/medRxiv via Europe PMC.
 
     Args:
         query: Search query (e.g., 'multiple sclerosis CD20')
-        limit: Maximum number of results (default: 25, max: 1000)
+        limit: Maximum number of results (default: 10, max: 1000)
 
     Returns:
         JSON with list of preprints including DOI, title, authors, journal, date, abstract

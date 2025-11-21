@@ -34,9 +34,11 @@ class CTGClient(BaseAPIClient):
         # Note: requests is synchronous, so we'll wrap calls in asyncio.to_thread
         self._session = requests.Session()
         self._session.timeout = self.timeout
-        # Mount hishel CacheAdapter for HTTP caching
-        self._session.mount("https://", CacheAdapter())
-        self._session.mount("http://", CacheAdapter())
+        # Mount hishel CacheAdapter for HTTP caching only if enabled
+        # Note: Disabled by default due to SQLite threading issues with asyncio.to_thread
+        if self.enable_cache:
+            self._session.mount("https://", CacheAdapter())
+            self._session.mount("http://", CacheAdapter())
         # BaseAPIClient expects _client for context manager, but we use _session
         self._client = None  # Not used, but needed for BaseAPIClient compatibility
 
@@ -59,16 +61,12 @@ class CTGClient(BaseAPIClient):
 
         try:
             # Run requests.get in thread pool
-            response = await self._run_sync(
-                self._session.get, url, params=params
-            )
+            response = await self._run_sync(self._session.get, url, params=params)
             response.raise_for_status()
             logger.info(f"HTTP Response: {response.status_code} {response.reason}")
             return response.json()
         except requests.exceptions.HTTPError as e:
-            logger.error(
-                f"HTTP Response: {e.response.status_code} {e.response.reason}"
-            )
+            logger.error(f"HTTP Response: {e.response.status_code} {e.response.reason}")
             error_msg = f"{self.api_name} API error: HTTP {e.response.status_code}"
             try:
                 error_detail = e.response.json()
@@ -98,7 +96,7 @@ class CTGClient(BaseAPIClient):
     ) -> dict:
         """
         Search clinical trials with various filters
-        
+
         Args:
             condition: Condition/disease query (e.g., 'multiple sclerosis')
             intervention: Intervention/treatment query (e.g., 'ocrelizumab')
@@ -107,7 +105,7 @@ class CTGClient(BaseAPIClient):
             page_size: Number of results per page (default: 20)
             page_token: Token for pagination (from previous response)
             fields: List of fields to return (None = all fields)
-            
+
         Returns:
             Dict with study results and pagination info (includes metadata)
         """
@@ -142,7 +140,7 @@ class CTGClient(BaseAPIClient):
 
         try:
             data = await self._get("/studies", params=params)
-            
+
             # Extract metadata
             metadata = {
                 "page_size": page_size,
@@ -168,12 +166,12 @@ class CTGClient(BaseAPIClient):
     ) -> dict:
         """
         Get single study by NCT ID
-        
+
         Args:
             nct_id: NCT identifier (e.g., 'NCT00841061')
             fields: List of fields to return (None = all fields)
             format: Response format ('json', 'csv', 'json.zip', 'fhir.json', 'ris')
-            
+
         Returns:
             Dict with study data
         """
@@ -214,12 +212,12 @@ class CTGClient(BaseAPIClient):
     ) -> dict:
         """
         Search studies by condition/disease
-        
+
         Args:
             condition_query: Condition or disease name (e.g., 'multiple sclerosis')
             status: List of statuses to filter (optional)
             page_size: Number of results per page (default: 20)
-            
+
         Returns:
             JSON string with study results
         """
@@ -236,12 +234,12 @@ class CTGClient(BaseAPIClient):
     ) -> dict:
         """
         Search studies by intervention/treatment
-        
+
         Args:
             intervention_query: Intervention or treatment name (e.g., 'ocrelizumab')
             status: List of statuses to filter (optional)
             page_size: Number of results per page (default: 20)
-            
+
         Returns:
             JSON string with study results
         """
@@ -253,14 +251,14 @@ class CTGClient(BaseAPIClient):
     async def get_study_metadata(self, include_indexed_only: bool = False) -> dict:
         """
         Get study data model metadata (available fields)
-        
+
         Note: The CTG API v2 metadata endpoint may not be available or may require
         different parameters. This method attempts to retrieve metadata but may return
         an error if the endpoint is not accessible.
-        
+
         Args:
             include_indexed_only: Include indexed-only fields (default: False)
-            
+
         Returns:
             Dict with field metadata or error message
         """
@@ -269,7 +267,7 @@ class CTGClient(BaseAPIClient):
         try:
             data = await self._get("/studies/metadata")
             return self.format_response(data)
-        except Exception as e:
+        except Exception:
             # If that fails, try with params
             try:
                 params = {"includeIndexedOnly": str(include_indexed_only).lower()}
@@ -290,7 +288,7 @@ class CTGClient(BaseAPIClient):
     async def get_search_areas(self) -> dict:
         """
         Get search area documentation
-        
+
         Returns:
             Dict with search area information
         """
@@ -303,4 +301,3 @@ class CTGClient(BaseAPIClient):
             return self.format_response(
                 None, {"error": f"ClinicalTrials.gov API error: {str(e)}"}
             )
-

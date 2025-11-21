@@ -89,3 +89,4 @@ class MyChemClient(BaseAPIClient):
             return self.format_response(None, {"error": f"MyChem API error: {str(e)}"})
 
 
+

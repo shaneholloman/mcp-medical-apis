@@ -14,7 +14,13 @@ from typing import Any
 import httpx
 from hishel import AsyncSqliteStorage
 from hishel.httpx import AsyncCacheClient
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_delay,
+    wait_exponential,
+    wait_fixed,
+)
 
 from ..settings import settings
 
@@ -191,7 +197,18 @@ class BaseAPIClient(ABC):
         log_url = f"{request_url}?{param_str}" if param_str else request_url
         logger.info(f"HTTP Request: {method} {log_url}")
 
-        # Create request function
+        # Create request function with retry decorator
+        # Retry on network errors (HTTPError, TimeoutException, ConnectError) but not on HTTP status errors
+        @retry(
+            stop=stop_after_delay(120),  # Stop after 60 seconds total
+            wait=wait_fixed(self.rate_limit_delay)
+            if self.rate_limit_delay
+            else wait_exponential(multiplier=1, min=5, max=60),
+            retry=retry_if_exception_type(
+                (httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError)
+            ),
+            reraise=True,
+        )
         async def make_request():
             if method == "GET":
                 response = await self.client.get(request_url, params=params)
@@ -213,18 +230,9 @@ class BaseAPIClient(ABC):
             )
             return response.json() if return_json else response.text
 
-        # Apply retry via tenacity if rate_limit_delay is configured (acts as delay between retries)
-        request_func = make_request
-        if self.rate_limit_delay:
-            request_func = retry(
-                stop=stop_after_attempt(3),
-                wait=wait_fixed(self.rate_limit_delay),
-                reraise=True,
-            )(make_request)
-
         # Execute request with error handling
         try:
-            return await request_func()
+            return await make_request()
         except httpx.HTTPStatusError as e:
             logger.error(
                 f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}"
