@@ -27,7 +27,7 @@ Add this to your `.cursor/mcp.json` (or equivalent MCP client configuration):
 
 ### What You Get
 
-Once connected, you'll have access to **100+ tools** across 14 biological and medical APIs:
+Once connected, you'll have access to **100+ tools** across 13 biological and medical APIs:
 
 - **Pathways**: Reactome, KEGG, Pathway Commons
 - **Genes & Proteins**: UniProt, MyGene.info, Node Normalization
@@ -36,7 +36,6 @@ Once connected, you'll have access to **100+ tools** across 14 biological and me
 - **Drugs**: ChEMBL, MyChem.info, OpenFDA
 - **Literature**: PubMed/PubTator3
 - **Trials**: ClinicalTrials.gov, NCI Clinical Trials
-- **Drug Repurposing Playbooks**: Structured strategies for navigating biomedical data trails
 
 ### Example: Search for a Gene
 
@@ -89,8 +88,6 @@ To run your own instance locally, you can either:
 - **BioThings Suite APIs** - MyGene.info (gene annotations), MyDisease.info (disease information),
   MyChem.info (drug/chemical data)
 - **NCI Clinical Trials API** - Cancer clinical trial search and metadata (requires API key)
-- **Drug Repurposing Playbooks** - Structured strategies for drug repurposing discovery (see
-  [PLAYBOOKS.md](./docs/PLAYBOOKS.md))
 
 ![](./agent-usage.png)
 
@@ -221,7 +218,6 @@ All endpoints are available at both production and local URLs:
 - `/tools/myvariant/mcp` - MyVariant.info API
 - `/tools/biothings/mcp` - BioThings Suite APIs (MyGene, MyDisease, MyChem)
 - `/tools/nci/mcp` - NCI Clinical Trials API (requires API key)
-- `/tools/playbooks/mcp` - Drug Repurposing Playbooks
 
 ### Example: Configuring Multiple APIs in Cursor
 

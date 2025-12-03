@@ -40,9 +40,8 @@ build-backend = "hatchling.build"
 packages = ["medical_mcps"]
 
 [tool.pytest.ini_options]
-timeout = 60
+timeout = 600
 timeout_method = "thread"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
-

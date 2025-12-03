@@ -168,6 +168,7 @@ class BaseAPIClient(ABC):
         json_data: dict[str, Any] | None = None,
         form_data: dict[str, Any] | None = None,
         return_json: bool = True,
+        timeout: float | None = None,
     ) -> dict[str, Any] | str:
         """
         Unified HTTP request method.
@@ -211,15 +212,15 @@ class BaseAPIClient(ABC):
         )
         async def make_request():
             if method == "GET":
-                response = await self.client.get(request_url, params=params)
+                response = await self.client.get(request_url, params=params, timeout=timeout)
             elif method == "POST":
                 if form_data is not None:
                     response = await self.client.post(
-                        request_url, data=form_data, params=params
+                        request_url, data=form_data, params=params, timeout=timeout
                     )
                 else:
                     response = await self.client.post(
-                        request_url, json=json_data, params=params
+                        request_url, json=json_data, params=params, timeout=timeout
                     )
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")

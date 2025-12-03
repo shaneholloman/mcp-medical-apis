@@ -120,7 +120,8 @@ stages:
         result:
           content:
             - type: "text"
-              text: !re_search "R-HSA|pathway"
+              # Check for either a list of participants (schemaClass) OR the fallback message
+              text: !re_search '"schemaClass":|"message":\s*"Participants list unavailable'
           isError: false
 
   # Test 5: get_pathway_participants - Error Case

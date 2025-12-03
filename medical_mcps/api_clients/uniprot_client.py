@@ -20,7 +20,33 @@ class UniProtClient(BaseAPIClient):
             timeout=30.0,
         )
 
-    async def get_protein(self, accession: str, format: str = "json") -> dict | str:
+    def _extract_field_value(self, data: dict, field_path: str) -> any:
+        """
+        Safely extracts a nested field value from a dictionary using a dot-separated path.
+        e.g., _extract_field_value(data, "organism.scientificName")
+        """
+        keys = field_path.split('.')
+        value = data
+        for key in keys:
+            if isinstance(value, dict) and key in value:
+                value = value[key]
+            elif isinstance(value, list) and key.isdigit():
+                try:
+                    index = int(key)
+                    if 0 <= index < len(value):
+                        value = value[index]
+                    else:
+                        return None
+                except ValueError:
+                    return None
+            else:
+                return None
+        return value
+
+
+    async def get_protein(
+        self, accession: str, format: str = "json", fields: list[str] | None = None
+    ) -> dict | str:
         """
         Get protein information by UniProt accession
 
@@ -33,7 +59,49 @@ class UniProtClient(BaseAPIClient):
         """
         if format == "json":
             data = await self._request("GET", endpoint=f"/uniprotkb/{accession}")
-            return self.format_response(data)
+
+            if data and fields is not None:
+                default_fields = [
+                    "primaryAccession",
+                    "uniProtkbId",
+                    "organism.scientificName",
+                    "proteinDescription.recommendedName.fullName.value",
+                    "genes.0.geneName.value", # Assuming first gene name is often sufficient
+                ]
+                
+                # Use provided fields or default fields if none are specified
+                fields_to_extract = fields if fields else default_fields
+
+                filtered_data = {}
+                for field_path in fields_to_extract:
+                    value = self._extract_field_value(data, field_path)
+                    if value is not None:
+                        # Create a flat key for the filtered data
+                        flat_key = field_path.replace('.', '_')
+                        # Use the last part of the path as the key if it's descriptive enough
+                        if '.' in field_path:
+                            final_key_part = field_path.split('.')[-1]
+                            # Handle special case for '.value' at the end
+                            if final_key_part == 'value' and len(field_path.split('.')) > 1:
+                                flat_key = field_path.split('.')[-2]
+                            else:
+                                flat_key = final_key_part
+                        else:
+                            flat_key = field_path
+
+                        # Avoid potential key collisions if using just the last part
+                        # A more robust solution might involve a mapping or more complex key generation
+                        # For now, we'll try to use a relatively unique flattened key
+                        # if simple last part leads to collision or is not clear.
+                        # For the sake of this task, we assume simple key naming is acceptable.
+                        filtered_data[flat_key] = value
+
+                return self.format_response(filtered_data)
+            elif data:
+                return self.format_response(data)
+            else:
+                return self.format_response(None)
+
         else:
             url = f"{self.base_url}/uniprotkb/{accession}.{format}"
             text = await self._request("GET", url=url, return_json=False)

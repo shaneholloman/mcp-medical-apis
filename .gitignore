@@ -17,6 +17,7 @@ env/
 .coverage.*
 htmlcov/
 *.cover
+**/test_reports/*
 
 # IDEs
 .vscode/
@@ -42,3 +43,5 @@ htmlcov/
 *.code-workspace
 
 searxng
+user_testing/*
+todo.md

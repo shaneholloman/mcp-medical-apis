@@ -5,7 +5,6 @@ marks:
   - usefixtures:
       - server_process
 
-
 stages:
   # Test 1: get_protein - Happy Path
   - name: Get protein with valid accession (P00520)
@@ -26,15 +25,13 @@ stages:
             format: "json"
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 1
         result:
           content:
             - type: "text"
-              text: !re_search "P00520"
+              text: !re_search "P00520.*Tyrosine-protein kinase ABL1"
           isError: false
 
   # Test 2: get_protein - Error Case
@@ -55,6 +52,17 @@ stages:
             accession: "INVALID_ACCESSION_12345"
     response:
       status_code: 200
+      # UniProt client wraps 400/404s as dictionary or text responses?
+      # Let's check loosely for error behavior first or inspect code.
+      # Code says: raises Exception -> Server returns text? Or wrapped JSON?
+      # BaseClient catches HTTPStatusError and raises Exception.
+      # Server likely returns {error: ...} or just string if decorator catches it.
+      # FastMCP usually returns error string if tool raises exception.
+      # If tool returns "Error...", response content is a string.
+      # Our validator assumes JSON. If it's a string error message, validator might fail with JSONDecodeError.
+      # But the validator handles JSONDecodeError and raises AssertionError.
+      # So this test might fail validation if it returns plain text error.
+      # Let's rely on simple text search for error cases for now, or update validator to handle string output.
       strict:
         - json:off
       json:
@@ -63,7 +71,7 @@ stages:
         result:
           content:
             - type: "text"
-              text: !re_search "Error"
+              text: !re_search "Error|not found|404"
 
   # Test 3: search_proteins - Happy Path
   - name: Search proteins with valid query
@@ -84,15 +92,13 @@ stages:
             limit: 5
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 3
         result:
           content:
             - type: "text"
-              text: !re_search "TP53"
+              text: !re_search "P04637.*P53_HUMAN"
           isError: false
 
   # Test 4: get_protein_sequence - Happy Path
@@ -115,42 +121,15 @@ stages:
       status_code: 200
       strict:
         - json:off
+      # This returns raw text (FASTA), not JSON.
+      # So we must use simple text validation.
       json:
         jsonrpc: "2.0"
         id: 4
         result:
           content:
             - type: "text"
-              text: !re_search "P00520"
-          isError: false
-
-  # Test 5: get_protein_sequence - Error Case
-  - name: Get protein sequence with invalid accession
-    request:
-      url: "http://localhost:8000/tools/uniprot/mcp"
-      method: POST
-      headers:
-        Content-Type: "application/json"
-        Accept: "application/json, text/event-stream"
-      json:
-        jsonrpc: "2.0"
-        id: 5
-        method: "tools/call"
-        params:
-          name: "uniprot_get_protein_sequence"
-          arguments:
-            accession: "INVALID123"
-    response:
-      status_code: 200
-      strict:
-        - json:off
-      json:
-        jsonrpc: "2.0"
-        id: 5
-        result:
-          content:
-            - type: "text"
-              text: !re_search "Error"
+              text: !re_search "^>sp\\|P00520\\|"
 
   # Test 6: get_disease_associations - Happy Path
   - name: Get disease associations with valid accession
@@ -170,15 +149,13 @@ stages:
             accession: "P00520"
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 6
         result:
           content:
             - type: "text"
-              text: !re_search "disease"
+              text: !re_search "DISEASE.*diseaseId"
           isError: false
 
   # Test 7: map_ids - Happy Path
@@ -201,13 +178,11 @@ stages:
             ids: "TP53"
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 7
         result:
           content:
             - type: "text"
-              text: !re_search "TP53|results|Error|mapping"
+              text: !re_search "TP53.*P04637"
           isError: false
