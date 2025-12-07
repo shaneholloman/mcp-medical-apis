@@ -93,7 +93,42 @@ To run your own instance locally, you can either:
 
 ## Installation
 
-### Option 1: Docker Compose (Recommended)
+### Option 1: Install from PyPI
+
+Install the package from PyPI:
+
+```bash
+pip install medical-mcps
+```
+
+Then run the server:
+
+```bash
+mcp-server
+```
+
+The server will be available at http://localhost:8000.
+
+### Option 2: Run with Docker
+
+Pull and run the pre-built Docker image:
+
+```bash
+# Pull latest image
+docker pull pascalwhoop/medical-mcps:latest
+
+# Run server
+docker run -p 8000:8000 pascalwhoop/medical-mcps:latest
+```
+
+The server will be available at http://localhost:8000.
+
+For specific versions:
+```bash
+docker pull pascalwhoop/medical-mcps:v0.1.0
+```
+
+### Option 3: Docker Compose (Recommended for Development)
 
 The easiest way to run both the MCP backend and SearXNG search engine:
 
@@ -115,7 +150,7 @@ Services will be available at:
 - **MCP Backend**: http://localhost:8000
 - **SearXNG**: http://localhost:8888
 
-### Option 2: Local Python Installation
+### Option 4: Local Python Installation
 
 ```bash
 # Install dependencies using uv
