@@ -55,6 +55,9 @@ jobs:
           # 3. Save version for later
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Sync dependencies
+        run: uv sync
+
       - name: Build and publish to PyPI
         # If this fails, the workflow DIES here.
         # Nothing has been pushed to GitHub. No cleanup needed.
@@ -110,5 +113,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
           gh release upload
-          'v${{ needs.publish.outputs.version }}' dist/**
+          'v${{ needs.publish.outputs.version }}' dist/*.sigstore.json
           --repo '${{ github.repository }}'
