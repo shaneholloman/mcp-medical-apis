@@ -42,6 +42,7 @@ from .servers import (  # noqa: E402
     nci_server,
     nodenorm_server,  # noqa: F401 - imported for side effects (tool registration)
     omim_server,
+    opentargets_server,
     openfda_server,
     pathwaycommons_server,
     pubmed_server,
@@ -82,6 +83,7 @@ async def lifespan(app: Starlette):
     logger.info("  - GWAS Catalog: /tools/gwas/mcp")
     logger.info("  - Pathway Commons: /tools/pathwaycommons/mcp")
     logger.info("  - ChEMBL: /tools/chembl/mcp")
+    logger.info("  - OpenTargets: /tools/opentargets/mcp")
     logger.info("  - ClinicalTrials.gov: /tools/ctg/mcp")
     logger.info("  - PubMed: /tools/pubmed/mcp")
     logger.info("  - OpenFDA: /tools/openfda/mcp")
@@ -105,6 +107,9 @@ async def lifespan(app: Starlette):
             pathwaycommons_server.pathwaycommons_mcp.session_manager.run()
         )
         await stack.enter_async_context(chembl_server.chembl_mcp.session_manager.run())
+        await stack.enter_async_context(
+            opentargets_server.opentargets_mcp.session_manager.run()
+        )
         await stack.enter_async_context(ctg_server.ctg_mcp.session_manager.run())
         await stack.enter_async_context(pubmed_server.pubmed_mcp.session_manager.run())
         await stack.enter_async_context(
@@ -139,6 +144,10 @@ app = Starlette(
         Mount("/tools/gwas", app=gwas_server.gwas_mcp.streamable_http_app()),
         Mount( "/tools/pathwaycommons", app=pathwaycommons_server.pathwaycommons_mcp.streamable_http_app(),),
         Mount("/tools/chembl", app=chembl_server.chembl_mcp.streamable_http_app()),
+        Mount(
+            "/tools/opentargets",
+            app=opentargets_server.opentargets_mcp.streamable_http_app(),
+        ),
         Mount("/tools/ctg", app=ctg_server.ctg_mcp.streamable_http_app()),
         Mount("/tools/pubmed", app=pubmed_server.pubmed_mcp.streamable_http_app()),
         Mount("/tools/openfda", app=openfda_server.openfda_mcp.streamable_http_app()),
@@ -183,6 +192,8 @@ def entry_point():
     pathwaycommons_server.pathwaycommons_mcp.settings.port = port
     chembl_server.chembl_mcp.settings.host = host
     chembl_server.chembl_mcp.settings.port = port
+    opentargets_server.opentargets_mcp.settings.host = host
+    opentargets_server.opentargets_mcp.settings.port = port
     ctg_server.ctg_mcp.settings.host = host
     ctg_server.ctg_mcp.settings.port = port
     pubmed_server.pubmed_mcp.settings.host = host
@@ -208,6 +219,7 @@ def entry_point():
     logger.info(f"  - GWAS Catalog: http://{host}:{port}/tools/gwas/mcp")
     logger.info(f"  - Pathway Commons: http://{host}:{port}/tools/pathwaycommons/mcp")
     logger.info(f"  - ChEMBL: http://{host}:{port}/tools/chembl/mcp")
+    logger.info(f"  - OpenTargets: http://{host}:{port}/tools/opentargets/mcp")
     logger.info(f"  - ClinicalTrials.gov: http://{host}:{port}/tools/ctg/mcp")
     logger.info(f"  - PubMed: http://{host}:{port}/tools/pubmed/mcp")
     logger.info(f"  - OpenFDA: http://{host}:{port}/tools/openfda/mcp")

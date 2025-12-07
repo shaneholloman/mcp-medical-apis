@@ -29,13 +29,16 @@ Add this to your `.cursor/mcp.json` (or equivalent MCP client configuration):
 
 Once connected, you'll have access to **100+ tools** across 13 biological and medical APIs:
 
--   **Pathways**: Reactome, KEGG, Pathway Commons
--   **Genes & Proteins**: UniProt, MyGene.info, Node Normalization
--   **Variants**: MyVariant.info, GWAS Catalog
--   **Diseases**: OMIM, MyDisease.info
--   **Drugs**: ChEMBL, MyChem.info, OpenFDA
--   **Literature**: PubMed/PubTator3
--   **Trials**: ClinicalTrials.gov, NCI Clinical Trials
+
+- **Pathways**: Reactome, KEGG, Pathway Commons
+- **Genes & Proteins**: UniProt, MyGene.info, Node Normalization
+- **Targets & Associations**: OpenTargets Platform
+- **Variants**: MyVariant.info, GWAS Catalog
+- **Diseases**: OMIM, MyDisease.info
+- **Drugs**: ChEMBL, MyChem.info, OpenFDA
+- **Literature**: PubMed/PubTator3
+- **Trials**: ClinicalTrials.gov, NCI Clinical Trials
+
 
 ### Example: Search for a Gene
 
@@ -73,23 +76,25 @@ To run your own instance locally, you can either:
 
 ### ✅ Implemented APIs
 
--   **Reactome API** - Pathway information, gene/protein queries, disease associations
--   **KEGG API** - Pathway maps, gene annotations, disease and drug information
--   **UniProt API** - Protein sequences, functional annotations, disease associations
--   **OMIM API** - Genetic disease information, gene-disease associations (requires API key)
--   **GWAS Catalog API** - Genetic associations, variant information, study metadata
--   **Pathway Commons API** - Integrated pathway data, pathway interactions, gene/protein networks
--   **Node Normalization API** - CURIE normalization, identifier mapping across databases
--   **ChEMBL API** - Drug-target interactions, bioactivity data, mechanisms of action, drug
-    indications
--   **ClinicalTrials.gov API** - Clinical trial search, study metadata, trial status
--   **PubMed/PubTator3 API** - Biomedical literature search, article retrieval, preprint search
--   **OpenFDA API** - FDA adverse event reports, drug labels, device events, drug approvals
--   **MyVariant.info API** - Genetic variant annotations, population frequencies, clinical
-    significance
--   **BioThings Suite APIs** - MyGene.info (gene annotations), MyDisease.info (disease information),
-    MyChem.info (drug/chemical data)
--   **NCI Clinical Trials API** - Cancer clinical trial search and metadata (requires API key)
+- **Reactome API** - Pathway information, gene/protein queries, disease associations
+- **KEGG API** - Pathway maps, gene annotations, disease and drug information
+- **UniProt API** - Protein sequences, functional annotations, disease associations
+- **OMIM API** - Genetic disease information, gene-disease associations (requires API key)
+- **GWAS Catalog API** - Genetic associations, variant information, study metadata
+- **Pathway Commons API** - Integrated pathway data, pathway interactions, gene/protein networks
+- **Node Normalization API** - CURIE normalization, identifier mapping across databases
+- **ChEMBL API** - Drug-target interactions, bioactivity data, mechanisms of action, drug
+  indications
+- **ClinicalTrials.gov API** - Clinical trial search, study metadata, trial status
+- **PubMed/PubTator3 API** - Biomedical literature search, article retrieval, preprint search
+- **OpenFDA API** - FDA adverse event reports, drug labels, device events, drug approvals
+- **OpenTargets Platform API** - Target/disease search, associations, evidence
+- **MyVariant.info API** - Genetic variant annotations, population frequencies, clinical
+  significance
+- **BioThings Suite APIs** - MyGene.info (gene annotations), MyDisease.info (disease information),
+  MyChem.info (drug/chemical data)
+- **NCI Clinical Trials API** - Cancer clinical trial search and metadata (requires API key)
+
 
 ![](./agent-usage.png)
 
@@ -241,21 +246,22 @@ If you prefer to use individual APIs separately, each API has its own endpoint:
 
 All endpoints are available at both production and local URLs:
 
--   `/tools/unified/mcp` - Unified server (all APIs combined)
--   `/tools/reactome/mcp` - Reactome API
--   `/tools/kegg/mcp` - KEGG API
--   `/tools/uniprot/mcp` - UniProt API
--   `/tools/omim/mcp` - OMIM API (requires API key)
--   `/tools/gwas/mcp` - GWAS Catalog API
--   `/tools/pathwaycommons/mcp` - Pathway Commons API
--   `/tools/nodenorm/mcp` - Node Normalization API
--   `/tools/chembl/mcp` - ChEMBL API
--   `/tools/ctg/mcp` - ClinicalTrials.gov API
--   `/tools/pubmed/mcp` - PubMed/PubTator3 API
--   `/tools/openfda/mcp` - OpenFDA API
--   `/tools/myvariant/mcp` - MyVariant.info API
--   `/tools/biothings/mcp` - BioThings Suite APIs (MyGene, MyDisease, MyChem)
--   `/tools/nci/mcp` - NCI Clinical Trials API (requires API key)
+- `/tools/unified/mcp` - Unified server (all APIs combined)
+- `/tools/reactome/mcp` - Reactome API
+- `/tools/kegg/mcp` - KEGG API
+- `/tools/uniprot/mcp` - UniProt API
+- `/tools/omim/mcp` - OMIM API (requires API key)
+- `/tools/gwas/mcp` - GWAS Catalog API
+- `/tools/pathwaycommons/mcp` - Pathway Commons API
+- `/tools/nodenorm/mcp` - Node Normalization API
+- `/tools/chembl/mcp` - ChEMBL API
+- `/tools/opentargets/mcp` - OpenTargets Platform API
+- `/tools/ctg/mcp` - ClinicalTrials.gov API
+- `/tools/pubmed/mcp` - PubMed/PubTator3 API
+- `/tools/openfda/mcp` - OpenFDA API
+- `/tools/myvariant/mcp` - MyVariant.info API
+- `/tools/biothings/mcp` - BioThings Suite APIs (MyGene, MyDisease, MyChem)
+- `/tools/nci/mcp` - NCI Clinical Trials API (requires API key)
 
 ### Example: Configuring Multiple APIs in Cursor
 
@@ -597,6 +603,14 @@ used.
 -   `chembl_find_drugs_by_indication` - Find all drugs for a disease/indication
 -   `chembl_get_drug_indications` - Get all indications for a specific drug
 
+### OpenTargets Tools
+
+- `opentargets_search` - Search targets, diseases, and drugs across the OpenTargets platform
+- `opentargets_get_associations` - Retrieve target-disease associations
+- `opentargets_get_evidence` - Fetch evidence linking a target to a disease
+
+This server follows the same FastMCP + `med_mcp_server` pattern used across the codebase rather than copying an external implementation, and its client calls the official OpenTargets v4 REST endpoints with the documented parameters (`q`/`entity` for search, `target`/`disease` for association and evidence) to stay API-compatible.
+
 ### ClinicalTrials.gov Tools
 
 -   `ctg_search_studies` - Search clinical trials with various filters
@@ -674,6 +688,7 @@ medical_mcps/
 │   ├── ctg_client.py
 │   ├── pubmed_client.py
 │   ├── openfda_client.py
+│   ├── opentargets_client.py
 │   ├── myvariant_client.py
 │   ├── mygene_client.py
 │   ├── mydisease_client.py
@@ -689,6 +704,7 @@ medical_mcps/
     ├── pathwaycommons_server.py
     ├── nodenorm_server.py
     ├── chembl_server.py
+    ├── opentargets_server.py
     ├── ctg_server.py
     ├── pubmed_server.py
     ├── openfda_server.py
