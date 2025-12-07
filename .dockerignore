@@ -44,8 +44,8 @@ Dockerfile
 docker-compose.yml
 
 # Documentation
-*.md
 docs/
+# Keep README.md for package metadata
 
 # Tests
 tests/
