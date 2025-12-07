@@ -45,3 +45,5 @@ htmlcov/
 searxng
 user_testing/*
 todo.md
+
+.claude/settings.local.json
