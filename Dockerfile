@@ -24,5 +24,5 @@ ENV MCP_PORT=8000
 ENV PYTHONUNBUFFERED=1
 
 # Run the server
-CMD ["uv", "run", "mcp-server"]
+CMD ["uv", "run", "medical-mcps"]
 
