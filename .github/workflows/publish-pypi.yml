@@ -107,11 +107,3 @@ jobs:
           --repo '${{ github.repository }}'
           --generate-notes
           dist/*
-
-      - name: Upload artifact signatures to GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          gh release upload
-          'v${{ needs.publish.outputs.version }}' dist/*.sigstore.json
-          --repo '${{ github.repository }}'
