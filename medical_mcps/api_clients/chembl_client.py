@@ -296,7 +296,9 @@ class ChEMBLClient(BaseAPIClient):
             logger.error(f"Error getting mechanism: {e}", exc_info=True)
             return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
 
-    async def find_drugs_by_target(self, target_chembl_id: str, limit: int = 50) -> dict:
+    async def find_drugs_by_target(
+        self, target_chembl_id: str, limit: int = 50
+    ) -> dict:
         """
         Find all drugs/compounds targeting a specific protein
 
@@ -368,9 +370,22 @@ class ChEMBLClient(BaseAPIClient):
         logger.info(f"Finding drugs for indication: {disease_query}")
 
         def _sync_query():
+            # Retrieve specific fields including IDs to keep response size manageable
             indications = self.chembl_client.drug_indication.filter(
                 mesh_heading__icontains=disease_query
-            ).only(["drug_chembl_id", "mesh_heading", "mesh_id"])[:limit]
+            ).only(
+                [
+                    "drug_chembl_id",
+                    "molecule_chembl_id",
+                    "parent_molecule_chembl_id",
+                    "mesh_heading",
+                    "mesh_id",
+                    "efo_id",
+                    "efo_term",
+                    "max_phase_for_ind",
+                    "indication_refs",  # Important for linking to trials
+                ]
+            )[:limit]
             return list(indications)
 
         try:

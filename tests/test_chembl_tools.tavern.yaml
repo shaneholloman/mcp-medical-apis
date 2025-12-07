@@ -5,7 +5,6 @@ marks:
   - usefixtures:
       - server_process
 
-
 stages:
   # Test 1: get_molecule - Happy Path
   - name: Get molecule with valid ChEMBL ID (ocrelizumab)
@@ -25,15 +24,13 @@ stages:
             molecule_chembl_id: "CHEMBL2108041"
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 1
         result:
           content:
             - type: "text"
-              text: !re_search "CHEMBL2108041|OCRELIZUMAB"
+              text: !re_search "CHEMBL2108041[\\s\\S]*OCRELIZUMAB[\\s\\S]*Antibody"
           isError: false
 
   # Test 2: search_molecules - Happy Path
@@ -55,15 +52,13 @@ stages:
             limit: 10
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 2
         result:
           content:
             - type: "text"
-              text: !re_search "CHEMBL|molecule"
+              text: !re_search "ocrelizumab[\\s\\S]*CHEMBL2108041"
           isError: false
 
   # Test 3: search_targets - Happy Path
@@ -85,15 +80,13 @@ stages:
             limit: 10
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 3
         result:
           content:
             - type: "text"
-              text: !re_search "CHEMBL|target"
+              text: !re_search "CD20[\\s\\S]*SINGLE PROTEIN[\\s\\S]*Homo sapiens"
           isError: false
 
   # Test 4: get_mechanism - Happy Path
@@ -114,15 +107,13 @@ stages:
             molecule_chembl_id: "CHEMBL2108041"
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 4
         result:
           content:
             - type: "text"
-              text: !re_search "mechanism|target|action"
+              text: !re_search "CHEMBL2108041[\\s\\S]*action_type"
           isError: false
 
   # Test 5: find_drugs_by_indication - Happy Path
@@ -144,15 +135,13 @@ stages:
             limit: 20
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 5
         result:
           content:
             - type: "text"
-              text: !re_search "drug|indication|Multiple Sclerosis"
+              text: !re_search "Multiple Sclerosis[\\s\\S]*molecule_chembl_id[\\s\\S]*mesh_heading"
           isError: false
 
   # Test 6: get_molecule - Error Case
@@ -173,13 +162,11 @@ stages:
             molecule_chembl_id: "CHEMBL9999999"
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 6
         result:
           content:
             - type: "text"
-              text: !re_search "Error|not found"
-
+              text: !re_search "error|not found"
+          isError: false

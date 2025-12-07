@@ -106,12 +106,20 @@ class ReactomeClient(BaseAPIClient):
         ]
 
         last_error = None
+        import httpx
+        
         for endpoint in endpoints_to_try:
             try:
-                data = await self._request("GET", endpoint=endpoint)
+                # Set a strict timeout for this specific call as it can hang on large pathways
+                data = await self._request("GET", endpoint=endpoint, timeout=10.0)
                 participant_count = len(data) if isinstance(data, list) else None
                 metadata = {"participants": participant_count} if participant_count else None
                 return self.format_response(data, metadata)
+            except httpx.ReadTimeout:
+                # If we timeout, return a specific message (as if endpoint was not available)
+                logger.warning(f"Timeout fetching participants for {pathway_id} at {endpoint}. Treating as unavailable.")
+                # This effectively means we break and go to the fallback logic
+                break
             except Exception as e:
                 last_error = e
                 # If it's not a 404, re-raise immediately
@@ -119,24 +127,21 @@ class ReactomeClient(BaseAPIClient):
                     raise
                 # Otherwise, try next endpoint
 
-        # If all endpoints failed, return pathway data with a note
-        # that participants endpoint is not available, but include pathway info
+        # If all endpoints failed or timed out, return pathway data with a note
         try:
             pathway_data = await self._request("GET", endpoint=f"/data/query/{pathway_id}")
             fallback_data = {
-                "message": "Direct participants endpoint not available for this pathway. "
-                "Pathway information retrieved instead. "
-                "To get participants, query individual pathway events.",
+                "message": "Participants list unavailable or too large to retrieve directly. "
+                "Pathway information retrieved instead.",
                 "pathway": pathway_data,
-                "note": "Use query_pathways() to search for specific genes/proteins, "
-                "or query individual pathway events to get their participants.",
+                "note": "To find if specific genes/proteins participate in this pathway, "
+                "use the 'reactome_query_pathways' tool with the gene name.",
             }
             return self.format_response(fallback_data)
         except Exception:
             # If we can't even get pathway data, raise the original error
             raise Exception(
                 f"Pathway '{pathway_id}' not found or participants endpoint unavailable. "
-                "Please verify the pathway ID is correct. "
                 f"Original error: {str(last_error)}"
             ) from last_error
 

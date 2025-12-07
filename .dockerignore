@@ -44,8 +44,8 @@ Dockerfile
 docker-compose.yml
 
 # Documentation
-*.md
 docs/
+# Keep README.md for package metadata
 
 # Tests
 tests/
@@ -56,5 +56,7 @@ railway.json
 Makefile
 agent-usage.png
 disease_evaluation_*.md
+
+
 
 

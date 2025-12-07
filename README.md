@@ -17,17 +17,18 @@ Add this to your `.cursor/mcp.json` (or equivalent MCP client configuration):
 
 ```json
 {
-  "mcpServers": {
-    "medical-apis": {
-      "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+    "mcpServers": {
+        "medical-apis": {
+            "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+        }
     }
-  }
 }
 ```
 
 ### What You Get
 
-Once connected, you'll have access to **100+ tools** across 14 biological and medical APIs:
+Once connected, you'll have access to **100+ tools** across 13 biological and medical APIs:
+
 
 - **Pathways**: Reactome, KEGG, Pathway Commons
 - **Genes & Proteins**: UniProt, MyGene.info, Node Normalization
@@ -37,20 +38,20 @@ Once connected, you'll have access to **100+ tools** across 14 biological and me
 - **Drugs**: ChEMBL, MyChem.info, OpenFDA
 - **Literature**: PubMed/PubTator3
 - **Trials**: ClinicalTrials.gov, NCI Clinical Trials
-- **Drug Repurposing Playbooks**: Structured strategies for navigating biomedical data trails
+
 
 ### Example: Search for a Gene
 
 ```json
 {
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": {
-    "name": "mygene_get_gene",
-    "arguments": {
-      "gene_id_or_symbol": "TP53"
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+        "name": "mygene_get_gene",
+        "arguments": {
+            "gene_id_or_symbol": "TP53"
+        }
     }
-  }
 }
 ```
 
@@ -58,16 +59,18 @@ Once connected, you'll have access to **100+ tools** across 14 biological and me
 
 If you prefer to use individual APIs separately, each API has its own endpoint:
 
-- `/tools/reactome/mcp` - Reactome only
-- `/tools/pubmed/mcp` - PubMed only
-- `/tools/chembl/mcp` - ChEMBL only
-- ... (see [Available Endpoints](#available-endpoints) for full list)
+-   `/tools/reactome/mcp` - Reactome only
+-   `/tools/pubmed/mcp` - PubMed only
+-   `/tools/chembl/mcp` - ChEMBL only
+-   ... (see [Available Endpoints](#available-endpoints) for full list)
 
 ### Local Development
 
 To run your own instance locally, you can either:
-- Use Docker Compose (recommended for quick setup) - see [Docker Compose Setup](#docker-compose-setup)
-- Run directly with Python/uv - see [Running the Server](#running-the-server) below
+
+-   Use Docker Compose (recommended for quick setup) - see
+    [Docker Compose Setup](#docker-compose-setup)
+-   Run directly with Python/uv - see [Running the Server](#running-the-server) below
 
 ## APIs Integrated
 
@@ -91,16 +94,51 @@ To run your own instance locally, you can either:
 - **BioThings Suite APIs** - MyGene.info (gene annotations), MyDisease.info (disease information),
   MyChem.info (drug/chemical data)
 - **NCI Clinical Trials API** - Cancer clinical trial search and metadata (requires API key)
-- **Drug Repurposing Playbooks** - Structured strategies for drug repurposing discovery (see
-  [PLAYBOOKS.md](./docs/PLAYBOOKS.md))
+
 
 ![](./agent-usage.png)
 
 ## Installation
 
-### Option 1: Docker Compose (Recommended)
+### Option 1: Install from PyPI
 
-The easiest way to run both the MCP backend and SearXNG search engine:
+Install the package from PyPI:
+
+```bash
+pip install medical-mcps
+```
+
+Then run the server:
+
+```bash
+medical-mcps
+```
+
+The server will be available at http://localhost:8000.
+
+### Option 2: Run with Docker
+
+Pull and run the pre-built Docker image:
+
+```bash
+# Pull latest image
+docker pull pascalwhoop/medical-mcps:latest
+
+# Run server
+docker run -p 8000:8000 pascalwhoop/medical-mcps:latest
+```
+
+The server will be available at http://localhost:8000.
+
+For specific versions:
+
+```bash
+docker pull pascalwhoop/medical-mcps:v0.1.0
+```
+
+### Option 3: Docker Compose (Recommended for Development)
+
+The easiest way to run the MCP backend:
 
 ```bash
 # Start all services with auto-rebuild
@@ -117,10 +155,10 @@ make docker-down
 ```
 
 Services will be available at:
-- **MCP Backend**: http://localhost:8000
-- **SearXNG**: http://localhost:8888
 
-### Option 2: Local Python Installation
+-   **MCP Backend**: http://localhost:8000
+
+### Option 4: Local Python Installation
 
 ```bash
 # Install dependencies using uv
@@ -178,7 +216,7 @@ The MCP servers are deployed and available at:
 
 ```json
 {
-  "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+    "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
 }
 ```
 
@@ -192,7 +230,7 @@ If you prefer to use individual APIs separately, each API has its own endpoint:
 
 ```json
 {
-  "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
+    "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
 }
 ```
 
@@ -200,7 +238,7 @@ If you prefer to use individual APIs separately, each API has its own endpoint:
 
 ```json
 {
-  "url": "http://localhost:8000/tools/reactome/mcp"
+    "url": "http://localhost:8000/tools/reactome/mcp"
 }
 ```
 
@@ -224,7 +262,6 @@ All endpoints are available at both production and local URLs:
 - `/tools/myvariant/mcp` - MyVariant.info API
 - `/tools/biothings/mcp` - BioThings Suite APIs (MyGene, MyDisease, MyChem)
 - `/tools/nci/mcp` - NCI Clinical Trials API (requires API key)
-- `/tools/playbooks/mcp` - Drug Repurposing Playbooks
 
 ### Example: Configuring Multiple APIs in Cursor
 
@@ -234,11 +271,11 @@ Access all APIs through one connection:
 
 ```json
 {
-  "mcpServers": {
-    "medical-apis": {
-      "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+    "mcpServers": {
+        "medical-apis": {
+            "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+        }
     }
-  }
 }
 ```
 
@@ -248,17 +285,17 @@ If you prefer separate connections for each API:
 
 ```json
 {
-  "mcpServers": {
-    "reactome": {
-      "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
-    },
-    "chembl": {
-      "url": "https://medical-mcps-production.up.railway.app/tools/chembl/mcp"
-    },
-    "pubmed": {
-      "url": "https://medical-mcps-production.up.railway.app/tools/pubmed/mcp"
+    "mcpServers": {
+        "reactome": {
+            "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
+        },
+        "chembl": {
+            "url": "https://medical-mcps-production.up.railway.app/tools/chembl/mcp"
+        },
+        "pubmed": {
+            "url": "https://medical-mcps-production.up.railway.app/tools/pubmed/mcp"
+        }
     }
-  }
 }
 ```
 
@@ -289,17 +326,17 @@ disk. This reduces redundant API calls and improves performance.
 
 ### Cache Configuration
 
-- **Cache Location**: `~/.cache/medical-mcps/api_cache/`
-- **Cache Duration**: 30 days (default TTL)
-- **Cache Refresh**: TTL is reset when accessing cached entries (`refresh_ttl_on_access=True`)
-- **Per-API Cache Files**: Each API has its own SQLite cache file (e.g., `reactome.db`, `kegg.db`)
+-   **Cache Location**: `~/.cache/medical-mcps/api_cache/`
+-   **Cache Duration**: 30 days (default TTL)
+-   **Cache Refresh**: TTL is reset when accessing cached entries (`refresh_ttl_on_access=True`)
+-   **Per-API Cache Files**: Each API has its own SQLite cache file (e.g., `reactome.db`, `kegg.db`)
 
 ### Cache Behavior
 
-- **Automatic**: Caching is enabled by default for all HTTP-based APIs
-- **Transparent**: Responses are cached automatically based on URL, parameters, and headers
-- **RFC 9111 Compliant**: Respects HTTP caching semantics and Cache-Control headers
-- **Cache Visibility**: Logs show "(from cache)" when serving cached responses
+-   **Automatic**: Caching is enabled by default for all HTTP-based APIs
+-   **Transparent**: Responses are cached automatically based on URL, parameters, and headers
+-   **RFC 9111 Compliant**: Respects HTTP caching semantics and Cache-Control headers
+-   **Cache Visibility**: Logs show "(from cache)" when serving cached responses
 
 ### Disabling Caching
 
@@ -327,18 +364,18 @@ rm ~/.cache/medical-mcps/api_cache/reactome.db
 
 All HTTP-based APIs support caching:
 
-- Reactome (httpx)
-- KEGG (httpx)
-- UniProt (httpx)
-- OMIM (httpx)
-- GWAS Catalog (httpx)
-- Pathway Commons (httpx)
-- ClinicalTrials.gov (requests)
-- PubMed (httpx)
-- OpenFDA (httpx)
-- MyVariant.info (httpx)
-- BioThings Suite (httpx)
-- NCI Clinical Trials (httpx)
+-   Reactome (httpx)
+-   KEGG (httpx)
+-   UniProt (httpx)
+-   OMIM (httpx)
+-   GWAS Catalog (httpx)
+-   Pathway Commons (httpx)
+-   ClinicalTrials.gov (requests)
+-   PubMed (httpx)
+-   OpenFDA (httpx)
+-   MyVariant.info (httpx)
+-   BioThings Suite (httpx)
+-   NCI Clinical Trials (httpx)
 
 **Note**: ChEMBL uses a library client (not HTTP), so caching is handled at the library level.
 
@@ -361,20 +398,21 @@ export SENTRY_DSN="https://your-dsn@sentry.io/project-id"
 
 Sentry can be configured via environment variables:
 
-- `SENTRY_DSN` - Your Sentry DSN (required to enable Sentry)
-- `SENTRY_TRACES_SAMPLE_RATE` - Sample rate for performance traces (default: `1.0` = 100%)
-- `SENTRY_SEND_DEFAULT_PII` - Include tool inputs/outputs in Sentry (default: `true`)
-- `SENTRY_ENABLE_LOGS` - Enable sending logs to Sentry (default: `true`)
-- `SENTRY_PROFILE_SESSION_SAMPLE_RATE` - Sample rate for profiling sessions (default: `1.0` = 100%)
-- `SENTRY_PROFILE_LIFECYCLE` - Profiler lifecycle mode (default: `trace` - auto-run when transaction
-  active)
-- `ENVIRONMENT` - Environment name (default: `local`)
+-   `SENTRY_DSN` - Your Sentry DSN (required to enable Sentry)
+-   `SENTRY_TRACES_SAMPLE_RATE` - Sample rate for performance traces (default: `1.0` = 100%)
+-   `SENTRY_SEND_DEFAULT_PII` - Include tool inputs/outputs in Sentry (default: `true`)
+-   `SENTRY_ENABLE_LOGS` - Enable sending logs to Sentry (default: `true`)
+-   `SENTRY_PROFILE_SESSION_SAMPLE_RATE` - Sample rate for profiling sessions (default: `1.0` =
+    100%)
+-   `SENTRY_PROFILE_LIFECYCLE` - Profiler lifecycle mode (default: `trace` - auto-run when
+    transaction active)
+-   `ENVIRONMENT` - Environment name (default: `local`)
 
 **Performance Monitoring:**
 
-- **Tracing**: Captures 100% of transactions by default (`traces_sample_rate=1.0`)
-- **Profiling**: Profiles 100% of sessions by default (`profile_session_sample_rate=1.0`)
-- **Logs**: Enabled by default (`enable_logs=True`)
+-   **Tracing**: Captures 100% of transactions by default (`traces_sample_rate=1.0`)
+-   **Profiling**: Profiles 100% of sessions by default (`profile_session_sample_rate=1.0`)
+-   **Logs**: Enabled by default (`enable_logs=True`)
 
 ### What Gets Tracked
 
@@ -382,29 +420,30 @@ Sentry automatically collects:
 
 **MCP Integration:**
 
-- **Tool executions**: Tool name, arguments, results, and execution errors
-- **Prompt requests**: Prompt name, arguments, and content
-- **Resource access**: Resource URI and access patterns
-- **Request context**: Request IDs, session IDs, and transport types
-- **Execution spans**: Timing information for all handler invocations
+-   **Tool executions**: Tool name, arguments, results, and execution errors
+-   **Prompt requests**: Prompt name, arguments, and content
+-   **Resource access**: Resource URI and access patterns
+-   **Request context**: Request IDs, session IDs, and transport types
+-   **Execution spans**: Timing information for all handler invocations
 
 **Starlette Integration:**
 
-- **HTTP requests**: Method, URL, headers, form data, JSON payloads
-- **Errors**: All exceptions leading to Internal Server Error (5xx status codes)
-- **Performance**: Request timing and transaction data
-- **Request data**: Attached to all events (excludes PII unless `send_default_pii=True`)
+-   **HTTP requests**: Method, URL, headers, form data, JSON payloads
+-   **Errors**: All exceptions leading to Internal Server Error (5xx status codes)
+-   **Performance**: Request timing and transaction data
+-   **Request data**: Attached to all events (excludes PII unless `send_default_pii=True`)
 
 **HTTPX Integration:**
 
-- **Outgoing HTTP requests**: All HTTP requests made by API clients (Reactome, KEGG, UniProt, etc.)
-- **Request spans**: Creates spans for each outgoing HTTP request
-- **Trace propagation**: Ensures traces are properly propagated to downstream services
+-   **Outgoing HTTP requests**: All HTTP requests made by API clients (Reactome, KEGG, UniProt,
+    etc.)
+-   **Request spans**: Creates spans for each outgoing HTTP request
+-   **Trace propagation**: Ensures traces are properly propagated to downstream services
 
 **Asyncio Integration:**
 
-- **Async operations**: Tracks async context and operations
-- **Async errors**: Captures errors in async functions and tasks
+-   **Async operations**: Tracks async context and operations
+-   **Async errors**: Captures errors in async functions and tasks
 
 ### Privacy
 
@@ -426,30 +465,30 @@ as a parameter with each tool call:
 
 ```json
 {
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": {
-    "name": "get_entry",
-    "arguments": {
-      "mim_number": "104300",
-      "api_key": "your-omim-api-key-here"
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+        "name": "get_entry",
+        "arguments": {
+            "mim_number": "104300",
+            "api_key": "your-omim-api-key-here"
+        }
     }
-  }
 }
 ```
 
 **APIs requiring API keys:**
 
-- **OMIM** - All tools require `api_key` parameter (get from https://omim.org/api)
-- **NCI Clinical Trials** - Optional `api_key` parameter (get from
-  https://clinicaltrialsapi.cancer.gov/)
-- **OpenFDA** - Optional `api_key` parameter for higher rate limits (get from
-  https://open.fda.gov/apis/)
+-   **OMIM** - All tools require `api_key` parameter (get from https://omim.org/api)
+-   **NCI Clinical Trials** - Optional `api_key` parameter (get from
+    https://clinicaltrialsapi.cancer.gov/)
+-   **OpenFDA** - Optional `api_key` parameter for higher rate limits (get from
+    https://open.fda.gov/apis/)
 
 **APIs not requiring API keys:**
 
-- Reactome, KEGG, UniProt, GWAS Catalog, Pathway Commons, Node Normalization, ChEMBL,
-  ClinicalTrials.gov, PubMed, MyVariant.info, BioThings Suite (MyGene, MyDisease, MyChem)
+-   Reactome, KEGG, UniProt, GWAS Catalog, Pathway Commons, Node Normalization, ChEMBL,
+    ClinicalTrials.gov, PubMed, MyVariant.info, BioThings Suite (MyGene, MyDisease, MyChem)
 
 ### Pattern for Future APIs
 
@@ -490,78 +529,79 @@ used.
 
 ### Reactome Tools
 
-- `reactome_get_pathway` - Get detailed pathway information
-- `reactome_query_pathways` - Query pathways by keyword or gene/protein name
-- `reactome_get_pathway_participants` - Get all participants in a pathway
-- `reactome_get_disease_pathways` - Get pathways associated with a disease
+-   `reactome_get_pathway` - Get detailed pathway information
+-   `reactome_query_pathways` - Query pathways by keyword or gene/protein name
+-   `reactome_get_pathway_participants` - Get all participants in a pathway
+-   `reactome_get_disease_pathways` - Get pathways associated with a disease
 
 ### KEGG Tools
 
-- `kegg_get_pathway_info` - Get pathway information by pathway ID
-- `kegg_list_pathways` - List pathways (optionally filtered by organism)
-- `kegg_find_pathways` - Find pathways matching a query keyword
-- `kegg_get_gene` - Get gene information by gene ID
-- `kegg_find_genes` - Find genes matching a query keyword
-- `kegg_get_disease` - Get disease information by disease ID
-- `kegg_find_diseases` - Find diseases matching a query keyword
-- `kegg_link_pathway_genes` - Get genes linked to a pathway
+-   `kegg_get_pathway_info` - Get pathway information by pathway ID
+-   `kegg_list_pathways` - List pathways (optionally filtered by organism)
+-   `kegg_find_pathways` - Find pathways matching a query keyword
+-   `kegg_get_gene` - Get gene information by gene ID
+-   `kegg_find_genes` - Find genes matching a query keyword
+-   `kegg_get_disease` - Get disease information by disease ID
+-   `kegg_find_diseases` - Find diseases matching a query keyword
+-   `kegg_link_pathway_genes` - Get genes linked to a pathway
 
 ### UniProt Tools
 
-- `uniprot_get_protein` - Get protein information by accession
-- `uniprot_search_proteins` - Search proteins in UniProtKB
-- `uniprot_get_protein_sequence` - Get protein sequence in FASTA format
-- `uniprot_get_disease_associations` - Get disease associations for a protein
-- `uniprot_map_ids` - Map identifiers between databases
+-   `uniprot_get_protein` - Get protein information by accession
+-   `uniprot_search_proteins` - Search proteins in UniProtKB
+-   `uniprot_get_protein_sequence` - Get protein sequence in FASTA format
+-   `uniprot_get_disease_associations` - Get disease associations for a protein
+-   `uniprot_map_ids` - Map identifiers between databases
 
 ### OMIM Tools
 
-- `omim_get_entry` - Get entry information by MIM number
-- `omim_search_entries` - Search entries in OMIM
-- `omim_get_gene` - Get gene information by gene symbol
-- `omim_search_genes` - Search genes in OMIM
-- `omim_get_phenotype` - Get phenotype information by MIM number
-- `omim_search_phenotypes` - Search phenotypes in OMIM
+-   `omim_get_entry` - Get entry information by MIM number
+-   `omim_search_entries` - Search entries in OMIM
+-   `omim_get_gene` - Get gene information by gene symbol
+-   `omim_search_genes` - Search genes in OMIM
+-   `omim_get_phenotype` - Get phenotype information by MIM number
+-   `omim_search_phenotypes` - Search phenotypes in OMIM
 
 **Note:** All OMIM tools require an `api_key` parameter. Get your API key from https://omim.org/api
 
 ### GWAS Catalog Tools
 
-- `gwas_get_association` - Get association information by association ID
-- `gwas_search_associations` - Search for associations with various filters
-- `gwas_get_variant` - Get SNP information by rsId
-- `gwas_search_variants` - Search for SNPs/variants by rsId
-- `gwas_get_study` - Get study information by study ID
-- `gwas_search_studies` - Search for studies with various filters
-- `gwas_get_trait` - Get trait information by trait ID
-- `gwas_search_traits` - Search for traits
+-   `gwas_get_association` - Get association information by association ID
+-   `gwas_search_associations` - Search for associations with various filters
+-   `gwas_get_variant` - Get SNP information by rsId
+-   `gwas_search_variants` - Search for SNPs/variants by rsId
+-   `gwas_get_study` - Get study information by study ID
+-   `gwas_search_studies` - Search for studies with various filters
+-   `gwas_get_trait` - Get trait information by trait ID
+-   `gwas_search_traits` - Search for traits
 
 ### Pathway Commons Tools
 
-- `pathwaycommons_search` - Search for pathways, proteins, or other biological entities
-- `pathwaycommons_get_pathway_by_uri` - Get pathway information by URI
-- `pathwaycommons_top_pathways` - Get top-level pathways (optionally filtered by gene or datasource)
-- `pathwaycommons_graph` - Get pathway graph/network (neighborhood, paths, etc.)
-- `pathwaycommons_traverse` - Traverse pathway data using graph path expressions
+-   `pathwaycommons_search` - Search for pathways, proteins, or other biological entities
+-   `pathwaycommons_get_pathway_by_uri` - Get pathway information by URI
+-   `pathwaycommons_top_pathways` - Get top-level pathways (optionally filtered by gene or
+    datasource)
+-   `pathwaycommons_graph` - Get pathway graph/network (neighborhood, paths, etc.)
+-   `pathwaycommons_traverse` - Traverse pathway data using graph path expressions
 
 ### Node Normalization Tools
 
-- `nodenorm_get_semantic_types` - Get all supported BioLink semantic types
-- `nodenorm_get_curie_prefixes` - Get all supported CURIE prefixes
-- `nodenorm_get_normalized_nodes` - Normalize one or more CURIEs to get equivalent identifiers
-- `nodenorm_get_allowed_conflations` - Get available conflation types
+-   `nodenorm_get_semantic_types` - Get all supported BioLink semantic types
+-   `nodenorm_get_curie_prefixes` - Get all supported CURIE prefixes
+-   `nodenorm_get_normalized_nodes` - Normalize one or more CURIEs to get equivalent identifiers
+-   `nodenorm_get_allowed_conflations` - Get available conflation types
 
 ### ChEMBL Tools
 
-- `chembl_get_molecule` - Get molecule (drug/compound) information by ChEMBL ID
-- `chembl_search_molecules` - Search molecules by name or synonym
-- `chembl_get_target` - Get target (protein) information by ChEMBL ID
-- `chembl_search_targets` - Search targets by name or synonym
-- `chembl_get_activities` - Get bioactivity data (filter by target or molecule)
-- `chembl_get_mechanism` - Get mechanism of action for a molecule
-- `chembl_find_drugs_by_target` - Find all drugs targeting a specific protein
-- `chembl_find_drugs_by_indication` - Find all drugs for a disease/indication
-- `chembl_get_drug_indications` - Get all indications for a specific drug
+-   `chembl_get_molecule` - Get molecule (drug/compound) information by ChEMBL ID
+-   `chembl_search_molecules` - Search molecules by name or synonym
+-   `chembl_get_target` - Get target (protein) information by ChEMBL ID
+-   `chembl_search_targets` - Search targets by name or synonym
+-   `chembl_get_activities` - Get bioactivity data (filter by target or molecule)
+-   `chembl_get_mechanism` - Get mechanism of action for a molecule
+-   `chembl_find_drugs_by_target` - Find all drugs targeting a specific protein
+-   `chembl_find_drugs_by_indication` - Find all drugs for a disease/indication
+-   `chembl_get_drug_indications` - Get all indications for a specific drug
 
 ### OpenTargets Tools
 
@@ -573,52 +613,52 @@ This server follows the same FastMCP + `med_mcp_server` pattern used across the 
 
 ### ClinicalTrials.gov Tools
 
-- `ctg_search_studies` - Search clinical trials with various filters
-- `ctg_get_study` - Get single study by NCT ID
-- `ctg_search_by_condition` - Search trials by condition/disease
-- `ctg_search_by_intervention` - Search trials by intervention/treatment
-- `ctg_get_study_metadata` - Get data model metadata (available fields)
+-   `ctg_search_studies` - Search clinical trials with various filters
+-   `ctg_get_study` - Get single study by NCT ID
+-   `ctg_search_by_condition` - Search trials by condition/disease
+-   `ctg_search_by_intervention` - Search trials by intervention/treatment
+-   `ctg_get_study_metadata` - Get data model metadata (available fields)
 
 ### PubMed/PubTator3 Tools
 
-- `pubmed_search_articles` - Search biomedical articles from PubMed/PubTator3 by genes, diseases,
-  chemicals, keywords, or variants
-- `pubmed_get_article` - Get detailed article information by PMID or DOI (supports full text
-  retrieval)
-- `pubmed_search_preprints` - Search preprint articles from bioRxiv/medRxiv via Europe PMC
+-   `pubmed_search_articles` - Search biomedical articles from PubMed/PubTator3 by genes, diseases,
+    chemicals, keywords, or variants
+-   `pubmed_get_article` - Get detailed article information by PMID or DOI (supports full text
+    retrieval)
+-   `pubmed_search_preprints` - Search preprint articles from bioRxiv/medRxiv via Europe PMC
 
 ### OpenFDA Tools
 
-- `openfda_search_adverse_events` - Search FDA adverse event reports (FAERS) by drug, reaction, or
-  seriousness
-- `openfda_get_adverse_event` - Get detailed adverse event report by safety report ID
-- `openfda_search_drug_labels` - Search FDA drug product labels (SPL) by drug name, indication, or
-  section
-- `openfda_get_drug_label` - Get full drug label by set ID (with optional section filtering)
-- `openfda_search_device_events` - Search FDA device adverse event reports (MAUDE) by device,
-  manufacturer, or problem
+-   `openfda_search_adverse_events` - Search FDA adverse event reports (FAERS) by drug, reaction, or
+    seriousness
+-   `openfda_get_adverse_event` - Get detailed adverse event report by safety report ID
+-   `openfda_search_drug_labels` - Search FDA drug product labels (SPL) by drug name, indication, or
+    section
+-   `openfda_get_drug_label` - Get full drug label by set ID (with optional section filtering)
+-   `openfda_search_device_events` - Search FDA device adverse event reports (MAUDE) by device,
+    manufacturer, or problem
 
 **Note:** OpenFDA tools support optional `api_key` parameter for higher rate limits. Get your API
 key from https://open.fda.gov/apis/
 
 ### MyVariant.info Tools
 
-- `myvariant_search_variants` - Search genetic variants by gene, HGVS notation, rsID, clinical
-  significance, frequency, or CADD score
-- `myvariant_get_variant` - Get comprehensive variant details by variant ID (HGVS, rsID, or
-  MyVariant ID)
+-   `myvariant_search_variants` - Search genetic variants by gene, HGVS notation, rsID, clinical
+    significance, frequency, or CADD score
+-   `myvariant_get_variant` - Get comprehensive variant details by variant ID (HGVS, rsID, or
+    MyVariant ID)
 
 ### BioThings Suite Tools
 
-- `mygene_get_gene` - Get gene information from MyGene.info by ID or symbol
-- `mydisease_get_disease` - Get disease information from MyDisease.info by ID or name
-- `mychem_get_drug` - Get drug/chemical information from MyChem.info by ID or name
+-   `mygene_get_gene` - Get gene information from MyGene.info by ID or symbol
+-   `mydisease_get_disease` - Get disease information from MyDisease.info by ID or name
+-   `mychem_get_drug` - Get drug/chemical information from MyChem.info by ID or name
 
 ### NCI Clinical Trials Tools
 
-- `nci_search_trials` - Search NCI clinical trials for cancer research by condition, intervention,
-  phase, or status
-- `nci_get_trial` - Get NCI trial details by trial ID
+-   `nci_search_trials` - Search NCI clinical trials for cancer research by condition, intervention,
+    phase, or status
+-   `nci_get_trial` - Get NCI trial details by trial ID
 
 **Note:** NCI tools support optional `api_key` parameter. Get your API key from
 https://clinicaltrialsapi.cancer.gov/

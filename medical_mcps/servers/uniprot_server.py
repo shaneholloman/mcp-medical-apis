@@ -25,18 +25,20 @@ uniprot_mcp = FastMCP(
 
 
 @medmcps_tool(name="uniprot_get_protein", servers=[uniprot_mcp, unified_mcp])
-async def get_protein(accession: str, format: str = "json") -> dict | str:
+async def get_protein(accession: str, format: str = "json", fields: list[str] | None = None) -> dict | str:
     """Get protein information from UniProt by accession.
 
     Args:
         accession: UniProt accession (e.g., 'P00520')
         format: Response format ('json', 'fasta', 'xml'). Default: 'json'
+        fields: Optional list of fields to return (e.g., 'primaryAccession', 'organism.scientificName').
+                If not provided, a default set of common fields will be returned.
     """
     logger.info(
-        f"Tool invoked: get_protein(accession='{accession}', format='{format}')"
+        f"Tool invoked: get_protein(accession='{accession}', format='{format}', fields={fields})"
     )
     try:
-        result = await uniprot_client.get_protein(accession, format)
+        result = await uniprot_client.get_protein(accession, format, fields)
         logger.info(f"Tool succeeded: get_protein(accession='{accession}')")
         return result
     except Exception as e:

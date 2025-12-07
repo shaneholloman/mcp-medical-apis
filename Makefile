@@ -1,9 +1,10 @@
-.PHONY: server server-no-reload help test-watch test docker
+.PHONY: server server-no-reload help test-watch test docker install build publish
 
 export SENTRY_DSN=https://14d9c0d3d267359f2f8e3f1513f019c0@o4510353175085056.ingest.de.sentry.io/4510353181769808
 
-install: 
+install:
 	uv sync
+
 # Start the MCP server with uvicorn and livereload
 server:
 	uv run uvicorn medical_mcps.http_server:app --reload --host 0.0.0.0 --port 8000
@@ -28,7 +29,16 @@ test-slow: install
 test-all: install
 	uv run pytest tests/ --timeout=200
 
-inspector: 
+# Build the package
+build:
+	uv lock
+	uv build
+
+# Publish to PyPI (builds first)
+publish: build
+	uv publish
+
+inspector:
 	npx @modelcontextprotocol/inspector@latest
 
 # Docker Compose - start services with watch and build

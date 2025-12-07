@@ -28,7 +28,7 @@ nodenorm_mcp = FastMCP(
 
 
 @medmcps_tool(name="nodenorm_get_semantic_types", servers=[nodenorm_mcp, unified_mcp])
-async def get_semantic_types() -> str:
+async def get_semantic_types() -> dict:
     """Get all BioLink semantic types for which normalization has been attempted.
 
     This endpoint returns the semantic types (categories) that Node Normalization
@@ -48,7 +48,7 @@ async def get_semantic_types() -> str:
 
 
 @medmcps_tool(name="nodenorm_get_curie_prefixes", servers=[nodenorm_mcp, unified_mcp])
-async def get_curie_prefixes() -> str:
+async def get_curie_prefixes() -> dict:
     """Get all CURIE prefixes available in the normalization database.
 
     This endpoint returns the list of supported CURIE prefixes (e.g., DRUGBANK,
@@ -81,7 +81,7 @@ async def get_normalized_nodes(
     description: bool = False,
     individual_types: bool = False,
     include_taxa: bool = True,
-) -> str:
+) -> dict:
     """Get normalized identifiers and semantic types for one or more CURIEs.
 
     This is the core normalization function. Given a CURIE from any source database,
@@ -127,7 +127,7 @@ async def get_normalized_nodes(
 
 
 @medmcps_tool(name="nodenorm_get_allowed_conflations", servers=[nodenorm_mcp, unified_mcp])
-async def get_allowed_conflations() -> str:
+async def get_allowed_conflations() -> dict:
     """Get the available conflation types that can be applied during normalization.
 
     Conflations merge equivalent entities across different representations:

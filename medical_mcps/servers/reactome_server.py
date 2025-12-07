@@ -119,6 +119,7 @@ async def get_pathway_participants(pathway_id: str) -> dict | list:
         is_validation_error = (
             "Invalid pathway ID format" in str(e) or "not found" in str(e).lower()
         )
+        error_message = f"Error calling Reactome API: {str(e)}"
         if is_validation_error:
             logger.warning(
                 f"Tool validation error: get_pathway_participants(pathway_id='{pathway_id}') - {e}"
@@ -128,7 +129,9 @@ async def get_pathway_participants(pathway_id: str) -> dict | list:
                 f"Tool failed: get_pathway_participants(pathway_id='{pathway_id}') - {e}",
                 exc_info=True,
             )
-        return f"Error calling Reactome API: {str(e)}"
+        # Always return a dictionary to match the output schema
+        return {"error": error_message, "message": "Check logs for more details."}
+
 
 
 @medmcps_tool(name="reactome_get_disease_pathways", servers=[reactome_mcp, unified_mcp])

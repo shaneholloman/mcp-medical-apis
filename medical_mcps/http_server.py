@@ -8,6 +8,7 @@ import contextlib
 import logging
 
 from starlette.applications import Starlette
+from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Mount
 
 # IMPORTANT: Configure logging BEFORE initializing Sentry
@@ -44,7 +45,6 @@ from .servers import (  # noqa: E402
     opentargets_server,
     openfda_server,
     pathwaycommons_server,
-    playbook_server,
     pubmed_server,
     reactome_server,
     uniprot_server,
@@ -90,7 +90,7 @@ async def lifespan(app: Starlette):
     logger.info("  - MyVariant: /tools/myvariant/mcp")
     logger.info("  - BioThings: /tools/biothings/mcp")
     logger.info("  - NCI Clinical Trials: /tools/nci/mcp (requires API key)")
-    logger.info("  - Drug Repurposing Playbooks: /tools/playbooks/mcp")
+    logger.info("  - Node Normalization: /tools/nodenorm/mcp")
 
     # Initialize all session managers using AsyncExitStack
     async with contextlib.AsyncExitStack() as stack:
@@ -123,7 +123,7 @@ async def lifespan(app: Starlette):
         )
         await stack.enter_async_context(nci_server.nci_mcp.session_manager.run())
         await stack.enter_async_context(
-            playbook_server.playbook_mcp.session_manager.run()
+            nodenorm_server.nodenorm_mcp.session_manager.run()
         )
         await stack.enter_async_context(unified_mcp.session_manager.run())
         yield
@@ -133,20 +133,16 @@ async def lifespan(app: Starlette):
 
 # Create Starlette app and mount all API servers
 
+# fmt: off
 app = Starlette(
     routes=[
         Mount("/tools/unified", app=unified_mcp.streamable_http_app()),
-        Mount(
-            "/tools/reactome", app=reactome_server.reactome_mcp.streamable_http_app()
-        ),
+        Mount( "/tools/reactome", app=reactome_server.reactome_mcp.streamable_http_app()),
         Mount("/tools/kegg", app=kegg_server.kegg_mcp.streamable_http_app()),
         Mount("/tools/uniprot", app=uniprot_server.uniprot_mcp.streamable_http_app()),
         Mount("/tools/omim", app=omim_server.omim_mcp.streamable_http_app()),
         Mount("/tools/gwas", app=gwas_server.gwas_mcp.streamable_http_app()),
-        Mount(
-            "/tools/pathwaycommons",
-            app=pathwaycommons_server.pathwaycommons_mcp.streamable_http_app(),
-        ),
+        Mount( "/tools/pathwaycommons", app=pathwaycommons_server.pathwaycommons_mcp.streamable_http_app(),),
         Mount("/tools/chembl", app=chembl_server.chembl_mcp.streamable_http_app()),
         Mount(
             "/tools/opentargets",
@@ -155,18 +151,22 @@ app = Starlette(
         Mount("/tools/ctg", app=ctg_server.ctg_mcp.streamable_http_app()),
         Mount("/tools/pubmed", app=pubmed_server.pubmed_mcp.streamable_http_app()),
         Mount("/tools/openfda", app=openfda_server.openfda_mcp.streamable_http_app()),
-        Mount(
-            "/tools/myvariant", app=myvariant_server.myvariant_mcp.streamable_http_app()
-        ),
-        Mount(
-            "/tools/biothings", app=biothings_server.biothings_mcp.streamable_http_app()
-        ),
+        Mount( "/tools/myvariant", app=myvariant_server.myvariant_mcp.streamable_http_app()),
+        Mount( "/tools/biothings", app=biothings_server.biothings_mcp.streamable_http_app()),
         Mount("/tools/nci", app=nci_server.nci_mcp.streamable_http_app()),
-        Mount(
-            "/tools/playbooks", app=playbook_server.playbook_mcp.streamable_http_app()
-        ),
+        Mount( "/tools/nodenorm", app=nodenorm_server.nodenorm_mcp.streamable_http_app()),
     ],
     lifespan=lifespan,
+)
+# fmt: on
+
+# add CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -206,8 +206,6 @@ def entry_point():
     biothings_server.biothings_mcp.settings.port = port
     nci_server.nci_mcp.settings.host = host
     nci_server.nci_mcp.settings.port = port
-    playbook_server.playbook_mcp.settings.host = host
-    playbook_server.playbook_mcp.settings.port = port
     unified_mcp.settings.host = host
     unified_mcp.settings.port = port
 
@@ -228,6 +226,7 @@ def entry_point():
     logger.info(f"  - MyVariant: http://{host}:{port}/tools/myvariant/mcp")
     logger.info(f"  - BioThings: http://{host}:{port}/tools/biothings/mcp")
     logger.info(f"  - NCI Clinical Trials: http://{host}:{port}/tools/nci/mcp")
+    logger.info(f"  - Node Normalization: http://{host}:{port}/tools/nodenorm/mcp")
 
     # Run the Starlette app with uvicorn
     uvicorn.run(app, host=host, port=port, log_level="info")

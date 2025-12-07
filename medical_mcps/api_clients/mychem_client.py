@@ -79,7 +79,10 @@ class MyChemClient(BaseAPIClient):
             # Get full details by ID
             drug_id = best_hit.get("_id")
             if drug_id:
-                full_response = await self._request("GET", url=f"{MYCHEM_GET_URL}/{drug_id}", params={}, return_json=False)
+                params = {}
+                if fields:
+                    params["fields"] = ",".join(fields)
+                full_response = await self._request("GET", url=f"{MYCHEM_GET_URL}/{drug_id}", params=params, return_json=False)
                 full_data = json.loads(full_response)
                 return self.format_response(full_data)
 
@@ -87,6 +90,8 @@ class MyChemClient(BaseAPIClient):
         except Exception as e:
             logger.error(f"Failed to fetch drug {drug_id_or_name}: {e}", exc_info=True)
             return self.format_response(None, {"error": f"MyChem API error: {str(e)}"})
+
+
 
 
 

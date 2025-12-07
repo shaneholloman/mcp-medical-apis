@@ -1,16 +1,15 @@
 ---
-test_name: GWAS Catalog API Tools Test Suite
+test_name: Node Normalization API Tools Test Suite
 
 marks:
   - usefixtures:
       - server_process
 
-
 stages:
-  # Test 1: search_associations - Basic query
-  - name: Search associations for diabetes
+  # Test 1: get_normalized_nodes - Happy Path (Gene Symbol)
+  - name: Normalize HGNC:TP53
     request:
-      url: "http://localhost:8000/tools/gwas/mcp"
+      url: "http://localhost:8000/tools/nodenorm/mcp"
       method: POST
       headers:
         Content-Type: "application/json"
@@ -20,27 +19,25 @@ stages:
         id: 1
         method: "tools/call"
         params:
-          name: "gwas_search_associations"
+          name: "nodenorm_get_normalized_nodes"
           arguments:
-            query: "diabetes"
-            size: 5
+            curies: "NCBIGene:7157"
+            conflate: true
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 1
         result:
           content:
             - type: "text"
-              text: !re_search "association|variant|study"
+              text: !re_search "NCBIGene:7157.*biolink:Gene"
           isError: false
 
-  # Test 2: search_studies - Basic query
-  - name: Search studies for multiple sclerosis
+  # Test 2: get_semantic_types - Happy Path
+  - name: Get semantic types
     request:
-      url: "http://localhost:8000/tools/gwas/mcp"
+      url: "http://localhost:8000/tools/nodenorm/mcp"
       method: POST
       headers:
         Content-Type: "application/json"
@@ -50,49 +47,44 @@ stages:
         id: 2
         method: "tools/call"
         params:
-          name: "gwas_search_studies"
-          arguments:
-            trait: "multiple sclerosis"
-            size: 5
+          name: "nodenorm_get_semantic_types"
+          arguments: {}
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
         id: 2
         result:
           content:
             - type: "text"
-              text: !re_search "association|variant|study"
+              text: !re_search "semantic_types.*biolink:Gene"
           isError: false
 
-  # Test 4: Error handling - Invalid query
-  - name: Search associations with invalid query
+  # Test 3: get_normalized_nodes - Error Case
+  - name: Normalize invalid CURIE
     request:
-      url: "http://localhost:8000/tools/gwas/mcp"
+      url: "http://localhost:8000/tools/nodenorm/mcp"
       method: POST
       headers:
         Content-Type: "application/json"
         Accept: "application/json, text/event-stream"
       json:
         jsonrpc: "2.0"
-        id: 4
+        id: 3
         method: "tools/call"
         params:
-          name: "gwas_search_associations"
+          name: "nodenorm_get_normalized_nodes"
           arguments:
-            query: "INVALIDQUERY12345"
-            size: 5
+            curies: "INVALID:12345"
+            conflate: true
     response:
       status_code: 200
-      strict:
-        - json:off
       json:
         jsonrpc: "2.0"
-        id: 4
+        id: 3
         result:
           content:
             - type: "text"
-              text: !re_search "no results|Error"
+              # NodeNorm usually returns null or empty for unknown CURIEs, not an error
+              text: !re_search "INVALID:12345.*null"
           isError: false

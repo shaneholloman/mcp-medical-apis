@@ -77,7 +77,10 @@ class MyDiseaseClient(BaseAPIClient):
             # Get full details by ID
             disease_id = best_hit.get("_id")
             if disease_id:
-                full_response = await self._request("GET", url=f"{MYDISEASE_GET_URL}/{disease_id}", params={}, return_json=False)
+                params = {}
+                if fields:
+                    params["fields"] = ",".join(fields)
+                full_response = await self._request("GET", url=f"{MYDISEASE_GET_URL}/{disease_id}", params=params, return_json=False)
                 full_data = json.loads(full_response)
                 return self.format_response(full_data)
 
@@ -89,6 +92,8 @@ class MyDiseaseClient(BaseAPIClient):
             return self.format_response(
                 None, {"error": f"MyDisease API error: {str(e)}"}
             )
+
+
 
 
 
