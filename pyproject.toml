@@ -31,12 +31,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
-
-[project.urls]
-Homepage = "https://github.com/pascalwhoop/medical-mcps"
-Documentation = "https://github.com/pascalwhoop/medical-mcps#readme"
-Repository = "https://github.com/pascalwhoop/medical-mcps"
-Issues = "https://github.com/pascalwhoop/medical-mcps/issues"
 dependencies = [
     "mcp>=1.0.0",
     "httpx[http2]>=0.27.0",
@@ -51,6 +45,12 @@ dependencies = [
     "sentry-sdk[mcp]>=2.44.0",
     "pyyaml>=6.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/pascalwhoop/medical-mcps"
+Documentation = "https://github.com/pascalwhoop/medical-mcps#readme"
+Repository = "https://github.com/pascalwhoop/medical-mcps"
+Issues = "https://github.com/pascalwhoop/medical-mcps/issues"
 
 [dependency-groups]
 dev = [
