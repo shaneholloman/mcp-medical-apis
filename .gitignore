@@ -42,7 +42,6 @@ htmlcov/
 
 *.code-workspace
 
-searxng
 user_testing/*
 todo.md
 

@@ -45,8 +45,7 @@ make docker-watch
 -   `make test` - Run tests (excludes slow Pathway Commons tests)
 -   `make test-all` - Run all tests including slow ones with 200s timeout
 -   `make test-watch` - Auto-run tests on file changes
--   `make docker-watch` - Start Docker services with auto-rebuild (MCP at localhost:8000, SearXNG at
-    localhost:8888)
+-   `make docker-watch` - Start Docker services with auto-rebuild (MCP at localhost:8000)
 
 ## Architecture
 
@@ -285,7 +284,6 @@ export SENTRY_SEND_DEFAULT_PII=true
 Docker setup is in `docker-compose.yml`:
 
 -   **MCP Backend**: Python service running uvicorn (port 8000)
--   **SearXNG**: Search engine service (port 8888)
 
 ```bash
 make docker-watch    # Start with auto-rebuild

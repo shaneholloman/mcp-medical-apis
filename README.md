@@ -133,7 +133,7 @@ docker pull pascalwhoop/medical-mcps:v0.1.0
 
 ### Option 3: Docker Compose (Recommended for Development)
 
-The easiest way to run both the MCP backend and SearXNG search engine:
+The easiest way to run the MCP backend:
 
 ```bash
 # Start all services with auto-rebuild
@@ -152,7 +152,6 @@ make docker-down
 Services will be available at:
 
 -   **MCP Backend**: http://localhost:8000
--   **SearXNG**: http://localhost:8888
 
 ### Option 4: Local Python Installation
 
