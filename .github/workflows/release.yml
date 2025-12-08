@@ -31,7 +31,9 @@ jobs:
           python-version: '3.12'
 
       - name: Run tests
-        run: make test
+        env:
+          ENABLE_CACHE: "true"  # Enable caching in CI for faster test runs
+        run: make test-parallel  # Run tests in parallel for faster CI
 
   version:
     name: Bump version and create tag

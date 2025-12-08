@@ -18,6 +18,7 @@ env/
 htmlcov/
 *.cover
 **/test_reports/*
+.testmondata
 
 # IDEs
 .vscode/

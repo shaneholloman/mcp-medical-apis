@@ -1,4 +1,4 @@
-.PHONY: server server-no-reload help test-watch test test-slow test-all test-cov lint format docker install build publish deploy-cloud-run get-service-url inspector
+.PHONY: server server-no-reload help test-watch test test-parallel test-slow test-all test-cov lint format docker install build publish deploy-cloud-run get-service-url inspector
 
 # Cloud Run deployment configuration
 SERVICE_NAME ?= medical-mcps
@@ -31,18 +31,32 @@ test-watch:
 
 # Run all tests (excluding slow Pathway Commons tests)
 test: install
+	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ -m "not slow"
+
+# Run tests in parallel (faster, shares one server instance)
+test-parallel: install
+	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
+	uv run pytest tests/ -m "not slow" -n auto
+
+# Run tests with pytest-testmon (only changed tests)
+test-testmon: install
+	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
+	uv run pytest tests/ --testmon -m "not slow"
 
 # Run slow tests (Pathway Commons) with extended timeout
 test-slow: install
+	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ -m "slow" --timeout=200
 
 # Run all tests including slow ones
 test-all: install
+	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ --timeout=200
 
 # Run tests with coverage report
 test-cov: install
+	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ -m "not slow" --cov=medical_mcps --cov-report=html --cov-report=term-missing
 
 # Lint code with ruff

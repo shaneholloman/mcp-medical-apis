@@ -117,8 +117,11 @@ stages:
 
 ## Test Performance
 
-- **Duration**: ~30 seconds for full suite
-- **Parallelization**: Tests run sequentially (server is shared)
+- **Duration**: ~30 seconds sequential, ~10-15 seconds parallel
+- **Parallelization**: Tests can run in parallel using `make test-parallel` (server is shared)
+  - Uses `pytest-xdist` to distribute tests across CPU cores
+  - All tests share a single server instance (session-scoped fixture)
+  - Server is stateless HTTP and handles concurrent requests safely
 - **External API Calls**: Tests make real calls to public APIs
   - UniProt, Reactome, KEGG: Fast (~1-2s per test)
   - GWAS, Pathway Commons: May be slower (~5-10s per test)
