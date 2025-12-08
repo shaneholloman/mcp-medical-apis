@@ -1,4 +1,4 @@
-.PHONY: server server-no-reload help test-watch test docker install build publish deploy-cloud-run get-service-url
+.PHONY: server server-no-reload help test-watch test test-slow test-all test-cov lint format docker install build publish deploy-cloud-run get-service-url inspector
 
 # Cloud Run deployment configuration
 SERVICE_NAME ?= medical-mcps
@@ -40,6 +40,19 @@ test-slow: install
 # Run all tests including slow ones
 test-all: install
 	uv run pytest tests/ --timeout=200
+
+# Run tests with coverage report
+test-cov: install
+	uv run pytest tests/ -m "not slow" --cov=medical_mcps --cov-report=html --cov-report=term-missing
+
+# Lint code with ruff
+lint: install
+	uv run ruff check medical_mcps tests
+
+# Format code with ruff
+format: install
+	uv run ruff format medical_mcps tests
+	uv run ruff check --fix medical_mcps tests
 
 # Build the package
 build:

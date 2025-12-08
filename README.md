@@ -1,5 +1,10 @@
 # Biological APIs MCP Server
 
+[![PyPI version](https://badge.fury.io/py/medical-mcps.svg)](https://pypi.org/project/medical-mcps/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/pascalwhoop/medical-mcps/actions/workflows/test.yml/badge.svg)](https://github.com/pascalwhoop/medical-mcps/actions)
+
 MCP server that integrates multiple biological and medical databases for research purposes.
 
 ## Quick Start
