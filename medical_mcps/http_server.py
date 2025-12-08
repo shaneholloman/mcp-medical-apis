@@ -9,7 +9,8 @@ import logging
 
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
-from starlette.routing import Mount
+from starlette.responses import JSONResponse
+from starlette.routing import Mount, Route
 
 # IMPORTANT: Configure logging BEFORE initializing Sentry
 # This ensures Sentry initialization messages are properly displayed
@@ -42,8 +43,8 @@ from .servers import (  # noqa: E402
     nci_server,
     nodenorm_server,  # noqa: F401 - imported for side effects (tool registration)
     omim_server,
-    opentargets_server,
     openfda_server,
+    opentargets_server,
     pathwaycommons_server,
     pubmed_server,
     reactome_server,
@@ -68,6 +69,11 @@ mcp_logger = logging.getLogger("mcp.server.streamable_http")
 mcp_logger.addFilter(SuppressClosedResourceErrorFilter())
 
 logger = logging.getLogger(__name__)
+
+
+async def health_check(request):
+    """Health check endpoint for Cloud Run"""
+    return JSONResponse({"status": "ok"})
 
 
 @contextlib.asynccontextmanager
@@ -136,6 +142,7 @@ async def lifespan(app: Starlette):
 # fmt: off
 app = Starlette(
     routes=[
+        Route("/health", health_check, methods=["GET"]),
         Mount("/tools/unified", app=unified_mcp.streamable_http_app()),
         Mount( "/tools/reactome", app=reactome_server.reactome_mcp.streamable_http_app()),
         Mount("/tools/kegg", app=kegg_server.kegg_mcp.streamable_http_app()),

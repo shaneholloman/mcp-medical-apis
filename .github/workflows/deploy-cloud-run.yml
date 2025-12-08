@@ -44,22 +44,16 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: medical-mcps
-          region: us-central1
-          image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/medical-mcps:${{ steps.get_version.outputs.image_tag }}
-          flags: |
-            --allow-unauthenticated
-            --memory=512Mi
-            --timeout=3600
-            --max-instances=100
-            --min-instances=0
+        run: |
+          make deploy-cloud-run \
+            IMAGE_TAG=${{ steps.get_version.outputs.image_tag }} \
+            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
       - name: Get deployed service URL
         id: service_url
         run: |
-          URL=$(gcloud run services describe medical-mcps --region us-central1 --format='value(status.url)')
+          URL=$(make get-service-url)
           echo "url=${URL}" >> $GITHUB_OUTPUT
 
       - name: Create deployment status
