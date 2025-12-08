@@ -8,10 +8,11 @@ import logging
 
 from mcp.server.fastmcp import FastMCP
 
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 from ..api_clients.reactome_client import ReactomeClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 from ..models.reactome import ReactomePathway
-from .validation import validate_response, validate_list_response
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,9 @@ async def query_pathways(query: str, species: str = "Homo sapiens") -> dict:
         return f"Error calling Reactome API: {str(e)}"
 
 
-@medmcps_tool(name="reactome_get_pathway_participants", servers=[reactome_mcp, unified_mcp])
+@medmcps_tool(
+    name="reactome_get_pathway_participants", servers=[reactome_mcp, unified_mcp]
+)
 async def get_pathway_participants(pathway_id: str) -> dict | list:
     """Get all participants (genes, proteins, small molecules) in a Reactome pathway.
 
@@ -146,7 +149,6 @@ async def get_pathway_participants(pathway_id: str) -> dict | list:
             )
         # Always return a dictionary to match the output schema
         return {"error": error_message, "message": "Check logs for more details."}
-
 
 
 @medmcps_tool(name="reactome_get_disease_pathways", servers=[reactome_mcp, unified_mcp])

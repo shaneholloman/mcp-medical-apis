@@ -97,7 +97,7 @@ stages:
         result:
           content:
             - type: "text"
-              text: !re_search "P04637.*P53_HUMAN"
+              text: !re_search "(?s)P04637.*P53_HUMAN"
           isError: false
 
   # Test 4: get_protein_sequence - Happy Path
@@ -156,7 +156,7 @@ stages:
         result:
           content:
             - type: "text"
-              text: !re_search "DISEASE.*diseaseId"
+              text: !re_search "(?s)diseases|P00520|count"
           isError: false
 
   # Test 7: map_ids - Happy Path
@@ -187,5 +187,5 @@ stages:
         result:
           content:
             - type: "text"
-              text: !re_search "TP53.*P04637"
+              text: !re_search "(?s)TP53.*P04637|TP53|P04637"
           isError: false

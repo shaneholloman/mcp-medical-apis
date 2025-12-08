@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from mcp.server.fastmcp import FastMCP
 
-from ..api_clients.pubmed_client import PubMedClient, PubTatorSearchResult, PubTatorArticle
+from ..api_clients.pubmed_client import PubMedClient, PubTatorSearchResult
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from .validation import validate_list_response

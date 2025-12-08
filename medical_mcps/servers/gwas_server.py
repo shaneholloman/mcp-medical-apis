@@ -11,7 +11,7 @@ from mcp.server.fastmcp import FastMCP
 from ..api_clients.gwas_client import GWASClient
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
-from ..models.gwas import GWASAssociation, GWASVariant, GWASStudy
+from ..models.gwas import GWASAssociation, GWASVariant
 from .validation import validate_response
 
 logger = logging.getLogger(__name__)
