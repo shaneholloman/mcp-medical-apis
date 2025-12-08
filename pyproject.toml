@@ -77,4 +77,5 @@ timeout = 600
 timeout_method = "thread"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "tavern: marks tests as tavern YAML tests",
 ]

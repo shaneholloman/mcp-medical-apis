@@ -31,11 +31,11 @@ test-watch:
 
 # Run all tests (excluding slow Pathway Commons tests)
 test: install
-	uv run pytest tests/ --ignore=tests/test_pathwaycommons_tools.tavern.yaml
+	uv run pytest tests/ -m "not slow"
 
 # Run slow tests (Pathway Commons) with extended timeout
 test-slow: install
-	uv run pytest tests/test_pathwaycommons_tools.tavern.yaml --timeout=200
+	uv run pytest tests/ -m "slow" --timeout=200
 
 # Run all tests including slow ones
 test-all: install

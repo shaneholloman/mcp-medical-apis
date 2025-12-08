@@ -2,6 +2,7 @@
 test_name: OMIM API Tools Test Suite
 
 marks:
+  - tavern
   - usefixtures:
       - server_process
       - server_url

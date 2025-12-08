@@ -9,9 +9,10 @@ from typing import List, Optional
 
 from mcp.server.fastmcp import FastMCP
 
-from ..api_clients.pubmed_client import PubMedClient
+from ..api_clients.pubmed_client import PubMedClient, PubTatorSearchResult, PubTatorArticle
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
+from .validation import validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,12 @@ async def search_articles(
             variants=variants,
             limit=limit,
             page=page,
+        )
+        result = validate_list_response(
+            result,
+            PubTatorSearchResult,
+            list_key="results",
+            api_name="PubMed",
         )
         logger.info("Tool succeeded: search_articles()")
         return result

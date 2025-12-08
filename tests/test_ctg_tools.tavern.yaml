@@ -2,6 +2,7 @@
 test_name: ClinicalTrials.gov API Tools Test Suite
 
 marks:
+  - tavern
   - usefixtures:
       - server_process
 

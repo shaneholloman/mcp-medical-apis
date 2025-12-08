@@ -2,6 +2,7 @@
 test_name: ChEMBL API Tools Test Suite
 
 marks:
+  - tavern
   - usefixtures:
       - server_process
 

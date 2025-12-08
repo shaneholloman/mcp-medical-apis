@@ -7,9 +7,11 @@ Exposes UniProt API tools via MCP at /tools/uniprot/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
+from pydantic import ValidationError
 
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 from ..api_clients.uniprot_client import UniProtClient
+from ..models.uniprot import UniProtProtein
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +41,30 @@ async def get_protein(accession: str, format: str = "json", fields: list[str] | 
     )
     try:
         result = await uniprot_client.get_protein(accession, format, fields)
+        
+        # Validate response structure for JSON format
+        if format == "json" and isinstance(result, dict):
+            # If result is wrapped in format_response, extract the data
+            data_to_validate = result.get("data", result)
+            
+            # Only validate if we have a dict (not filtered fields)
+            if isinstance(data_to_validate, dict) and "primaryAccession" in data_to_validate:
+                try:
+                    # Instantiating the model validates the structure
+                    validated = UniProtProtein(**data_to_validate)
+                    logger.debug(f"Validated UniProt protein structure for {accession}")
+                    # Use the validated model's dict representation
+                    if "data" in result:
+                        result["data"] = validated.model_dump(exclude_none=False)
+                    else:
+                        result = validated.model_dump(exclude_none=False)
+                except ValidationError as ve:
+                    logger.warning(
+                        f"UniProt response validation warning for {accession}: {ve}. "
+                        "Response structure may have changed, but continuing with raw data."
+                    )
+                    # Continue with original result - validation is informative, not blocking
+        
         logger.info(f"Tool succeeded: get_protein(accession='{accession}')")
         return result
     except Exception as e:

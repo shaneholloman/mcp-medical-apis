@@ -10,11 +10,12 @@ from .base_client import BaseAPIClient
 class ReactomeClient(BaseAPIClient):
     """Client for interacting with the Reactome Content Service API"""
 
-    def __init__(self):
+    def __init__(self, enable_cache: bool | None = None):
         super().__init__(
             base_url="https://reactome.org/ContentService",
             api_name="Reactome",
             timeout=30.0,
+            enable_cache=enable_cache,
         )
 
     async def get_pathway(self, pathway_id: str) -> dict:
@@ -45,7 +46,9 @@ class ReactomeClient(BaseAPIClient):
             # If query endpoint fails, try the pathway endpoint as fallback
             if "404" in str(e) or "Not Found" in str(e):
                 try:
-                    data = await self._request("GET", endpoint=f"/data/pathway/{pathway_id}")
+                    data = await self._request(
+                        "GET", endpoint=f"/data/pathway/{pathway_id}"
+                    )
                     return self.format_response(data)
                 except Exception:
                     raise Exception(
@@ -77,8 +80,13 @@ class ReactomeClient(BaseAPIClient):
             for group in data.get("results", []):
                 if group.get("typeName") == "Pathway":
                     pathway_results.extend(group.get("entries", []))
-            formatted_data = {"pathways": pathway_results, "total": len(pathway_results)}
-            return self.format_response(formatted_data, {"results": len(pathway_results)})
+            formatted_data = {
+                "pathways": pathway_results,
+                "total": len(pathway_results),
+            }
+            return self.format_response(
+                formatted_data, {"results": len(pathway_results)}
+            )
         return self.format_response(data)
 
     async def get_pathway_participants(self, pathway_id: str) -> dict | list:
@@ -107,17 +115,21 @@ class ReactomeClient(BaseAPIClient):
 
         last_error = None
         import httpx
-        
+
         for endpoint in endpoints_to_try:
             try:
                 # Set a strict timeout for this specific call as it can hang on large pathways
                 data = await self._request("GET", endpoint=endpoint, timeout=10.0)
                 participant_count = len(data) if isinstance(data, list) else None
-                metadata = {"participants": participant_count} if participant_count else None
+                metadata = (
+                    {"participants": participant_count} if participant_count else None
+                )
                 return self.format_response(data, metadata)
             except httpx.ReadTimeout:
                 # If we timeout, return a specific message (as if endpoint was not available)
-                logger.warning(f"Timeout fetching participants for {pathway_id} at {endpoint}. Treating as unavailable.")
+                logger.warning(
+                    f"Timeout fetching participants for {pathway_id} at {endpoint}. Treating as unavailable."
+                )
                 # This effectively means we break and go to the fallback logic
                 break
             except Exception as e:
@@ -129,7 +141,9 @@ class ReactomeClient(BaseAPIClient):
 
         # If all endpoints failed or timed out, return pathway data with a note
         try:
-            pathway_data = await self._request("GET", endpoint=f"/data/query/{pathway_id}")
+            pathway_data = await self._request(
+                "GET", endpoint=f"/data/query/{pathway_id}"
+            )
             fallback_data = {
                 "message": "Participants list unavailable or too large to retrieve directly. "
                 "Pathway information retrieved instead.",
@@ -157,7 +171,9 @@ class ReactomeClient(BaseAPIClient):
         """
         # First, search for the disease using the correct endpoint
         params = {"query": disease_name, "species": "9606"}
-        search_results = await self._request("GET", endpoint="/search/query", params=params)
+        search_results = await self._request(
+            "GET", endpoint="/search/query", params=params
+        )
 
         # Filter for disease entities and get their pathways
         disease_pathways: list[dict] = []
@@ -172,8 +188,9 @@ class ReactomeClient(BaseAPIClient):
                         if disease_id:
                             try:
                                 # Get pathways for this disease
-                                pathway_data = await self._request("GET", endpoint=
-                                    f"/data/disease/{disease_id}/pathways"
+                                pathway_data = await self._request(
+                                    "GET",
+                                    endpoint=f"/data/disease/{disease_id}/pathways",
                                 )
                                 if isinstance(pathway_data, list):
                                     disease_pathways.extend(pathway_data)
@@ -188,4 +205,6 @@ class ReactomeClient(BaseAPIClient):
             }
             return self.format_response(no_results_data, {"results": 0})
 
-        return self.format_response(disease_pathways, {"pathways": len(disease_pathways)})
+        return self.format_response(
+            disease_pathways, {"pathways": len(disease_pathways)}
+        )

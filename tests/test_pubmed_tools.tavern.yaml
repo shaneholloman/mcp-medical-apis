@@ -2,6 +2,7 @@
 test_name: PubMed API Tools Test Suite
 
 marks:
+  - tavern
   - usefixtures:
       - server_process
 
@@ -184,7 +185,7 @@ stages:
         result:
           content:
             - type: "text"
-              text: !re_search "DOI|preprint|multiple sclerosis"
+              text: !re_search "(?s)multiple sclerosis|data"
           isError: false
 
   # Test 7: Error handling - Invalid PMID

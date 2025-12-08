@@ -2,6 +2,8 @@
 test_name: Pathway Commons API Tools Test Suite
 
 marks:
+  - tavern
+  - slow
   - usefixtures:
       - server_process
 

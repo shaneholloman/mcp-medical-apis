@@ -2,6 +2,7 @@
 test_name: UniProt API Tools Test Suite
 
 marks:
+  - tavern
   - usefixtures:
       - server_process
 
@@ -25,13 +26,20 @@ stages:
             format: "json"
     response:
       status_code: 200
+      strict:
+        - json:off  # Allow MCP framework fields like structuredContent
       json:
         jsonrpc: "2.0"
         id: 1
         result:
+          # Validate structure via structuredContent (added by FastMCP when it detects structured data)
+          structuredContent:
+            result:
+              primaryAccession: "P00520"
+              uniProtkbId: !re_search "ABL1"
           content:
             - type: "text"
-              text: !re_search "P00520.*Tyrosine-protein kinase ABL1"
+              text: !re_search "P00520"
           isError: false
 
   # Test 2: get_protein - Error Case
@@ -52,19 +60,8 @@ stages:
             accession: "INVALID_ACCESSION_12345"
     response:
       status_code: 200
-      # UniProt client wraps 400/404s as dictionary or text responses?
-      # Let's check loosely for error behavior first or inspect code.
-      # Code says: raises Exception -> Server returns text? Or wrapped JSON?
-      # BaseClient catches HTTPStatusError and raises Exception.
-      # Server likely returns {error: ...} or just string if decorator catches it.
-      # FastMCP usually returns error string if tool raises exception.
-      # If tool returns "Error...", response content is a string.
-      # Our validator assumes JSON. If it's a string error message, validator might fail with JSONDecodeError.
-      # But the validator handles JSONDecodeError and raises AssertionError.
-      # So this test might fail validation if it returns plain text error.
-      # Let's rely on simple text search for error cases for now, or update validator to handle string output.
       strict:
-        - json:off
+        - json:off  # Allow MCP framework fields like structuredContent
       json:
         jsonrpc: "2.0"
         id: 2
@@ -92,6 +89,8 @@ stages:
             limit: 5
     response:
       status_code: 200
+      strict:
+        - json:off  # Allow MCP framework fields like structuredContent
       json:
         jsonrpc: "2.0"
         id: 3
@@ -120,7 +119,7 @@ stages:
     response:
       status_code: 200
       strict:
-        - json:off
+        - json:off  # Allow MCP framework fields like structuredContent
       # This returns raw text (FASTA), not JSON.
       # So we must use simple text validation.
       json:
@@ -149,6 +148,8 @@ stages:
             accession: "P00520"
     response:
       status_code: 200
+      strict:
+        - json:off  # Allow MCP framework fields like structuredContent
       json:
         jsonrpc: "2.0"
         id: 6
@@ -178,6 +179,8 @@ stages:
             ids: "TP53"
     response:
       status_code: 200
+      strict:
+        - json:off  # Allow MCP framework fields like structuredContent
       json:
         jsonrpc: "2.0"
         id: 7

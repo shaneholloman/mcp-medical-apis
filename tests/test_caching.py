@@ -54,8 +54,8 @@ def clean_ctg_cache(get_cache_file_path):
 
 @pytest.mark.asyncio
 async def test_reactome_caching_enabled(clean_reactome_cache, cache_dir):
-    """Test that Reactome client caching is enabled by default"""
-    client = ReactomeClient()
+    """Test that Reactome client caching can be enabled"""
+    client = ReactomeClient(enable_cache=True)
     assert client.enable_cache is True
     # Cache dir is per-process, so it should be a subdirectory of cache_dir
     assert cache_dir in client.cache_dir.parents or client.cache_dir == cache_dir
@@ -64,7 +64,7 @@ async def test_reactome_caching_enabled(clean_reactome_cache, cache_dir):
 @pytest.mark.asyncio
 async def test_reactome_cache_creation(clean_reactome_cache, get_cache_file_path):
     """Test that cache file is created after first request"""
-    client = ReactomeClient()
+    client = ReactomeClient(enable_cache=True)
     cache_file = get_cache_file_path("reactome")
 
     # Cache file should not exist initially
@@ -87,7 +87,7 @@ async def test_reactome_cache_creation(clean_reactome_cache, get_cache_file_path
 @pytest.mark.asyncio
 async def test_reactome_cache_hit(clean_reactome_cache, get_cache_file_path):
     """Test that second request uses cache (revalidated)"""
-    client = ReactomeClient()
+    client = ReactomeClient(enable_cache=True)
     cache_file = get_cache_file_path("reactome")
 
     async with client:
@@ -108,35 +108,50 @@ async def test_reactome_cache_hit(clean_reactome_cache, get_cache_file_path):
 @pytest.mark.asyncio
 async def test_reactome_cache_extensions(clean_reactome_cache):
     """Test that hishel extensions are present in responses"""
-    client = ReactomeClient()
+    client = ReactomeClient(enable_cache=True)
 
     async with client:
-        # Make a request
-        response = await client.client.get(
+        # Make first request - should store in cache
+        response1 = await client.client.get(
             "https://reactome.org/ContentService/data/query/R-HSA-1640170"
         )
 
-        # Check for hishel extensions
-        assert "hishel_from_cache" in response.extensions
-        assert "hishel_stored" in response.extensions
-        assert "hishel_revalidated" in response.extensions
-
         # First request should store in cache
-        assert response.extensions.get("hishel_stored") is True
+        assert "hishel_stored" in response1.extensions
+        assert response1.extensions.get("hishel_stored") is True
+        # First request won't be from cache
+        assert response1.extensions.get("hishel_from_cache") is False
+
+        # Make second request - should use cache (may revalidate)
+        response2 = await client.client.get(
+            "https://reactome.org/ContentService/data/query/R-HSA-1640170"
+        )
+
+        # Second request should have cache-related extensions
+        # hishel revalidates cached responses by default, so check for revalidated flag
+        assert "hishel_revalidated" in response2.extensions
+        assert response2.extensions.get("hishel_revalidated") is True
+        # When revalidated, hishel_from_cache may be False but revalidated is True
 
 
 @pytest.mark.asyncio
 async def test_reactome_cache_disabled():
     """Test that caching can be disabled"""
-    # ReactomeClient doesn't expose enable_cache parameter directly
-    # We can test by checking the client type when cache is disabled
-    # For now, just verify the client works with caching enabled
-    client = ReactomeClient()
-    assert client.enable_cache is True  # Default is True
+    # Test with caching disabled
+    client_disabled = ReactomeClient(enable_cache=False)
+    assert client_disabled.enable_cache is False
 
-    async with client:
-        # The client should work
-        result = await client.get_pathway("R-HSA-1640170")
+    async with client_disabled:
+        # The client should work without cache
+        result = await client_disabled.get_pathway("R-HSA-1640170")
+        assert isinstance(result, dict)
+
+    # Test with caching enabled
+    client_enabled = ReactomeClient(enable_cache=True)
+    assert client_enabled.enable_cache is True
+
+    async with client_enabled:
+        result = await client_enabled.get_pathway("R-HSA-1640170")
         assert isinstance(result, dict)
 
 
@@ -209,7 +224,7 @@ async def test_cache_directory_creation(cache_dir):
 @pytest.mark.asyncio
 async def test_multiple_api_caches(cache_dir, get_cache_file_path):
     """Test that different APIs use separate cache files"""
-    reactome_client = ReactomeClient()
+    reactome_client = ReactomeClient(enable_cache=True)
     # Note: We can't easily test CTG cache file name without making requests
     # But we can verify the pattern
 

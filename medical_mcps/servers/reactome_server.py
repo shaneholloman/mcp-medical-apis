@@ -7,9 +7,11 @@ Exposes Reactome API tools via MCP at /tools/reactome/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 from ..api_clients.reactome_client import ReactomeClient
+from ..models.reactome import ReactomePathway
+from .validation import validate_response, validate_list_response
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,13 @@ async def get_pathway(pathway_id: str) -> dict:
     logger.info(f"Tool invoked: get_pathway(pathway_id='{pathway_id}')")
     try:
         result = await reactome_client.get_pathway(pathway_id)
+        result = validate_response(
+            result,
+            ReactomePathway,
+            key_field="stId",
+            api_name="Reactome",
+            context=pathway_id,
+        )
         logger.info(f"Tool succeeded: get_pathway(pathway_id='{pathway_id}')")
         return result
     except Exception as e:
@@ -82,6 +91,12 @@ async def query_pathways(query: str, species: str = "Homo sapiens") -> dict:
     logger.info(f"Tool invoked: query_pathways(query='{query}', species='{species}')")
     try:
         result = await reactome_client.query_pathways(query, species)
+        result = validate_list_response(
+            result,
+            ReactomePathway,
+            list_key="pathways",
+            api_name="Reactome",
+        )
         logger.info(
             f"Tool succeeded: query_pathways(query='{query}', species='{species}')"
         )

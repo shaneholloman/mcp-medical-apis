@@ -2,6 +2,7 @@
 test_name: NCI Clinical Trials API Tools Test Suite
 
 marks:
+  - tavern
   - usefixtures:
       - server_process
       - nci_api_key

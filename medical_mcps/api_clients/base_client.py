@@ -17,6 +17,8 @@ from hishel.httpx import AsyncCacheClient
 from tenacity import (
     retry,
     retry_if_exception_type,
+    retry_unless_exception_type,
+    stop_after_attempt,
     stop_after_delay,
     wait_exponential,
     wait_fixed,
@@ -200,19 +202,24 @@ class BaseAPIClient(ABC):
 
         # Create request function with retry decorator
         # Retry on network errors (HTTPError, TimeoutException, ConnectError) but not on HTTP status errors
+        # Limit retries to prevent hanging in tests - use stop_after_attempt to limit retry count
         @retry(
-            stop=stop_after_delay(120),  # Stop after 60 seconds total
+            stop=stop_after_attempt(3)
+            | stop_after_delay(120),  # Stop after 3 attempts or 120 seconds
             wait=wait_fixed(self.rate_limit_delay)
             if self.rate_limit_delay
             else wait_exponential(multiplier=1, min=5, max=60),
             retry=retry_if_exception_type(
                 (httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError)
-            ),
+            )
+            & retry_unless_exception_type(httpx.HTTPStatusError),
             reraise=True,
         )
         async def make_request():
             if method == "GET":
-                response = await self.client.get(request_url, params=params, timeout=timeout)
+                response = await self.client.get(
+                    request_url, params=params, timeout=timeout
+                )
             elif method == "POST":
                 if form_data is not None:
                     response = await self.client.post(

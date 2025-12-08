@@ -11,6 +11,8 @@ from mcp.server.fastmcp import FastMCP
 from ..api_clients.gwas_client import GWASClient
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
+from ..models.gwas import GWASAssociation, GWASVariant, GWASStudy
+from .validation import validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +35,15 @@ async def get_association(association_id: str) -> dict:
         association_id: GWAS association ID
     """
     try:
-        return await gwas_client.get_association(association_id)
+        result = await gwas_client.get_association(association_id)
+        result = validate_response(
+            result,
+            GWASAssociation,
+            key_field="id",
+            api_name="GWAS",
+            context=association_id,
+        )
+        return result
     except Exception as e:
         logger.error(
             f"Error calling GWAS Catalog API (get_association): {e}", exc_info=True
@@ -85,7 +95,15 @@ async def get_variant(variant_id: str) -> dict:
         JSON with SNP details including chromosomal location, functional class, and genomic contexts
     """
     try:
-        return await gwas_client.get_variant(variant_id)
+        result = await gwas_client.get_variant(variant_id)
+        result = validate_response(
+            result,
+            GWASVariant,
+            key_field="rsId",
+            api_name="GWAS",
+            context=variant_id,
+        )
+        return result
     except Exception as e:
         logger.error(
             f"Error calling GWAS Catalog API (get_variant): {e}", exc_info=True

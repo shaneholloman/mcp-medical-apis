@@ -10,9 +10,11 @@ across biological databases, returning equivalent identifiers and semantic types
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
+from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 from ..api_clients.nodenorm_client import NodeNormClient
+from ..models.nodenorm import NodeNormalizationNode
+from .validation import validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +119,40 @@ async def get_normalized_nodes(
             individual_types=individual_types,
             include_taxa=include_taxa,
         )
+        
+        # Validate response structure - NodeNorm returns dict of CURIE -> node
+        if isinstance(result, dict):
+            data_to_validate = result.get("data", result)
+            
+            # Handle formatted response with normalized_nodes wrapper
+            if isinstance(data_to_validate, dict) and "normalized_nodes" in data_to_validate:
+                normalized_nodes = data_to_validate.get("normalized_nodes", {})
+                if isinstance(normalized_nodes, dict):
+                    # Validate first node as sample
+                    for curie, node_data in normalized_nodes.items():
+                        if isinstance(node_data, dict) and "id" in node_data:
+                            validate_response(
+                                {"data": node_data},
+                                NodeNormalizationNode,
+                                key_field="id",
+                                api_name="Node Normalization",
+                                context=curie,
+                            )
+                            break  # Only validate first node
+            # Handle direct normalized_nodes dict (without wrapper)
+            elif isinstance(data_to_validate, dict):
+                # Validate first node as sample
+                for curie, node_data in data_to_validate.items():
+                    if isinstance(node_data, dict) and "id" in node_data:
+                        validate_response(
+                            {"data": node_data},
+                            NodeNormalizationNode,
+                            key_field="id",
+                            api_name="Node Normalization",
+                            context=curie,
+                        )
+                        break  # Only validate first node
+        
         return result
     except Exception as e:
         logger.error(

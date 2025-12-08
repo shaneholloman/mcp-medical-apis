@@ -32,8 +32,8 @@ def server_process(server_url: str) -> Generator[subprocess.Popen, None, None]:
         url_part = server_url
 
     if ":" in url_part:
-        host, port = url_part.split(":", 1)
-        port = int(port)
+        host, port_str = url_part.split(":", 1)
+        port = int(port_str)
     else:
         host = "localhost"
         port = 8000
@@ -46,7 +46,7 @@ def server_process(server_url: str) -> Generator[subprocess.Popen, None, None]:
     # Start the server process
     logger.info(f"Starting MCP server at {server_url}")
     process = subprocess.Popen(
-        ["uv", "run", "mcp-server"],
+        ["uv", "run", "medical-mcps"],
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -122,7 +122,7 @@ def omim_api_key() -> str:
 
 
 def pytest_collection_modifyitems(config, items):
-    """Skip OMIM tests if API key is not set, and mark Pathway Commons tests as slow"""
+    """Skip OMIM tests if API key is not set, and skip NCI tests if API key is not set"""
     # Skip OMIM tests if API key is not set
     omim_api_key = os.getenv("OMIM_API_KEY", "")
     if not omim_api_key:
@@ -138,8 +138,3 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "nci" in item.name.lower():
                 item.add_marker(skip_nci)
-
-    # Note: Pathway Commons tests are excluded from default test run via Makefile
-    # They require --timeout=200 to run (API is very slow, can take 2-3 minutes)
-
-
