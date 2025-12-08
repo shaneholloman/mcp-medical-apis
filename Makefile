@@ -79,8 +79,8 @@ deploy-cloud-run:
 		--max-instances $(MAX_INSTANCES) \
 		--min-instances $(MIN_INSTANCES) \
 		--set-env-vars "$$ENV_VARS" \
-		--startup-probe-path /health \
-		--liveness-probe-path /health
+		--startup-probe=httpGet.port=$(PORT),httpGet.path=/health \
+		--liveness-probe=httpGet.port=$(PORT),httpGet.path=/health
 	@echo "Deployment complete!"
 
 # Get the deployed service URL
