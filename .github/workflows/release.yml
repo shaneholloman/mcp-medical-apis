@@ -1,0 +1,203 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  id-token: write
+  packages: write
+  attestations: write
+  deployments: write
+
+jobs:
+  version:
+    name: Bump version and create tag
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.versioning.outputs.version }}
+      tag: ${{ steps.versioning.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version and create tag
+        id: versioning
+        run: |
+          uv version --bump patch
+          NEW_VERSION=$(uv version --short)
+          TAG="v$NEW_VERSION"
+          
+          git add pyproject.toml
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git tag -a "$TAG" -m "Release $TAG"
+          
+          git push origin main
+          git push origin "$TAG"
+          
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  pypi:
+    name: Publish to PyPI
+    needs: version
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/medical-mcps
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Build and publish to PyPI
+        run: make publish
+
+      - name: Store distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  docker:
+    name: Build and push Docker image
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/medical-mcps
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=${{ needs.version.outputs.tag }}
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/medical-mcps
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  github-release:
+    name: Create GitHub Release
+    needs: [version, pypi]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Sign distributions
+        uses: sigstore/gh-action-sigstore-python@v3.0.0
+        with:
+          inputs: >-
+            ./dist/*.tar.gz
+            ./dist/*.whl
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create
+          '${{ needs.version.outputs.tag }}'
+          --repo '${{ github.repository }}'
+          --generate-notes
+          dist/*
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: [version, docker]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://medical-mcps-curiloo.run.app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          make deploy-cloud-run \
+            IMAGE_TAG=${{ needs.version.outputs.tag }} \
+            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - name: Get deployed service URL
+        id: service_url
+        run: |
+          URL=$(make get-service-url)
+          echo "url=${URL}" >> $GITHUB_OUTPUT
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Cloud Run Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ needs.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/medical-mcps:${{ needs.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Service URL:** ${{ steps.service_url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Deployed Successfully" >> $GITHUB_STEP_SUMMARY
+
