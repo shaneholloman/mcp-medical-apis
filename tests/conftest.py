@@ -23,8 +23,7 @@ def server_process(server_url: str) -> Generator[subprocess.Popen, None, None]:
     Start the MCP server as a subprocess for the entire test session.
     The server will be available at the server_url.
 
-    This fixture is session-scoped, so it will be shared across all pytest-xdist workers
-    when running tests in parallel. The server is stateless HTTP and can handle concurrent requests.
+    The server is stateless HTTP and can handle concurrent requests.
     """
     # Extract host and port from URL
     if server_url.startswith("http://"):

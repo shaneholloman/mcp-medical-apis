@@ -33,7 +33,7 @@ jobs:
       - name: Run tests
         env:
           ENABLE_CACHE: "true"  # Enable caching in CI for faster test runs
-        run: make test-parallel  # Run tests in parallel for faster CI
+        run: make test  # Run sequential tests
 
   version:
     name: Bump version and create tag
