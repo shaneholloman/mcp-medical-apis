@@ -12,6 +12,7 @@ from .base import MCPToolResult
 
 class PathwayCommonsPathway(BaseModel):
     """Pathway Commons pathway model"""
+
     uri: str | None = None
     name: str | None = None
     displayName: str | None = None
@@ -25,6 +26,7 @@ class PathwayCommonsPathway(BaseModel):
 
 class PathwayCommonsSearchResult(BaseModel):
     """Pathway Commons search result model"""
+
     hits: list[PathwayCommonsPathway] | None = None
     total: int | None = None
 
@@ -34,4 +36,5 @@ class PathwayCommonsSearchResult(BaseModel):
 
 class PathwayCommonsToolResult(MCPToolResult[PathwayCommonsPathway]):
     """Pathway Commons-specific MCP tool result"""
+
     pass

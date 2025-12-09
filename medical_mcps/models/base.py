@@ -5,7 +5,7 @@ These models define the universal structure for all MCP tool responses.
 Server-specific models should inherit from these base models.
 """
 
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
@@ -20,7 +20,7 @@ class MCPContentItem(BaseModel):
     text: str
 
 
-class MCPToolResult(BaseModel, Generic[T]):
+class MCPToolResult[T](BaseModel):
     """
     Base model for MCP tool result structure.
 
@@ -37,7 +37,7 @@ class MCPToolResult(BaseModel, Generic[T]):
         extra = "allow"  # Allow extra fields for flexibility
 
 
-class MCPResponse(BaseModel, Generic[T]):
+class MCPResponse[T](BaseModel):
     """
     Base model for complete MCP JSON-RPC response.
 

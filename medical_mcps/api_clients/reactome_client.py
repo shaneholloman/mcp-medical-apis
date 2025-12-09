@@ -4,7 +4,11 @@ Documentation: https://reactome.org/dev/content-service
 Base URL: https://reactome.org/ContentService
 """
 
+import logging
+
 from .base_client import BaseAPIClient
+
+logger = logging.getLogger(__name__)
 
 
 class ReactomeClient(BaseAPIClient):
@@ -46,9 +50,7 @@ class ReactomeClient(BaseAPIClient):
             # If query endpoint fails, try the pathway endpoint as fallback
             if "404" in str(e) or "Not Found" in str(e):
                 try:
-                    data = await self._request(
-                        "GET", endpoint=f"/data/pathway/{pathway_id}"
-                    )
+                    data = await self._request("GET", endpoint=f"/data/pathway/{pathway_id}")
                     return self.format_response(data)
                 except Exception:
                     raise Exception(
@@ -84,9 +86,7 @@ class ReactomeClient(BaseAPIClient):
                 "pathways": pathway_results,
                 "total": len(pathway_results),
             }
-            return self.format_response(
-                formatted_data, {"results": len(pathway_results)}
-            )
+            return self.format_response(formatted_data, {"results": len(pathway_results)})
         return self.format_response(data)
 
     async def get_pathway_participants(self, pathway_id: str) -> dict | list:
@@ -121,9 +121,7 @@ class ReactomeClient(BaseAPIClient):
                 # Set a strict timeout for this specific call as it can hang on large pathways
                 data = await self._request("GET", endpoint=endpoint, timeout=10.0)
                 participant_count = len(data) if isinstance(data, list) else None
-                metadata = (
-                    {"participants": participant_count} if participant_count else None
-                )
+                metadata = {"participants": participant_count} if participant_count else None
                 return self.format_response(data, metadata)
             except httpx.ReadTimeout:
                 # If we timeout, return a specific message (as if endpoint was not available)
@@ -141,9 +139,7 @@ class ReactomeClient(BaseAPIClient):
 
         # If all endpoints failed or timed out, return pathway data with a note
         try:
-            pathway_data = await self._request(
-                "GET", endpoint=f"/data/query/{pathway_id}"
-            )
+            pathway_data = await self._request("GET", endpoint=f"/data/query/{pathway_id}")
             fallback_data = {
                 "message": "Participants list unavailable or too large to retrieve directly. "
                 "Pathway information retrieved instead.",
@@ -171,19 +167,14 @@ class ReactomeClient(BaseAPIClient):
         """
         # First, search for the disease using the correct endpoint
         params = {"query": disease_name, "species": "9606"}
-        search_results = await self._request(
-            "GET", endpoint="/search/query", params=params
-        )
+        search_results = await self._request("GET", endpoint="/search/query", params=params)
 
         # Filter for disease entities and get their pathways
         disease_pathways: list[dict] = []
         if isinstance(search_results, dict) and "results" in search_results:
             for group in search_results.get("results", []):
                 for result in group.get("entries", []):
-                    if (
-                        result.get("type") == "Disease"
-                        or result.get("exactType") == "Disease"
-                    ):
+                    if result.get("type") == "Disease" or result.get("exactType") == "Disease":
                         disease_id = result.get("stId") or result.get("id")
                         if disease_id:
                             try:
@@ -205,6 +196,4 @@ class ReactomeClient(BaseAPIClient):
             }
             return self.format_response(no_results_data, {"results": 0})
 
-        return self.format_response(
-            disease_pathways, {"pathways": len(disease_pathways)}
-        )
+        return self.format_response(disease_pathways, {"pathways": len(disease_pathways)})

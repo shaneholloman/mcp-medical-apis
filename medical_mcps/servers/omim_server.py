@@ -28,7 +28,7 @@ omim_mcp = FastMCP(
 @medmcps_tool(name="omim_get_entry", servers=[omim_mcp, unified_mcp])
 async def get_entry(mim_number: str, api_key: str, include: str = "text") -> dict:
     """Get entry information from OMIM by MIM number.
-    
+
     Args:
         mim_number: MIM number (e.g., '104300')
         api_key: OMIM API key (REQUIRED - get from https://omim.org/api)
@@ -55,14 +55,10 @@ async def get_entry(mim_number: str, api_key: str, include: str = "text") -> dic
 
 @medmcps_tool(name="omim_search_entries", servers=[omim_mcp, unified_mcp])
 async def search_entries(
-    search: str,
-    api_key: str,
-    include: str = "text",
-    limit: int = 20,
-    start: int = 0
+    search: str, api_key: str, include: str = "text", limit: int = 20, start: int = 0
 ) -> dict:
     """Search entries in OMIM.
-    
+
     Args:
         search: Search query
         api_key: OMIM API key (REQUIRED - get from https://omim.org/api)
@@ -91,7 +87,7 @@ async def search_entries(
 @medmcps_tool(name="omim_get_gene", servers=[omim_mcp, unified_mcp])
 async def get_gene(gene_symbol: str, api_key: str, include: str = "geneMap") -> dict:
     """Get gene information from OMIM by gene symbol.
-    
+
     Args:
         gene_symbol: Gene symbol (e.g., 'BRCA1')
         api_key: OMIM API key (REQUIRED - get from https://omim.org/api)
@@ -118,14 +114,10 @@ async def get_gene(gene_symbol: str, api_key: str, include: str = "geneMap") -> 
 
 @medmcps_tool(name="omim_search_genes", servers=[omim_mcp, unified_mcp])
 async def search_genes(
-    search: str,
-    api_key: str,
-    include: str = "geneMap",
-    limit: int = 20,
-    start: int = 0
+    search: str, api_key: str, include: str = "geneMap", limit: int = 20, start: int = 0
 ) -> dict:
     """Search genes in OMIM.
-    
+
     Args:
         search: Search query
         api_key: OMIM API key (REQUIRED - get from https://omim.org/api)
@@ -154,7 +146,7 @@ async def search_genes(
 @medmcps_tool(name="omim_get_phenotype", servers=[omim_mcp, unified_mcp])
 async def get_phenotype(mim_number: str, api_key: str, include: str = "text") -> dict:
     """Get phenotype information from OMIM by MIM number.
-    
+
     Args:
         mim_number: MIM number
         api_key: OMIM API key (REQUIRED - get from https://omim.org/api)
@@ -181,14 +173,10 @@ async def get_phenotype(mim_number: str, api_key: str, include: str = "text") ->
 
 @medmcps_tool(name="omim_search_phenotypes", servers=[omim_mcp, unified_mcp])
 async def search_phenotypes(
-    search: str,
-    api_key: str,
-    include: str = "text",
-    limit: int = 20,
-    start: int = 0
+    search: str, api_key: str, include: str = "text", limit: int = 20, start: int = 0
 ) -> dict:
     """Search phenotypes in OMIM.
-    
+
     Args:
         search: Search query
         api_key: OMIM API key (REQUIRED - get from https://omim.org/api)

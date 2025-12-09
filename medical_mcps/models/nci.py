@@ -14,6 +14,7 @@ from .base import MCPToolResult
 
 class NCITrial(BaseModel):
     """NCI trial model"""
+
     nct_id: str | None = None
     protocol_id: str | None = None
     nci_id: str | None = None
@@ -31,6 +32,7 @@ class NCITrial(BaseModel):
 
 class NCISearchResult(BaseModel):
     """NCI search result model"""
+
     data: list[NCITrial] | None = None
     total: int | None = None
 
@@ -40,4 +42,5 @@ class NCISearchResult(BaseModel):
 
 class NCIToolResult(MCPToolResult[NCITrial]):
     """NCI-specific MCP tool result"""
+
     pass

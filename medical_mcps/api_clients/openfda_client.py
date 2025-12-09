@@ -64,9 +64,7 @@ class OpenFDAClient(BaseAPIClient):
         if reaction:
             reaction_sanitized = sanitize_input(reaction, max_length=200)
             if reaction_sanitized:
-                search_parts.append(
-                    f'patient.reaction.reactionmeddrapt:"{reaction_sanitized}"'
-                )
+                search_parts.append(f'patient.reaction.reactionmeddrapt:"{reaction_sanitized}"')
 
         if serious is not None:
             serious_value = "1" if serious else "2"
@@ -119,7 +117,9 @@ class OpenFDAClient(BaseAPIClient):
 
         try:
             # Use full URL for OpenFDA endpoints
-            response = await self._request("GET", url=OPENFDA_DRUG_EVENTS_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=OPENFDA_DRUG_EVENTS_URL, params=params, return_json=False
+            )
             response = json.loads(response)
 
             results = response.get("results", [])
@@ -168,9 +168,7 @@ class OpenFDAClient(BaseAPIClient):
             logger.error(f"Adverse event search failed: {e}", exc_info=True)
             return self.format_response([], {"error": f"OpenFDA API error: {e!s}"})
 
-    async def get_adverse_event(
-        self, report_id: str, api_key: str | None = None
-    ) -> dict[str, Any]:
+    async def get_adverse_event(self, report_id: str, api_key: str | None = None) -> dict[str, Any]:
         """
         Get detailed adverse event report.
 
@@ -191,7 +189,9 @@ class OpenFDAClient(BaseAPIClient):
 
         try:
             # Use full URL for OpenFDA endpoints
-            response = await self._request("GET", url=OPENFDA_DRUG_EVENTS_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=OPENFDA_DRUG_EVENTS_URL, params=params, return_json=False
+            )
             response = json.loads(response)
 
             results = response.get("results", [])
@@ -218,9 +218,7 @@ class OpenFDAClient(BaseAPIClient):
                 }
             )
         except Exception as e:
-            logger.error(
-                f"Failed to fetch adverse event {report_id}: {e}", exc_info=True
-            )
+            logger.error(f"Failed to fetch adverse event {report_id}: {e}", exc_info=True)
             return self.format_response(None, {"error": f"OpenFDA API error: {e!s}"})
 
     async def search_drug_labels(
@@ -285,7 +283,9 @@ class OpenFDAClient(BaseAPIClient):
 
         try:
             # Use full URL for OpenFDA endpoints
-            response = await self._request("GET", url=OPENFDA_DRUG_LABELS_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=OPENFDA_DRUG_LABELS_URL, params=params, return_json=False
+            )
             response = json.loads(response)
 
             results = response.get("results", [])
@@ -306,9 +306,7 @@ class OpenFDAClient(BaseAPIClient):
                         "generic_name": openfda.get("generic_name", [None])[0]
                         if openfda.get("generic_name")
                         else None,
-                        "indications_and_usage": result.get(
-                            "indications_and_usage", [None]
-                        )[0]
+                        "indications_and_usage": result.get("indications_and_usage", [None])[0]
                         if result.get("indications_and_usage")
                         else None,
                         "boxed_warning": result.get("boxed_warning", [None])[0]
@@ -353,14 +351,14 @@ class OpenFDAClient(BaseAPIClient):
 
         try:
             # Use full URL for OpenFDA endpoints
-            response = await self._request("GET", url=OPENFDA_DRUG_LABELS_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=OPENFDA_DRUG_LABELS_URL, params=params, return_json=False
+            )
             response = json.loads(response)
 
             results = response.get("results", [])
             if not results:
-                return self.format_response(
-                    None, {"error": f"Drug label '{set_id}' not found"}
-                )
+                return self.format_response(None, {"error": f"Drug label '{set_id}' not found"})
 
             result = results[0]
             openfda = result.get("openfda", {})
@@ -441,9 +439,7 @@ class OpenFDAClient(BaseAPIClient):
         if manufacturer:
             manufacturer_sanitized = sanitize_input(manufacturer, max_length=100)
             if manufacturer_sanitized:
-                search_parts.append(
-                    f'device.manufacturer_d_name:"{manufacturer_sanitized}"'
-                )
+                search_parts.append(f'device.manufacturer_d_name:"{manufacturer_sanitized}"')
 
         if problem:
             problem_sanitized = sanitize_input(problem, max_length=200)
@@ -469,7 +465,9 @@ class OpenFDAClient(BaseAPIClient):
 
         try:
             # Use full URL for OpenFDA endpoints
-            response = await self._request("GET", url=OPENFDA_DEVICE_EVENTS_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=OPENFDA_DEVICE_EVENTS_URL, params=params, return_json=False
+            )
             response = json.loads(response)
 
             results = response.get("results", [])
@@ -480,9 +478,7 @@ class OpenFDAClient(BaseAPIClient):
             # Format results
             formatted_results = []
             for result in results:
-                device_info = (
-                    result.get("device", [{}])[0] if result.get("device") else {}
-                )
+                device_info = result.get("device", [{}])[0] if result.get("device") else {}
                 formatted_results.append(
                     {
                         "mdr_report_key": result.get("mdr_report_key"),

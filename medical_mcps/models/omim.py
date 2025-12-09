@@ -14,6 +14,7 @@ from .base import MCPToolResult
 
 class OMIMEntry(BaseModel):
     """OMIM entry model"""
+
     mimNumber: str | None = None
     preferredTitle: str | None = None
     allelicVariantList: list[dict[str, Any]] | None = None
@@ -26,6 +27,7 @@ class OMIMEntry(BaseModel):
 
 class OMIMSearchResult(BaseModel):
     """OMIM search result model"""
+
     omim: dict[str, Any] | None = None
     searchResponse: dict[str, Any] | None = None
 
@@ -35,4 +37,5 @@ class OMIMSearchResult(BaseModel):
 
 class OMIMToolResult(MCPToolResult[OMIMEntry]):
     """OMIM-specific MCP tool result"""
+
     pass

@@ -98,10 +98,7 @@ class PubTatorArticle(BaseModel):
         abstracts = []
         for passage in self.passages:
             infons = passage.get("infons", {})
-            if (
-                infons.get("section_type") == "ABSTRACT"
-                or infons.get("type") == "abstract"
-            ):
+            if infons.get("section_type") == "ABSTRACT" or infons.get("type") == "abstract":
                 abstracts.append(passage.get("text", ""))
         return "\n\n".join(abstracts)
 
@@ -188,7 +185,9 @@ class PubMedClient(BaseAPIClient):
                 "limit": 1,
             }
             # Use full URL for autocomplete endpoint
-            response = await self._request("GET", url=PUBTATOR3_AUTOCOMPLETE_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=PUBTATOR3_AUTOCOMPLETE_URL, params=params, return_json=False
+            )
 
             data = json.loads(response)
             if isinstance(data, list) and len(data) > 0:
@@ -267,9 +266,7 @@ class PubMedClient(BaseAPIClient):
         query_text = " AND ".join(query_parts) if query_parts else ""
 
         if not query_text:
-            return self.format_response(
-                [], {"error": "At least one search parameter is required"}
-            )
+            return self.format_response([], {"error": "At least one search parameter is required"})
 
         # Calculate pagination
         total_needed = page * limit
@@ -278,7 +275,9 @@ class PubMedClient(BaseAPIClient):
         try:
             # Make GET request to PubTator3 search API (API accepts GET with query params)
             # Use _get_text_direct since we're using a full URL, not a relative endpoint
-            response_text = await self._request("GET", url=PUBTATOR3_SEARCH_URL, params=params, return_json=False)
+            response_text = await self._request(
+                "GET", url=PUBTATOR3_SEARCH_URL, params=params, return_json=False
+            )
             response = json.loads(response_text)
 
             # Parse response
@@ -396,9 +395,7 @@ class PubMedClient(BaseAPIClient):
         """Check if identifier is a PMID."""
         return str(identifier).isdigit()
 
-    async def _get_article_by_pmid(
-        self, pmid: int, full: bool = False
-    ) -> dict[str, Any]:
+    async def _get_article_by_pmid(self, pmid: int, full: bool = False) -> dict[str, Any]:
         """Get article by PMID using PubTator3."""
         try:
             request_data = {
@@ -453,10 +450,7 @@ class PubMedClient(BaseAPIClient):
         abstracts = []
         for passage in passages:
             infons = passage.get("infons", {})
-            if (
-                infons.get("section_type") == "ABSTRACT"
-                or infons.get("type") == "abstract"
-            ):
+            if infons.get("section_type") == "ABSTRACT" or infons.get("type") == "abstract":
                 abstracts.append(passage.get("text", ""))
         return "\n\n".join(abstracts)
 
@@ -480,7 +474,9 @@ class PubMedClient(BaseAPIClient):
                 "format": "json",
                 "pageSize": 1,
             }
-            response = await self._request("GET", url=f"{EUROPE_PMC_BASE_URL}/search", params=params, return_json=False)
+            response = await self._request(
+                "GET", url=f"{EUROPE_PMC_BASE_URL}/search", params=params, return_json=False
+            )
 
             data = json.loads(response)
             result_list = data.get("resultList", {})
@@ -503,14 +499,10 @@ class PubMedClient(BaseAPIClient):
                     }
                 )
 
-            return self.format_response(
-                None, {"error": f"Article with DOI {doi} not found"}
-            )
+            return self.format_response(None, {"error": f"Article with DOI {doi} not found"})
         except Exception as e:
             logger.error(f"Failed to fetch article by DOI {doi}: {e}", exc_info=True)
-            return self.format_response(
-                None, {"error": f"Europe PMC API error: {e!s}"}
-            )
+            return self.format_response(None, {"error": f"Europe PMC API error: {e!s}"})
 
     async def search_preprints(self, query: str, limit: int = 25) -> dict[str, Any]:
         """
@@ -530,7 +522,9 @@ class PubMedClient(BaseAPIClient):
                 "pageSize": min(limit, 1000),
                 "resultType": "core",
             }
-            response = await self._request("GET", url=f"{EUROPE_PMC_BASE_URL}/search", params=params, return_json=False)
+            response = await self._request(
+                "GET", url=f"{EUROPE_PMC_BASE_URL}/search", params=params, return_json=False
+            )
 
             data = json.loads(response)
             result_list = data.get("resultList", {})
@@ -564,6 +558,4 @@ class PubMedClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Preprint search failed: {e}", exc_info=True)
-            return self.format_response(
-                [], {"error": f"Europe PMC API error: {e!s}"}
-            )
+            return self.format_response([], {"error": f"Europe PMC API error: {e!s}"})

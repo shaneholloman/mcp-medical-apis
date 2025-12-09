@@ -5,7 +5,6 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -103,21 +102,15 @@ class ReactomePathway(BaseModel):
     isInDisease: bool | None = None
     isInferred: bool | None = None
     maxDepth: int | None = None
-    name: list[str] | str | None = (
-        None  # Can be list[str] or str (with HTML in query results)
-    )
+    name: list[str] | str | None = None  # Can be list[str] or str (with HTML in query results)
     releaseDate: str | None = None
     releaseStatus: str | None = None
     speciesName: str | None = None
-    species: list[ReactomeSpecies] | list[str] | None = (
-        None  # Can be list of objects or strings
-    )
+    species: list[ReactomeSpecies] | list[str] | None = None  # Can be list of objects or strings
     figure: list[ReactomeFigure] | None = None
     goBiologicalProcess: ReactomeGOBiologicalProcess | None = None
     orthologousEvent: list[ReactomeOrthologousEvent] | None = None
-    summation: list[ReactomeSummation] | str | None = (
-        None  # Can be list of objects or string
-    )
+    summation: list[ReactomeSummation] | str | None = None  # Can be list of objects or string
     className: str | None = None
     schemaClass: str | None = None
     type: str | None = None  # Present in query results (e.g., "Pathway")

@@ -23,9 +23,7 @@ opentargets_mcp = FastMCP(
 
 
 @medmcps_tool(name="opentargets_search", servers=[opentargets_mcp, unified_mcp])
-async def opentargets_search(
-    query: str, entity: str | None = None, size: int = 10
-) -> dict:
+async def opentargets_search(query: str, entity: str | None = None, size: int = 10) -> dict:
     """Search OpenTargets entities (targets, diseases, drugs)."""
     logger.info(
         "Tool invoked: opentargets_search(query='%s', entity='%s', size=%s)",
@@ -49,9 +47,7 @@ async def opentargets_search(
         return {"api_source": "OpenTargets", "data": None, "error": str(e)}
 
 
-@medmcps_tool(
-    name="opentargets_get_associations", servers=[opentargets_mcp, unified_mcp]
-)
+@medmcps_tool(name="opentargets_get_associations", servers=[opentargets_mcp, unified_mcp])
 async def opentargets_get_associations(
     target_id: str | None = None,
     disease_id: str | None = None,

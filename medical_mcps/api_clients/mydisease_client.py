@@ -45,13 +45,16 @@ class MyDiseaseClient(BaseAPIClient):
         """
         try:
             # Check if it's a MONDO or DOID ID
-            if disease_id_or_name.startswith("MONDO:") or disease_id_or_name.startswith(
-                "DOID:"
-            ):
+            if disease_id_or_name.startswith("MONDO:") or disease_id_or_name.startswith("DOID:"):
                 params = {}
                 if fields:
                     params["fields"] = ",".join(fields)
-                response = await self._request("GET", url=f"{MYDISEASE_GET_URL}/{disease_id_or_name}", params=params, return_json=False)
+                response = await self._request(
+                    "GET",
+                    url=f"{MYDISEASE_GET_URL}/{disease_id_or_name}",
+                    params=params,
+                    return_json=False,
+                )
                 data = json.loads(response)
                 return self.format_response(data)
 
@@ -63,7 +66,9 @@ class MyDiseaseClient(BaseAPIClient):
             if fields:
                 params["fields"] = ",".join(fields)
 
-            response = await self._request("GET", url=MYDISEASE_QUERY_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=MYDISEASE_QUERY_URL, params=params, return_json=False
+            )
             data = json.loads(response)
 
             hits = data.get("hits", [])
@@ -80,20 +85,13 @@ class MyDiseaseClient(BaseAPIClient):
                 params = {}
                 if fields:
                     params["fields"] = ",".join(fields)
-                full_response = await self._request("GET", url=f"{MYDISEASE_GET_URL}/{disease_id}", params=params, return_json=False)
+                full_response = await self._request(
+                    "GET", url=f"{MYDISEASE_GET_URL}/{disease_id}", params=params, return_json=False
+                )
                 full_data = json.loads(full_response)
                 return self.format_response(full_data)
 
             return self.format_response(best_hit)
         except Exception as e:
-            logger.error(
-                f"Failed to fetch disease {disease_id_or_name}: {e}", exc_info=True
-            )
-            return self.format_response(
-                None, {"error": f"MyDisease API error: {e!s}"}
-            )
-
-
-
-
-
+            logger.error(f"Failed to fetch disease {disease_id_or_name}: {e}", exc_info=True)
+            return self.format_response(None, {"error": f"MyDisease API error: {e!s}"})

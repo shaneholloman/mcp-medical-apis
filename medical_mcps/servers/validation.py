@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseModel)
 
 
-def validate_response(
+def validate_response[T: BaseModel](
     result: dict,
     model_class: type[T],
     key_field: str | None = None,
@@ -67,7 +67,7 @@ def validate_response(
         raise ValueError(f"Invalid {api_name} API response structure: {ve}") from ve
 
 
-def validate_list_response(
+def validate_list_response[T: BaseModel](
     result: dict,
     model_class: type[T],
     list_key: str = "results",
@@ -110,8 +110,6 @@ def validate_list_response(
                 logger.debug(f"Validated {api_name} list response structure")
             except ValidationError as ve:
                 logger.error(f"{api_name} list response validation failed: {ve}")
-                raise ValueError(
-                    f"Invalid {api_name} API response structure: {ve}"
-                ) from ve
+                raise ValueError(f"Invalid {api_name} API response structure: {ve}") from ve
 
     return result

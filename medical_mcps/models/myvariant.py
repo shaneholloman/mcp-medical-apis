@@ -14,6 +14,7 @@ from .base import MCPToolResult
 
 class MyVariantVariant(BaseModel):
     """MyVariant variant model"""
+
     _id: str | None = None
     query: str | None = None
     dbsnp: dict[str, Any] | None = None
@@ -29,6 +30,7 @@ class MyVariantVariant(BaseModel):
 
 class MyVariantSearchResult(BaseModel):
     """MyVariant search result model"""
+
     hits: list[MyVariantVariant] | None = None
     total: int | None = None
 
@@ -38,4 +40,5 @@ class MyVariantSearchResult(BaseModel):
 
 class MyVariantToolResult(MCPToolResult[MyVariantVariant]):
     """MyVariant-specific MCP tool result"""
+
     pass

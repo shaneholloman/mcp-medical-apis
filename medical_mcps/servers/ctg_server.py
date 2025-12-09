@@ -29,9 +29,9 @@ ctg_mcp = FastMCP(
 
 @medmcps_tool(name="ctg_search_studies", servers=[ctg_mcp, unified_mcp])
 async def search_studies(
-    condition: str = None,
-    intervention: str = None,
-    status: str = None,
+    condition: str | None = None,
+    intervention: str | None = None,
+    status: str | None = None,
     page_size: int = 10,
 ) -> dict:
     """Search clinical trials from ClinicalTrials.gov.
@@ -109,7 +109,7 @@ async def get_study(nct_id: str) -> dict:
 
 @medmcps_tool(name="ctg_search_by_condition", servers=[ctg_mcp, unified_mcp])
 async def search_by_condition(
-    condition_query: str, status: str = None, page_size: int = 10
+    condition_query: str, status: str | None = None, page_size: int = 10
 ) -> dict:
     """Search clinical trials by condition/disease.
 
@@ -140,9 +140,7 @@ async def search_by_condition(
             list_key="studies",
             api_name="ClinicalTrials.gov",
         )
-        logger.info(
-            f"Tool succeeded: search_by_condition(condition_query='{condition_query}')"
-        )
+        logger.info(f"Tool succeeded: search_by_condition(condition_query='{condition_query}')")
         return result
     except Exception as e:
         logger.error(
@@ -154,7 +152,7 @@ async def search_by_condition(
 
 @medmcps_tool(name="ctg_search_by_intervention", servers=[ctg_mcp, unified_mcp])
 async def search_by_intervention(
-    intervention_query: str, status: str = None, page_size: int = 10
+    intervention_query: str, status: str | None = None, page_size: int = 10
 ) -> dict:
     """Search clinical trials by intervention/treatment.
 

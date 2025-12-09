@@ -5,7 +5,6 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-
 from pydantic import BaseModel
 
 from .base import MCPToolResult

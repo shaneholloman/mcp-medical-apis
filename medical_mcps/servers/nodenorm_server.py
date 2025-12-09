@@ -126,10 +126,7 @@ async def get_normalized_nodes(
             data_to_validate = result.get("data", result)
 
             # Handle formatted response with normalized_nodes wrapper
-            if (
-                isinstance(data_to_validate, dict)
-                and "normalized_nodes" in data_to_validate
-            ):
+            if isinstance(data_to_validate, dict) and "normalized_nodes" in data_to_validate:
                 normalized_nodes = data_to_validate.get("normalized_nodes", {})
                 if isinstance(normalized_nodes, dict):
                     # Validate first node as sample
@@ -166,9 +163,7 @@ async def get_normalized_nodes(
         return f"Error calling Node Normalization API: {e!s}"
 
 
-@medmcps_tool(
-    name="nodenorm_get_allowed_conflations", servers=[nodenorm_mcp, unified_mcp]
-)
+@medmcps_tool(name="nodenorm_get_allowed_conflations", servers=[nodenorm_mcp, unified_mcp])
 async def get_allowed_conflations() -> dict:
     """Get the available conflation types that can be applied during normalization.
 

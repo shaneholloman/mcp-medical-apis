@@ -30,13 +30,9 @@ biothings_mcp = FastMCP(
 
 
 @medmcps_tool(name="mygene_get_gene", servers=[biothings_mcp, unified_mcp])
-async def mygene_get_gene(
-    gene_id_or_symbol: str, fields: list[str] | None = None
-) -> dict:
+async def mygene_get_gene(gene_id_or_symbol: str, fields: list[str] | None = None) -> dict:
     """Get gene information from MyGene.info by ID or symbol."""
-    logger.info(
-        f"Tool invoked: mygene_get_gene(gene_id_or_symbol='{gene_id_or_symbol}')"
-    )
+    logger.info(f"Tool invoked: mygene_get_gene(gene_id_or_symbol='{gene_id_or_symbol}')")
     try:
         result = await mygene_client.get_gene(gene_id_or_symbol, fields=fields)
         result = validate_response(
@@ -53,13 +49,9 @@ async def mygene_get_gene(
 
 
 @medmcps_tool(name="mydisease_get_disease", servers=[biothings_mcp, unified_mcp])
-async def mydisease_get_disease(
-    disease_id_or_name: str, fields: list[str] | None = None
-) -> dict:
+async def mydisease_get_disease(disease_id_or_name: str, fields: list[str] | None = None) -> dict:
     """Get disease information from MyDisease.info by ID or name."""
-    logger.info(
-        f"Tool invoked: mydisease_get_disease(disease_id_or_name='{disease_id_or_name}')"
-    )
+    logger.info(f"Tool invoked: mydisease_get_disease(disease_id_or_name='{disease_id_or_name}')")
     try:
         result = await mydisease_client.get_disease(disease_id_or_name, fields=fields)
         result = validate_response(
@@ -76,9 +68,7 @@ async def mydisease_get_disease(
 
 
 @medmcps_tool(name="mychem_get_drug", servers=[biothings_mcp, unified_mcp])
-async def mychem_get_drug(
-    drug_id_or_name: str, fields: list[str] | None = None
-) -> dict:
+async def mychem_get_drug(drug_id_or_name: str, fields: list[str] | None = None) -> dict:
     """Get drug/chemical information from MyChem.info by ID or name."""
     logger.info(f"Tool invoked: mychem_get_drug(drug_id_or_name='{drug_id_or_name}')")
     try:

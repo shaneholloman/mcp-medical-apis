@@ -49,7 +49,12 @@ class MyGeneClient(BaseAPIClient):
                 params = {}
                 if fields:
                     params["fields"] = ",".join(fields)
-                response = await self._request("GET", url=f"{MYGENE_GET_URL}/{gene_id_or_symbol}", params=params, return_json=False)
+                response = await self._request(
+                    "GET",
+                    url=f"{MYGENE_GET_URL}/{gene_id_or_symbol}",
+                    params=params,
+                    return_json=False,
+                )
                 data = json.loads(response)
                 return self.format_response(data)
 
@@ -62,7 +67,9 @@ class MyGeneClient(BaseAPIClient):
             if fields:
                 params["fields"] = ",".join(fields)
 
-            response = await self._request("GET", url=MYGENE_QUERY_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=MYGENE_QUERY_URL, params=params, return_json=False
+            )
             data = json.loads(response)
 
             hits = data.get("hits", [])
@@ -78,18 +85,13 @@ class MyGeneClient(BaseAPIClient):
             # Get full details by ID
             gene_id = best_hit.get("_id")
             if gene_id:
-                full_response = await self._request("GET", url=f"{MYGENE_GET_URL}/{gene_id}", params={}, return_json=False)
+                full_response = await self._request(
+                    "GET", url=f"{MYGENE_GET_URL}/{gene_id}", params={}, return_json=False
+                )
                 full_data = json.loads(full_response)
                 return self.format_response(full_data)
 
             return self.format_response(best_hit)
         except Exception as e:
-            logger.error(
-                f"Failed to fetch gene {gene_id_or_symbol}: {e}", exc_info=True
-            )
+            logger.error(f"Failed to fetch gene {gene_id_or_symbol}: {e}", exc_info=True)
             return self.format_response(None, {"error": f"MyGene API error: {e!s}"})
-
-
-
-
-

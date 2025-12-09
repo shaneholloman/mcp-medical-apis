@@ -72,9 +72,7 @@ class GWASClient(BaseAPIClient):
             result_count = len(associations)
 
         metadata = (
-            {"results": result_count, "page": page}
-            if result_count is not None
-            else {"page": page}
+            {"results": result_count, "page": page} if result_count is not None else {"page": page}
         )
         return self.format_response(data, metadata)
 
@@ -118,9 +116,7 @@ class GWASClient(BaseAPIClient):
             result_count = len(snps)
 
         metadata = (
-            {"results": result_count, "page": page}
-            if result_count is not None
-            else {"page": page}
+            {"results": result_count, "page": page} if result_count is not None else {"page": page}
         )
         return self.format_response(data, metadata)
 
@@ -178,9 +174,7 @@ class GWASClient(BaseAPIClient):
         data = await self._request("GET", endpoint=f"/efoTraits/{trait_id}")
         return self.format_response(data)
 
-    async def search_traits(
-        self, query: str | None = None, size: int = 20, page: int = 0
-    ) -> dict:
+    async def search_traits(self, query: str | None = None, size: int = 20, page: int = 0) -> dict:
         """
         Search for traits
 

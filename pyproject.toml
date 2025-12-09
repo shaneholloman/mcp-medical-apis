@@ -117,6 +117,8 @@ select = [
 ]
 ignore = [
     "E501",   # line too long (ruff-format handles this)
+    "N815",   # mixedCase variables in class scope (Pydantic models match external API schemas)
+    "ASYNC109",  # async function with timeout parameter (design choice for API clients)
 ]
 
 [tool.ruff.lint.isort]

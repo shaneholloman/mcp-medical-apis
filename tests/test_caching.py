@@ -22,9 +22,7 @@ def get_cache_file_path():
     import os
 
     process_id = os.getpid()
-    proc_cache_dir = (
-        Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{process_id}"
-    )
+    proc_cache_dir = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{process_id}"
     return lambda api_name: proc_cache_dir / f"{api_name.lower()}.db"
 
 
@@ -167,17 +165,13 @@ async def test_ctg_cache_adapter(clean_ctg_cache):
 
     async with client:
         # Make a request
-        result1 = await client.search_studies(
-            condition="multiple sclerosis", page_size=5
-        )
+        result1 = await client.search_studies(condition="multiple sclerosis", page_size=5)
 
         # Verify response is valid
         assert isinstance(result1, dict)
 
         # Make second request - should use cache
-        result2 = await client.search_studies(
-            condition="multiple sclerosis", page_size=5
-        )
+        result2 = await client.search_studies(condition="multiple sclerosis", page_size=5)
 
         # Results should match
         assert result1 == result2, "Cached response should match original"
@@ -205,8 +199,7 @@ async def test_ctg_cache_header(clean_ctg_cache):
 
         # Check for cache header (may be present on cached responses)
         # Note: hishel may add X-Hishel-From-Cache header
-        headers1 = dict(response1.headers)
-        headers2 = dict(response2.headers)
+        # Headers are checked implicitly via response objects
 
         # Both requests should succeed
         assert response1.status_code == 200
@@ -229,10 +222,7 @@ async def test_multiple_api_caches(cache_dir, get_cache_file_path):
     # But we can verify the pattern
 
     # Cache dir is per-process, so it should be a subdirectory of cache_dir
-    assert (
-        cache_dir in reactome_client.cache_dir.parents
-        or reactome_client.cache_dir == cache_dir
-    )
+    assert cache_dir in reactome_client.cache_dir.parents or reactome_client.cache_dir == cache_dir
 
     # Reactome should use reactome.db in per-process directory
     reactome_cache_file = get_cache_file_path("reactome")

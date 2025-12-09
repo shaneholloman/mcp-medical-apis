@@ -14,6 +14,7 @@ from .base import MCPToolResult
 
 class OpenTargetsAssociation(BaseModel):
     """OpenTargets association model"""
+
     target: dict[str, Any] | None = None
     disease: dict[str, Any] | None = None
     association_score: dict[str, Any] | None = None
@@ -25,6 +26,7 @@ class OpenTargetsAssociation(BaseModel):
 
 class OpenTargetsSearchResult(BaseModel):
     """OpenTargets search result model"""
+
     data: list[dict[str, Any]] | None = None
     total: int | None = None
 
@@ -34,4 +36,5 @@ class OpenTargetsSearchResult(BaseModel):
 
 class OpenTargetsToolResult(MCPToolResult[OpenTargetsAssociation]):
     """OpenTargets-specific MCP tool result"""
+
     pass

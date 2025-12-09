@@ -5,7 +5,6 @@ Models derived from OpenAPI spec: https://nodenormalization-sri.renci.org/1.5/op
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -26,9 +25,7 @@ class NodeNormalizationNode(BaseModel):
     equivalent_identifiers: list[NodeNormalizationIdentifier] | None = None
     type: list[str] | None = None  # Semantic types
     taxa: list[str] | None = None  # Taxa associated with the node
-    information_content: float | None = (
-        None  # Information content metric (float value)
-    )
+    information_content: float | None = None  # Information content metric (float value)
 
     class Config:
         extra = "allow"

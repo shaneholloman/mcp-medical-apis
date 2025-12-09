@@ -14,6 +14,7 @@ from .base import MCPToolResult
 
 class ChEMBLMolecule(BaseModel):
     """ChEMBL molecule model"""
+
     molecule_chembl_id: str
     pref_name: str | None = None
     molecule_type: str | None = None
@@ -28,6 +29,7 @@ class ChEMBLMolecule(BaseModel):
 
 class ChEMBLTarget(BaseModel):
     """ChEMBL target model"""
+
     target_chembl_id: str
     pref_name: str | None = None
     target_type: str | None = None
@@ -39,6 +41,7 @@ class ChEMBLTarget(BaseModel):
 
 class ChEMBLActivity(BaseModel):
     """ChEMBL activity model"""
+
     activity_id: int | None = None
     molecule_chembl_id: str | None = None
     target_chembl_id: str | None = None
@@ -53,6 +56,7 @@ class ChEMBLActivity(BaseModel):
 
 class ChEMBLMechanism(BaseModel):
     """ChEMBL mechanism model"""
+
     mechanism_id: int | None = None
     molecule_chembl_id: str | None = None
     target_chembl_id: str | None = None
@@ -65,6 +69,7 @@ class ChEMBLMechanism(BaseModel):
 
 class ChEMBLDrugIndication(BaseModel):
     """ChEMBL drug indication model"""
+
     drug_chembl_id: str | None = None
     molecule_chembl_id: str | None = None
     parent_molecule_chembl_id: str | None = None
@@ -81,4 +86,5 @@ class ChEMBLDrugIndication(BaseModel):
 
 class ChEMBLToolResult(MCPToolResult[ChEMBLMolecule]):
     """ChEMBL-specific MCP tool result"""
+
     pass

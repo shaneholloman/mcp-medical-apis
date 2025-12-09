@@ -24,9 +24,7 @@ class PathwayCommonsClient(BaseAPIClient):
             timeout=160.0,  # 120s observed + 30% buffer - Pathway Commons API is very slow
         )
 
-    async def _get_flexible(
-        self, endpoint: str, params: dict[str, Any] | None = None
-    ) -> Any:
+    async def _get_flexible(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         """Make a GET request that handles both JSON and text responses"""
         url = f"{self.base_url}{endpoint}"
 
@@ -39,9 +37,7 @@ class PathwayCommonsClient(BaseAPIClient):
             await self._rate_limit()
             response = await self.client.get(url, params=params)
             response.raise_for_status()
-            logger.info(
-                f"HTTP Response: {response.status_code} {response.reason_phrase}"
-            )
+            logger.info(f"HTTP Response: {response.status_code} {response.reason_phrase}")
             # Pathway Commons returns various formats
             content_type = response.headers.get("content-type", "")
             if "json" in content_type:
@@ -49,9 +45,7 @@ class PathwayCommonsClient(BaseAPIClient):
             else:
                 return response.text
         except httpx.HTTPStatusError as e:
-            logger.error(
-                f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}"
-            )
+            logger.error(f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}")
             raise Exception(
                 f"{self.api_name} API error: HTTP {e.response.status_code} - {e!s}"
             ) from e
@@ -83,9 +77,7 @@ class PathwayCommonsClient(BaseAPIClient):
         # v2 API requires POST with JSON body
         payload: dict[str, Any] = {"q": q, "type": type}
         if datasource:
-            payload["datasource"] = (
-                [datasource] if isinstance(datasource, str) else datasource
-            )
+            payload["datasource"] = [datasource] if isinstance(datasource, str) else datasource
 
         data = await self._request("POST", endpoint="/v2/search", json_data=payload)
         return self.format_response(data, {"page": page})
@@ -122,13 +114,9 @@ class PathwayCommonsClient(BaseAPIClient):
         # v2 API requires POST with JSON body
         # The API requires 'q' parameter (query string), not 'gene'
         # If no gene provided, use '*' to get all top pathways
-        payload: dict[str, Any] = {
-            "q": gene if gene else "*"
-        }
+        payload: dict[str, Any] = {"q": gene if gene else "*"}
         if datasource:
-            payload["datasource"] = (
-                [datasource] if isinstance(datasource, str) else datasource
-            )
+            payload["datasource"] = [datasource] if isinstance(datasource, str) else datasource
 
         data = await self._request("POST", endpoint="/v2/top_pathways", json_data=payload)
         return self.format_response(data, {"limit": limit})

@@ -14,6 +14,7 @@ from .base import MCPToolResult
 
 class OpenFDAAdverseEvent(BaseModel):
     """OpenFDA adverse event model"""
+
     safetyreportid: str | None = None
     serious: int | None = None
     receivedate: str | None = None
@@ -28,6 +29,7 @@ class OpenFDAAdverseEvent(BaseModel):
 
 class OpenFDADrugLabel(BaseModel):
     """OpenFDA drug label model"""
+
     set_id: str | None = None
     brand_name: str | None = None
     generic_name: str | None = None
@@ -45,4 +47,5 @@ class OpenFDADrugLabel(BaseModel):
 
 class OpenFDAToolResult(MCPToolResult[OpenFDAAdverseEvent]):
     """OpenFDA-specific MCP tool result"""
+
     pass

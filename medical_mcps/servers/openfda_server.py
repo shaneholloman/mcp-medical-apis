@@ -180,9 +180,7 @@ async def get_drug_label(
     """
     logger.info(f"Tool invoked: get_drug_label(set_id='{set_id}', sections={sections})")
     try:
-        result = await openfda_client.get_drug_label(
-            set_id, sections=sections, api_key=api_key
-        )
+        result = await openfda_client.get_drug_label(set_id, sections=sections, api_key=api_key)
         result = validate_response(
             result,
             OpenFDADrugLabel,

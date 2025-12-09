@@ -52,10 +52,7 @@ async def get_protein(
             data_to_validate = result.get("data", result)
 
             # Only validate if we have a dict (not filtered fields)
-            if (
-                isinstance(data_to_validate, dict)
-                and "primaryAccession" in data_to_validate
-            ):
+            if isinstance(data_to_validate, dict) and "primaryAccession" in data_to_validate:
                 try:
                     # Instantiating the model validates the structure
                     validated = UniProtProtein(**data_to_validate)
@@ -75,9 +72,7 @@ async def get_protein(
         logger.info(f"Tool succeeded: get_protein(accession='{accession}')")
         return result
     except Exception as e:
-        logger.error(
-            f"Tool failed: get_protein(accession='{accession}') - {e}", exc_info=True
-        )
+        logger.error(f"Tool failed: get_protein(accession='{accession}') - {e}", exc_info=True)
         return f"Error calling UniProt API: {e!s}"
 
 
@@ -111,9 +106,7 @@ async def search_proteins(
         logger.info(f"Tool succeeded: search_proteins(query='{query}')")
         return result
     except Exception as e:
-        logger.error(
-            f"Tool failed: search_proteins(query='{query}') - {e}", exc_info=True
-        )
+        logger.error(f"Tool failed: search_proteins(query='{query}') - {e}", exc_info=True)
         return f"Error calling UniProt API: {e!s}"
 
 
@@ -137,9 +130,7 @@ async def get_protein_sequence(accession: str) -> str:
         return f"Error calling UniProt API: {e!s}"
 
 
-@medmcps_tool(
-    name="uniprot_get_disease_associations", servers=[uniprot_mcp, unified_mcp]
-)
+@medmcps_tool(name="uniprot_get_disease_associations", servers=[uniprot_mcp, unified_mcp])
 async def get_disease_associations(accession: str) -> dict:
     """Get disease associations for a protein.
 
@@ -149,9 +140,7 @@ async def get_disease_associations(accession: str) -> dict:
     logger.info(f"Tool invoked: get_disease_associations(accession='{accession}')")
     try:
         result = await uniprot_client.get_disease_associations(accession)
-        logger.info(
-            f"Tool succeeded: get_disease_associations(accession='{accession}')"
-        )
+        logger.info(f"Tool succeeded: get_disease_associations(accession='{accession}')")
         return result
     except Exception as e:
         logger.error(
@@ -182,9 +171,7 @@ async def map_ids(from_db: str, to_db: str, ids: str) -> dict | str:
     Returns:
         JSON with mapping results including jobId, mapped results, and any failed IDs
     """
-    logger.info(
-        f"Tool invoked: map_ids(from_db='{from_db}', to_db='{to_db}', ids='{ids}')"
-    )
+    logger.info(f"Tool invoked: map_ids(from_db='{from_db}', to_db='{to_db}', ids='{ids}')")
     try:
         id_list = [id.strip() for id in ids.split(",")]
         result = await uniprot_client.map_ids(from_db, to_db, id_list)

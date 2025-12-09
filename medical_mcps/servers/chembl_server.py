@@ -155,8 +155,8 @@ async def search_targets(query: str, limit: int = 20) -> dict:
 
 @medmcps_tool(name="chembl_get_activities", servers=[chembl_mcp, unified_mcp])
 async def get_activities(
-    target_chembl_id: str = None,
-    molecule_chembl_id: str = None,
+    target_chembl_id: str | None = None,
+    molecule_chembl_id: str | None = None,
     limit: int = 50,
 ) -> dict:
     """Get bioactivity data from ChEMBL.
@@ -293,9 +293,7 @@ async def get_drug_indications(molecule_chembl_id: str) -> dict:
     Returns:
         JSON with list of indications for the drug
     """
-    logger.info(
-        f"Tool invoked: get_drug_indications(molecule_chembl_id='{molecule_chembl_id}')"
-    )
+    logger.info(f"Tool invoked: get_drug_indications(molecule_chembl_id='{molecule_chembl_id}')")
     try:
         result = await chembl_client.get_drug_indications(molecule_chembl_id)
         result = validate_list_response(
@@ -314,4 +312,3 @@ async def get_drug_indications(molecule_chembl_id: str) -> dict:
             exc_info=True,
         )
         return f"Error calling ChEMBL API: {e!s}"
-

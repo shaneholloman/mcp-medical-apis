@@ -14,6 +14,7 @@ from .base import MCPToolResult
 
 class CTGStudy(BaseModel):
     """ClinicalTrials.gov study model"""
+
     nctId: str | None = None
     protocolSection: dict[str, Any] | None = None
     derivedSection: dict[str, Any] | None = None
@@ -25,6 +26,7 @@ class CTGStudy(BaseModel):
 
 class CTGSearchResult(BaseModel):
     """ClinicalTrials.gov search result model"""
+
     studies: list[CTGStudy] | None = None
     nextPageToken: str | None = None
     totalCount: int | None = None
@@ -35,4 +37,5 @@ class CTGSearchResult(BaseModel):
 
 class CTGToolResult(MCPToolResult[CTGStudy]):
     """ClinicalTrials.gov-specific MCP tool result"""
+
     pass

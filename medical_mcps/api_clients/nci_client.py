@@ -67,9 +67,7 @@ class NCIClient(BaseAPIClient):
         if not self.api_key:
             return self.format_response(
                 [],
-                {
-                    "error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"
-                },
+                {"error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"},
             )
 
         params: dict[str, Any] = {
@@ -130,9 +128,7 @@ class NCIClient(BaseAPIClient):
         if not self.api_key:
             return self.format_response(
                 None,
-                {
-                    "error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"
-                },
+                {"error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"},
             )
 
         try:

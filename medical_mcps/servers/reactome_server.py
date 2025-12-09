@@ -59,13 +59,9 @@ async def get_pathway(pathway_id: str) -> dict:
         return result
     except Exception as e:
         # Check if this is a validation error (user error) vs server error
-        is_validation_error = (
-            "Invalid pathway ID format" in str(e) or "not found" in str(e).lower()
-        )
+        is_validation_error = "Invalid pathway ID format" in str(e) or "not found" in str(e).lower()
         if is_validation_error:
-            logger.warning(
-                f"Tool validation error: get_pathway(pathway_id='{pathway_id}') - {e}"
-            )
+            logger.warning(f"Tool validation error: get_pathway(pathway_id='{pathway_id}') - {e}")
         else:
             logger.error(
                 f"Tool failed: get_pathway(pathway_id='{pathway_id}') - {e}",
@@ -98,9 +94,7 @@ async def query_pathways(query: str, species: str = "Homo sapiens") -> dict:
             list_key="pathways",
             api_name="Reactome",
         )
-        logger.info(
-            f"Tool succeeded: query_pathways(query='{query}', species='{species}')"
-        )
+        logger.info(f"Tool succeeded: query_pathways(query='{query}', species='{species}')")
         return result
     except Exception as e:
         logger.error(
@@ -110,9 +104,7 @@ async def query_pathways(query: str, species: str = "Homo sapiens") -> dict:
         return f"Error calling Reactome API: {e!s}"
 
 
-@medmcps_tool(
-    name="reactome_get_pathway_participants", servers=[reactome_mcp, unified_mcp]
-)
+@medmcps_tool(name="reactome_get_pathway_participants", servers=[reactome_mcp, unified_mcp])
 async def get_pathway_participants(pathway_id: str) -> dict | list:
     """Get all participants (genes, proteins, small molecules) in a Reactome pathway.
 
@@ -129,14 +121,10 @@ async def get_pathway_participants(pathway_id: str) -> dict | list:
     logger.info(f"Tool invoked: get_pathway_participants(pathway_id='{pathway_id}')")
     try:
         result = await reactome_client.get_pathway_participants(pathway_id)
-        logger.info(
-            f"Tool succeeded: get_pathway_participants(pathway_id='{pathway_id}')"
-        )
+        logger.info(f"Tool succeeded: get_pathway_participants(pathway_id='{pathway_id}')")
         return result
     except Exception as e:
-        is_validation_error = (
-            "Invalid pathway ID format" in str(e) or "not found" in str(e).lower()
-        )
+        is_validation_error = "Invalid pathway ID format" in str(e) or "not found" in str(e).lower()
         error_message = f"Error calling Reactome API: {e!s}"
         if is_validation_error:
             logger.warning(
@@ -168,9 +156,7 @@ async def get_disease_pathways(disease_name: str) -> dict | list:
     logger.info(f"Tool invoked: get_disease_pathways(disease_name='{disease_name}')")
     try:
         result = await reactome_client.get_disease_pathways(disease_name)
-        logger.info(
-            f"Tool succeeded: get_disease_pathways(disease_name='{disease_name}')"
-        )
+        logger.info(f"Tool succeeded: get_disease_pathways(disease_name='{disease_name}')")
         return result
     except Exception as e:
         logger.error(

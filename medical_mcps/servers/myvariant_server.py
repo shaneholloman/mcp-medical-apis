@@ -70,9 +70,7 @@ async def get_variant(variant_id: str, include_external: bool = False) -> dict:
     """Get comprehensive variant details by ID."""
     logger.info(f"Tool invoked: get_variant(variant_id='{variant_id}')")
     try:
-        result = await myvariant_client.get_variant(
-            variant_id, include_external=include_external
-        )
+        result = await myvariant_client.get_variant(variant_id, include_external=include_external)
         result = validate_response(
             result,
             MyVariantVariant,

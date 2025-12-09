@@ -80,9 +80,7 @@ class MyVariantClient(BaseAPIClient):
             query_parts.append(f"cadd.phred:>={cadd_min}")
 
         if not query_parts:
-            return self.format_response(
-                [], {"error": "At least one search parameter is required"}
-            )
+            return self.format_response([], {"error": "At least one search parameter is required"})
 
         query = " AND ".join(query_parts)
 
@@ -94,7 +92,9 @@ class MyVariantClient(BaseAPIClient):
         }
 
         try:
-            response = await self._request("GET", url=MYVARIANT_QUERY_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=MYVARIANT_QUERY_URL, params=params, return_json=False
+            )
             data = json.loads(response)
 
             hits = data.get("hits", [])
@@ -112,9 +112,7 @@ class MyVariantClient(BaseAPIClient):
             logger.error(f"Variant search failed: {e}", exc_info=True)
             return self.format_response([], {"error": f"MyVariant API error: {e!s}"})
 
-    async def get_variant(
-        self, variant_id: str, include_external: bool = False
-    ) -> dict[str, Any]:
+    async def get_variant(self, variant_id: str, include_external: bool = False) -> dict[str, Any]:
         """
         Get comprehensive variant details by ID.
 
@@ -126,7 +124,12 @@ class MyVariantClient(BaseAPIClient):
             Dict with full variant annotations
         """
         try:
-            response = await self._request("GET", url=f"{MYVARIANT_GET_URL}/{variant_id}", params={"fields": "all"}, return_json=False)
+            response = await self._request(
+                "GET",
+                url=f"{MYVARIANT_GET_URL}/{variant_id}",
+                params={"fields": "all"},
+                return_json=False,
+            )
             data = json.loads(response)
 
             # MyVariant returns hits array, get first hit
@@ -156,11 +159,4 @@ class MyVariantClient(BaseAPIClient):
             return self.format_response(variant_data)
         except Exception as e:
             logger.error(f"Failed to fetch variant {variant_id}: {e}", exc_info=True)
-            return self.format_response(
-                None, {"error": f"MyVariant API error: {e!s}"}
-            )
-
-
-
-
-
+            return self.format_response(None, {"error": f"MyVariant API error: {e!s}"})
