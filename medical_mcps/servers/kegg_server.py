@@ -7,9 +7,10 @@ Exposes KEGG API tools via MCP at /tools/kegg/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.kegg_client import KEGGClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ async def get_pathway_info(pathway_id: str) -> str:
         return await kegg_client.get_pathway(pathway_id)
     except Exception as e:
         logger.error(f"Error calling KEGG API (get_pathway_info): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"
 
 
 @medmcps_tool(name="kegg_list_pathways", servers=[kegg_mcp, unified_mcp])
@@ -49,7 +50,7 @@ async def list_pathways(organism: str | None = None) -> str:
         return await kegg_client.list_pathways(organism)
     except Exception as e:
         logger.error(f"Error calling KEGG API (list_pathways): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"
 
 
 @medmcps_tool(name="kegg_find_pathways", servers=[kegg_mcp, unified_mcp])
@@ -63,7 +64,7 @@ async def find_pathways(query: str) -> str:
         return await kegg_client.find_pathways(query)
     except Exception as e:
         logger.error(f"Error calling KEGG API (find_pathways): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"
 
 
 @medmcps_tool(name="kegg_get_gene", servers=[kegg_mcp, unified_mcp])
@@ -77,7 +78,7 @@ async def get_gene(gene_id: str) -> str:
         return await kegg_client.get_gene(gene_id)
     except Exception as e:
         logger.error(f"Error calling KEGG API (get_gene): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"
 
 
 @medmcps_tool(name="kegg_find_genes", servers=[kegg_mcp, unified_mcp])
@@ -92,7 +93,7 @@ async def find_genes(query: str, organism: str | None = None) -> str:
         return await kegg_client.find_genes(query, organism)
     except Exception as e:
         logger.error(f"Error calling KEGG API (find_genes): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"
 
 
 @medmcps_tool(name="kegg_get_disease", servers=[kegg_mcp, unified_mcp])
@@ -106,7 +107,7 @@ async def get_disease(disease_id: str) -> str:
         return await kegg_client.get_disease(disease_id)
     except Exception as e:
         logger.error(f"Error calling KEGG API (get_disease): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"
 
 
 @medmcps_tool(name="kegg_find_diseases", servers=[kegg_mcp, unified_mcp])
@@ -120,7 +121,7 @@ async def find_diseases(query: str) -> str:
         return await kegg_client.find_diseases(query)
     except Exception as e:
         logger.error(f"Error calling KEGG API (find_diseases): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"
 
 
 @medmcps_tool(name="kegg_link_pathway_genes", servers=[kegg_mcp, unified_mcp])
@@ -140,4 +141,4 @@ async def link_pathway_genes(pathway_id: str) -> str:
         return await kegg_client.link_pathway_genes(pathway_id)
     except Exception as e:
         logger.error(f"Error calling KEGG API (link_pathway_genes): {e}", exc_info=True)
-        return f"Error calling KEGG API: {str(e)}"
+        return f"Error calling KEGG API: {e!s}"

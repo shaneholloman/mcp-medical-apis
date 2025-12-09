@@ -7,11 +7,12 @@ Exposes ClinicalTrials.gov API tools via MCP at /tools/ctg/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.ctg_client import CTGClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 from ..models.ctg import CTGStudy
-from .validation import validate_response, validate_list_response
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ async def search_studies(
         return result
     except Exception as e:
         logger.error(f"Tool failed: search_studies() - {e}", exc_info=True)
-        return f"Error calling ClinicalTrials.gov API: {str(e)}"
+        return f"Error calling ClinicalTrials.gov API: {e!s}"
 
 
 @medmcps_tool(name="ctg_get_study", servers=[ctg_mcp, unified_mcp])
@@ -103,7 +104,7 @@ async def get_study(nct_id: str) -> dict:
         return result
     except Exception as e:
         logger.error(f"Tool failed: get_study(nct_id='{nct_id}') - {e}", exc_info=True)
-        return f"Error calling ClinicalTrials.gov API: {str(e)}"
+        return f"Error calling ClinicalTrials.gov API: {e!s}"
 
 
 @medmcps_tool(name="ctg_search_by_condition", servers=[ctg_mcp, unified_mcp])
@@ -148,7 +149,7 @@ async def search_by_condition(
             f"Tool failed: search_by_condition(condition_query='{condition_query}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ClinicalTrials.gov API: {str(e)}"
+        return f"Error calling ClinicalTrials.gov API: {e!s}"
 
 
 @medmcps_tool(name="ctg_search_by_intervention", servers=[ctg_mcp, unified_mcp])
@@ -193,7 +194,7 @@ async def search_by_intervention(
             f"Tool failed: search_by_intervention(intervention_query='{intervention_query}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ClinicalTrials.gov API: {str(e)}"
+        return f"Error calling ClinicalTrials.gov API: {e!s}"
 
 
 @medmcps_tool(name="ctg_get_study_metadata", servers=[ctg_mcp, unified_mcp])
@@ -210,4 +211,4 @@ async def get_study_metadata() -> dict:
         return result
     except Exception as e:
         logger.error(f"Tool failed: get_study_metadata() - {e}", exc_info=True)
-        return f"Error calling ClinicalTrials.gov API: {str(e)}"
+        return f"Error calling ClinicalTrials.gov API: {e!s}"

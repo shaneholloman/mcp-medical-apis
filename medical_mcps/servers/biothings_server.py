@@ -13,7 +13,7 @@ from ..api_clients.mydisease_client import MyDiseaseClient
 from ..api_clients.mygene_client import MyGeneClient
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
-from ..models.biothings import MyGeneGene, MyDiseaseDisease, MyChemDrug
+from ..models.biothings import MyChemDrug, MyDiseaseDisease, MyGeneGene
 from .validation import validate_response
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ async def mygene_get_gene(
         return result
     except Exception as e:
         logger.error(f"Tool failed: mygene_get_gene() - {e}", exc_info=True)
-        return {"api_source": "MyGene", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "MyGene", "data": None, "error": f"Error: {e!s}"}
 
 
 @medmcps_tool(name="mydisease_get_disease", servers=[biothings_mcp, unified_mcp])
@@ -72,7 +72,7 @@ async def mydisease_get_disease(
         return result
     except Exception as e:
         logger.error(f"Tool failed: mydisease_get_disease() - {e}", exc_info=True)
-        return {"api_source": "MyDisease", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "MyDisease", "data": None, "error": f"Error: {e!s}"}
 
 
 @medmcps_tool(name="mychem_get_drug", servers=[biothings_mcp, unified_mcp])
@@ -93,4 +93,4 @@ async def mychem_get_drug(
         return result
     except Exception as e:
         logger.error(f"Tool failed: mychem_get_drug() - {e}", exc_info=True)
-        return {"api_source": "MyChem", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "MyChem", "data": None, "error": f"Error: {e!s}"}

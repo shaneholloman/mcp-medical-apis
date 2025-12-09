@@ -115,7 +115,7 @@ class NCIClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"NCI trial search failed: {e}", exc_info=True)
-            return self.format_response([], {"error": f"NCI API error: {str(e)}"})
+            return self.format_response([], {"error": f"NCI API error: {e!s}"})
 
     async def get_trial(self, trial_id: str) -> dict[str, Any]:
         """
@@ -149,4 +149,4 @@ class NCIClient(BaseAPIClient):
             return self.format_response(response)
         except Exception as e:
             logger.error(f"Failed to fetch NCI trial {trial_id}: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"NCI API error: {str(e)}"})
+            return self.format_response(None, {"error": f"NCI API error: {e!s}"})

@@ -71,7 +71,7 @@ async def get_pathway(pathway_id: str) -> dict:
                 f"Tool failed: get_pathway(pathway_id='{pathway_id}') - {e}",
                 exc_info=True,
             )
-        return f"Error calling Reactome API: {str(e)}"
+        return f"Error calling Reactome API: {e!s}"
 
 
 @medmcps_tool(name="reactome_query_pathways", servers=[reactome_mcp, unified_mcp])
@@ -107,7 +107,7 @@ async def query_pathways(query: str, species: str = "Homo sapiens") -> dict:
             f"Tool failed: query_pathways(query='{query}', species='{species}') - {e}",
             exc_info=True,
         )
-        return f"Error calling Reactome API: {str(e)}"
+        return f"Error calling Reactome API: {e!s}"
 
 
 @medmcps_tool(
@@ -137,7 +137,7 @@ async def get_pathway_participants(pathway_id: str) -> dict | list:
         is_validation_error = (
             "Invalid pathway ID format" in str(e) or "not found" in str(e).lower()
         )
-        error_message = f"Error calling Reactome API: {str(e)}"
+        error_message = f"Error calling Reactome API: {e!s}"
         if is_validation_error:
             logger.warning(
                 f"Tool validation error: get_pathway_participants(pathway_id='{pathway_id}') - {e}"
@@ -177,4 +177,4 @@ async def get_disease_pathways(disease_name: str) -> dict | list:
             f"Tool failed: get_disease_pathways(disease_name='{disease_name}') - {e}",
             exc_info=True,
         )
-        return f"Error calling Reactome API: {str(e)}"
+        return f"Error calling Reactome API: {e!s}"

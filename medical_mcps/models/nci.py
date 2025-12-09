@@ -5,7 +5,8 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -13,26 +14,26 @@ from .base import MCPToolResult
 
 class NCITrial(BaseModel):
     """NCI trial model"""
-    nct_id: Optional[str] = None
-    protocol_id: Optional[str] = None
-    nci_id: Optional[str] = None
-    official_title: Optional[str] = None
-    brief_title: Optional[str] = None
-    current_trial_status: Optional[str] = None
-    lead_org: Optional[dict[str, Any]] = None
-    primary_disease_names: Optional[list[str]] = None
-    intervention_names: Optional[list[str]] = None
-    phase: Optional[list[str]] = None
-    
+    nct_id: str | None = None
+    protocol_id: str | None = None
+    nci_id: str | None = None
+    official_title: str | None = None
+    brief_title: str | None = None
+    current_trial_status: str | None = None
+    lead_org: dict[str, Any] | None = None
+    primary_disease_names: list[str] | None = None
+    intervention_names: list[str] | None = None
+    phase: list[str] | None = None
+
     class Config:
         extra = "allow"
 
 
 class NCISearchResult(BaseModel):
     """NCI search result model"""
-    data: Optional[list[NCITrial]] = None
-    total: Optional[int] = None
-    
+    data: list[NCITrial] | None = None
+    total: int | None = None
+
     class Config:
         extra = "allow"
 

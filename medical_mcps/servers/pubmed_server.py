@@ -5,7 +5,6 @@ Exposes PubMed article search and retrieval tools via MCP at /tools/pubmed/mcp
 """
 
 import logging
-from typing import List, Optional
 
 from mcp.server.fastmcp import FastMCP
 
@@ -29,11 +28,11 @@ pubmed_mcp = FastMCP(
 
 @medmcps_tool(name="pubmed_search_articles", servers=[pubmed_mcp, unified_mcp])
 async def search_articles(
-    genes: Optional[List[str]] = None,
-    diseases: Optional[List[str]] = None,
-    chemicals: Optional[List[str]] = None,
-    keywords: Optional[List[str]] = None,
-    variants: Optional[List[str]] = None,
+    genes: list[str] | None = None,
+    diseases: list[str] | None = None,
+    chemicals: list[str] | None = None,
+    keywords: list[str] | None = None,
+    variants: list[str] | None = None,
     limit: int = 10,
     page: int = 1,
 ) -> dict:
@@ -77,7 +76,7 @@ async def search_articles(
         return {
             "api_source": "PubMed",
             "data": [],
-            "error": f"Error calling PubMed API: {str(e)}",
+            "error": f"Error calling PubMed API: {e!s}",
         }
 
 
@@ -105,7 +104,7 @@ async def get_article(pmid_or_doi: str, full: bool = False) -> dict:
         return {
             "api_source": "PubMed",
             "data": None,
-            "error": f"Error calling PubMed API: {str(e)}",
+            "error": f"Error calling PubMed API: {e!s}",
         }
 
 
@@ -133,5 +132,5 @@ async def search_preprints(query: str, limit: int = 10) -> dict:
         return {
             "api_source": "PubMed",
             "data": [],
-            "error": f"Error calling PubMed API: {str(e)}",
+            "error": f"Error calling PubMed API: {e!s}",
         }

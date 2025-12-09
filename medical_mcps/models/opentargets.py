@@ -5,7 +5,8 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -13,20 +14,20 @@ from .base import MCPToolResult
 
 class OpenTargetsAssociation(BaseModel):
     """OpenTargets association model"""
-    target: Optional[dict[str, Any]] = None
-    disease: Optional[dict[str, Any]] = None
-    association_score: Optional[dict[str, Any]] = None
-    datatype_scores: Optional[dict[str, Any]] = None
-    
+    target: dict[str, Any] | None = None
+    disease: dict[str, Any] | None = None
+    association_score: dict[str, Any] | None = None
+    datatype_scores: dict[str, Any] | None = None
+
     class Config:
         extra = "allow"
 
 
 class OpenTargetsSearchResult(BaseModel):
     """OpenTargets search result model"""
-    data: Optional[list[dict[str, Any]]] = None
-    total: Optional[int] = None
-    
+    data: list[dict[str, Any]] | None = None
+    total: int | None = None
+
     class Config:
         extra = "allow"
 

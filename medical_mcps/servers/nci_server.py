@@ -8,11 +8,12 @@ import logging
 import os
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.nci_client import NCIClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 from ..models.nci import NCITrial
-from .validation import validate_response, validate_list_response
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ async def search_trials(
         return result
     except Exception as e:
         logger.error(f"Tool failed: nci_search_trials() - {e}", exc_info=True)
-        return {"api_source": "NCI", "data": [], "error": f"Error: {str(e)}"}
+        return {"api_source": "NCI", "data": [], "error": f"Error: {e!s}"}
 
 
 @medmcps_tool(name="nci_get_trial", servers=[nci_mcp, unified_mcp])
@@ -110,4 +111,4 @@ async def get_trial(trial_id: str, api_key: str | None = None) -> dict:
         return result
     except Exception as e:
         logger.error(f"Tool failed: nci_get_trial() - {e}", exc_info=True)
-        return {"api_source": "NCI", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "NCI", "data": None, "error": f"Error: {e!s}"}

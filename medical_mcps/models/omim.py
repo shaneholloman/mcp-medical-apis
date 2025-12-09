@@ -5,7 +5,8 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -13,21 +14,21 @@ from .base import MCPToolResult
 
 class OMIMEntry(BaseModel):
     """OMIM entry model"""
-    mimNumber: Optional[str] = None
-    preferredTitle: Optional[str] = None
-    allelicVariantList: Optional[list[dict[str, Any]]] = None
-    geneMap: Optional[dict[str, Any]] = None
-    text: Optional[list[dict[str, Any]]] = None
-    
+    mimNumber: str | None = None
+    preferredTitle: str | None = None
+    allelicVariantList: list[dict[str, Any]] | None = None
+    geneMap: dict[str, Any] | None = None
+    text: list[dict[str, Any]] | None = None
+
     class Config:
         extra = "allow"
 
 
 class OMIMSearchResult(BaseModel):
     """OMIM search result model"""
-    omim: Optional[dict[str, Any]] = None
-    searchResponse: Optional[dict[str, Any]] = None
-    
+    omim: dict[str, Any] | None = None
+    searchResponse: dict[str, Any] | None = None
+
     class Config:
         extra = "allow"
 

@@ -156,7 +156,7 @@ class ReactomeClient(BaseAPIClient):
             # If we can't even get pathway data, raise the original error
             raise Exception(
                 f"Pathway '{pathway_id}' not found or participants endpoint unavailable. "
-                f"Original error: {str(last_error)}"
+                f"Original error: {last_error!s}"
             ) from last_error
 
     async def get_disease_pathways(self, disease_name: str) -> dict | list:

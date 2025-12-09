@@ -315,7 +315,7 @@ class PubMedClient(BaseAPIClient):
 
         except Exception as e:
             logger.error(f"Search failed: {e}", exc_info=True)
-            return self.format_response([], {"error": f"PubMed API error: {str(e)}"})
+            return self.format_response([], {"error": f"PubMed API error: {e!s}"})
 
     async def _add_abstracts(self, results: list[dict], pmids: list[int]) -> None:
         """Add abstracts to search results."""
@@ -436,7 +436,7 @@ class PubMedClient(BaseAPIClient):
             return self.format_response(None, {"error": f"Article {pmid} not found"})
         except Exception as e:
             logger.error(f"Failed to fetch article {pmid}: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"PubMed API error: {str(e)}"})
+            return self.format_response(None, {"error": f"PubMed API error: {e!s}"})
 
     def _extract_title(self, article: dict) -> str:
         """Extract title from article passages."""
@@ -509,7 +509,7 @@ class PubMedClient(BaseAPIClient):
         except Exception as e:
             logger.error(f"Failed to fetch article by DOI {doi}: {e}", exc_info=True)
             return self.format_response(
-                None, {"error": f"Europe PMC API error: {str(e)}"}
+                None, {"error": f"Europe PMC API error: {e!s}"}
             )
 
     async def search_preprints(self, query: str, limit: int = 25) -> dict[str, Any]:
@@ -565,5 +565,5 @@ class PubMedClient(BaseAPIClient):
         except Exception as e:
             logger.error(f"Preprint search failed: {e}", exc_info=True)
             return self.format_response(
-                [], {"error": f"Europe PMC API error: {str(e)}"}
+                [], {"error": f"Europe PMC API error: {e!s}"}
             )

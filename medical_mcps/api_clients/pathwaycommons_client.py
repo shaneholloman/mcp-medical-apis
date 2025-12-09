@@ -53,11 +53,11 @@ class PathwayCommonsClient(BaseAPIClient):
                 f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}"
             )
             raise Exception(
-                f"{self.api_name} API error: HTTP {e.response.status_code} - {str(e)}"
+                f"{self.api_name} API error: HTTP {e.response.status_code} - {e!s}"
             ) from e
         except httpx.HTTPError as e:
-            logger.error(f"HTTP Error: {str(e)}")
-            raise Exception(f"{self.api_name} API error: {str(e)}") from e
+            logger.error(f"HTTP Error: {e!s}")
+            raise Exception(f"{self.api_name} API error: {e!s}") from e
 
     async def search(
         self,

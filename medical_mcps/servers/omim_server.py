@@ -8,11 +8,12 @@ API key MUST be provided by the MCP client with each request
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.omim_client import OMIMClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 from ..models.omim import OMIMEntry
-from .validation import validate_response, validate_list_response
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ async def get_entry(mim_number: str, api_key: str, include: str = "text") -> dic
     """
     if not api_key:
         return "Error: OMIM API key is required. Get your API key from https://omim.org/api"
-    
+
     try:
         client = OMIMClient(api_key=api_key)
         result = await client.get_entry(mim_number, include)
@@ -49,7 +50,7 @@ async def get_entry(mim_number: str, api_key: str, include: str = "text") -> dic
         return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (get_entry): {e}", exc_info=True)
-        return f"Error calling OMIM API: {str(e)}"
+        return f"Error calling OMIM API: {e!s}"
 
 
 @medmcps_tool(name="omim_search_entries", servers=[omim_mcp, unified_mcp])
@@ -71,7 +72,7 @@ async def search_entries(
     """
     if not api_key:
         return "Error: OMIM API key is required. Get your API key from https://omim.org/api"
-    
+
     try:
         client = OMIMClient(api_key=api_key)
         result = await client.search_entries(search, include, limit, start)
@@ -84,7 +85,7 @@ async def search_entries(
         return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (search_entries): {e}", exc_info=True)
-        return f"Error calling OMIM API: {str(e)}"
+        return f"Error calling OMIM API: {e!s}"
 
 
 @medmcps_tool(name="omim_get_gene", servers=[omim_mcp, unified_mcp])
@@ -98,7 +99,7 @@ async def get_gene(gene_symbol: str, api_key: str, include: str = "geneMap") -> 
     """
     if not api_key:
         return "Error: OMIM API key is required. Get your API key from https://omim.org/api"
-    
+
     try:
         client = OMIMClient(api_key=api_key)
         result = await client.get_gene(gene_symbol, include)
@@ -112,7 +113,7 @@ async def get_gene(gene_symbol: str, api_key: str, include: str = "geneMap") -> 
         return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (get_gene): {e}", exc_info=True)
-        return f"Error calling OMIM API: {str(e)}"
+        return f"Error calling OMIM API: {e!s}"
 
 
 @medmcps_tool(name="omim_search_genes", servers=[omim_mcp, unified_mcp])
@@ -134,7 +135,7 @@ async def search_genes(
     """
     if not api_key:
         return "Error: OMIM API key is required. Get your API key from https://omim.org/api"
-    
+
     try:
         client = OMIMClient(api_key=api_key)
         result = await client.search_genes(search, include, limit, start)
@@ -147,7 +148,7 @@ async def search_genes(
         return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (search_genes): {e}", exc_info=True)
-        return f"Error calling OMIM API: {str(e)}"
+        return f"Error calling OMIM API: {e!s}"
 
 
 @medmcps_tool(name="omim_get_phenotype", servers=[omim_mcp, unified_mcp])
@@ -161,7 +162,7 @@ async def get_phenotype(mim_number: str, api_key: str, include: str = "text") ->
     """
     if not api_key:
         return "Error: OMIM API key is required. Get your API key from https://omim.org/api"
-    
+
     try:
         client = OMIMClient(api_key=api_key)
         result = await client.get_phenotype(mim_number, include)
@@ -175,7 +176,7 @@ async def get_phenotype(mim_number: str, api_key: str, include: str = "text") ->
         return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (get_phenotype): {e}", exc_info=True)
-        return f"Error calling OMIM API: {str(e)}"
+        return f"Error calling OMIM API: {e!s}"
 
 
 @medmcps_tool(name="omim_search_phenotypes", servers=[omim_mcp, unified_mcp])
@@ -197,7 +198,7 @@ async def search_phenotypes(
     """
     if not api_key:
         return "Error: OMIM API key is required. Get your API key from https://omim.org/api"
-    
+
     try:
         client = OMIMClient(api_key=api_key)
         result = await client.search_phenotypes(search, include, limit, start)
@@ -210,4 +211,4 @@ async def search_phenotypes(
         return result
     except Exception as e:
         logger.error(f"Error calling OMIM API (search_phenotypes): {e}", exc_info=True)
-        return f"Error calling OMIM API: {str(e)}"
+        return f"Error calling OMIM API: {e!s}"

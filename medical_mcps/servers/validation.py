@@ -3,7 +3,7 @@ Shared validation utilities for API responses.
 """
 
 import logging
-from typing import Type, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -14,7 +14,7 @@ T = TypeVar("T", bound=BaseModel)
 
 def validate_response(
     result: dict,
-    model_class: Type[T],
+    model_class: type[T],
     key_field: str | None = None,
     api_name: str = "API",
     context: str = "",
@@ -69,7 +69,7 @@ def validate_response(
 
 def validate_list_response(
     result: dict,
-    model_class: Type[T],
+    model_class: type[T],
     list_key: str = "results",
     api_name: str = "API",
 ) -> dict:

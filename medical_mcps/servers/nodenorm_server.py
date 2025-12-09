@@ -47,7 +47,7 @@ async def get_semantic_types() -> dict:
             f"Error calling Node Normalization API (get_semantic_types): {e}",
             exc_info=True,
         )
-        return f"Error calling Node Normalization API: {str(e)}"
+        return f"Error calling Node Normalization API: {e!s}"
 
 
 @medmcps_tool(name="nodenorm_get_curie_prefixes", servers=[nodenorm_mcp, unified_mcp])
@@ -73,7 +73,7 @@ async def get_curie_prefixes() -> dict:
             f"Error calling Node Normalization API (get_curie_prefixes): {e}",
             exc_info=True,
         )
-        return f"Error calling Node Normalization API: {str(e)}"
+        return f"Error calling Node Normalization API: {e!s}"
 
 
 @medmcps_tool(name="nodenorm_get_normalized_nodes", servers=[nodenorm_mcp, unified_mcp])
@@ -163,7 +163,7 @@ async def get_normalized_nodes(
             f"Error calling Node Normalization API (get_normalized_nodes): {e}",
             exc_info=True,
         )
-        return f"Error calling Node Normalization API: {str(e)}"
+        return f"Error calling Node Normalization API: {e!s}"
 
 
 @medmcps_tool(
@@ -186,4 +186,4 @@ async def get_allowed_conflations() -> dict:
             f"Error calling Node Normalization API (get_allowed_conflations): {e}",
             exc_info=True,
         )
-        return f"Error calling Node Normalization API: {str(e)}"
+        return f"Error calling Node Normalization API: {e!s}"

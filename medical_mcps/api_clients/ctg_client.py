@@ -76,13 +76,13 @@ class CTGClient(BaseAPIClient):
                             error_msg += f" - {error_detail[field]}"
                             break
                     else:
-                        error_msg += f" - {str(e)}"
+                        error_msg += f" - {e!s}"
             except Exception:
-                error_msg += f" - {str(e)}"
+                error_msg += f" - {e!s}"
             raise Exception(error_msg) from e
         except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP Error: {str(e)}")
-            raise Exception(f"{self.api_name} API error: {str(e)}") from e
+            logger.error(f"HTTP Error: {e!s}")
+            raise Exception(f"{self.api_name} API error: {e!s}") from e
 
     async def search_studies(
         self,
@@ -155,7 +155,7 @@ class CTGClient(BaseAPIClient):
         except Exception as e:
             logger.error(f"Error searching studies: {e}", exc_info=True)
             return self.format_response(
-                None, {"error": f"ClinicalTrials.gov API error: {str(e)}"}
+                None, {"error": f"ClinicalTrials.gov API error: {e!s}"}
             )
 
     async def get_study(
@@ -201,7 +201,7 @@ class CTGClient(BaseAPIClient):
                     None, {"error": f"Study {nct_id} not found"}
                 )
             return self.format_response(
-                None, {"error": f"ClinicalTrials.gov API error: {str(e)}"}
+                None, {"error": f"ClinicalTrials.gov API error: {e!s}"}
             )
 
     async def search_by_condition(
@@ -299,5 +299,5 @@ class CTGClient(BaseAPIClient):
         except Exception as e:
             logger.error(f"Error getting search areas: {e}", exc_info=True)
             return self.format_response(
-                None, {"error": f"ClinicalTrials.gov API error: {str(e)}"}
+                None, {"error": f"ClinicalTrials.gov API error: {e!s}"}
             )

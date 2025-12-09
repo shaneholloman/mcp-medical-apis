@@ -9,7 +9,7 @@ from ..api_clients.opentargets_client import OpenTargetsClient
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.opentargets import OpenTargetsAssociation
-from .validation import validate_response, validate_list_response
+from .validation import validate_list_response
 
 logger = logging.getLogger(__name__)
 

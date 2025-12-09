@@ -166,7 +166,7 @@ class OpenFDAClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Adverse event search failed: {e}", exc_info=True)
-            return self.format_response([], {"error": f"OpenFDA API error: {str(e)}"})
+            return self.format_response([], {"error": f"OpenFDA API error: {e!s}"})
 
     async def get_adverse_event(
         self, report_id: str, api_key: str | None = None
@@ -221,7 +221,7 @@ class OpenFDAClient(BaseAPIClient):
             logger.error(
                 f"Failed to fetch adverse event {report_id}: {e}", exc_info=True
             )
-            return self.format_response(None, {"error": f"OpenFDA API error: {str(e)}"})
+            return self.format_response(None, {"error": f"OpenFDA API error: {e!s}"})
 
     async def search_drug_labels(
         self,
@@ -327,7 +327,7 @@ class OpenFDAClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Drug label search failed: {e}", exc_info=True)
-            return self.format_response([], {"error": f"OpenFDA API error: {str(e)}"})
+            return self.format_response([], {"error": f"OpenFDA API error: {e!s}"})
 
     async def get_drug_label(
         self, set_id: str, sections: list[str] | None = None, api_key: str | None = None
@@ -402,7 +402,7 @@ class OpenFDAClient(BaseAPIClient):
             return self.format_response(label_data)
         except Exception as e:
             logger.error(f"Failed to fetch drug label {set_id}: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"OpenFDA API error: {str(e)}"})
+            return self.format_response(None, {"error": f"OpenFDA API error: {e!s}"})
 
     async def search_device_events(
         self,
@@ -509,4 +509,4 @@ class OpenFDAClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Device event search failed: {e}", exc_info=True)
-            return self.format_response([], {"error": f"OpenFDA API error: {str(e)}"})
+            return self.format_response([], {"error": f"OpenFDA API error: {e!s}"})

@@ -110,7 +110,7 @@ class MyVariantClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Variant search failed: {e}", exc_info=True)
-            return self.format_response([], {"error": f"MyVariant API error: {str(e)}"})
+            return self.format_response([], {"error": f"MyVariant API error: {e!s}"})
 
     async def get_variant(
         self, variant_id: str, include_external: bool = False
@@ -157,7 +157,7 @@ class MyVariantClient(BaseAPIClient):
         except Exception as e:
             logger.error(f"Failed to fetch variant {variant_id}: {e}", exc_info=True)
             return self.format_response(
-                None, {"error": f"MyVariant API error: {str(e)}"}
+                None, {"error": f"MyVariant API error: {e!s}"}
             )
 
 

@@ -90,7 +90,7 @@ class MyDiseaseClient(BaseAPIClient):
                 f"Failed to fetch disease {disease_id_or_name}: {e}", exc_info=True
             )
             return self.format_response(
-                None, {"error": f"MyDisease API error: {str(e)}"}
+                None, {"error": f"MyDisease API error: {e!s}"}
             )
 
 

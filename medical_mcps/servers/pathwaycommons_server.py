@@ -7,11 +7,12 @@ Exposes Pathway Commons API tools via MCP at /tools/pathwaycommons/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.pathwaycommons_client import PathwayCommonsClient
-from ..models.pathwaycommons import PathwayCommonsPathway, PathwayCommonsSearchResult
-from .validation import validate_response, validate_list_response
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
+from ..models.pathwaycommons import PathwayCommonsPathway
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ async def search_pathwaycommons(
         logger.error(
             f"Tool failed: search_pathwaycommons(q='{q}', type='{type}') - {e}", exc_info=True
         )
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_get_pathway_by_uri", servers=[pathwaycommons_mcp, unified_mcp])
@@ -103,7 +104,7 @@ async def get_pathway_by_uri(uri: str, format: str = "json") -> dict | str:
         logger.error(
             f"Tool failed: get_pathway_by_uri(uri='{uri}') - {e}", exc_info=True
         )
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_top_pathways", servers=[pathwaycommons_mcp, unified_mcp])
@@ -144,7 +145,7 @@ async def top_pathways(
         return result
     except Exception as e:
         logger.error(f"Tool failed: top_pathways(gene='{gene}') - {e}", exc_info=True)
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_graph", servers=[pathwaycommons_mcp, unified_mcp])
@@ -198,7 +199,7 @@ async def graph(
         return result
     except Exception as e:
         logger.error(f"Tool failed: graph(source='{source}') - {e}", exc_info=True)
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_traverse", servers=[pathwaycommons_mcp, unified_mcp])
@@ -228,4 +229,4 @@ async def traverse(uri: str, path: str, format: str = "json") -> dict | str:
         logger.error(
             f"Tool failed: traverse(uri='{uri}', path='{path}') - {e}", exc_info=True
         )
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"

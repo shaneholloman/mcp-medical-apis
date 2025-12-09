@@ -78,7 +78,7 @@ async def get_protein(
         logger.error(
             f"Tool failed: get_protein(accession='{accession}') - {e}", exc_info=True
         )
-        return f"Error calling UniProt API: {str(e)}"
+        return f"Error calling UniProt API: {e!s}"
 
 
 @medmcps_tool(name="uniprot_search_proteins", servers=[uniprot_mcp, unified_mcp])
@@ -114,7 +114,7 @@ async def search_proteins(
         logger.error(
             f"Tool failed: search_proteins(query='{query}') - {e}", exc_info=True
         )
-        return f"Error calling UniProt API: {str(e)}"
+        return f"Error calling UniProt API: {e!s}"
 
 
 @medmcps_tool(name="uniprot_get_protein_sequence", servers=[uniprot_mcp, unified_mcp])
@@ -134,7 +134,7 @@ async def get_protein_sequence(accession: str) -> str:
             f"Tool failed: get_protein_sequence(accession='{accession}') - {e}",
             exc_info=True,
         )
-        return f"Error calling UniProt API: {str(e)}"
+        return f"Error calling UniProt API: {e!s}"
 
 
 @medmcps_tool(
@@ -158,7 +158,7 @@ async def get_disease_associations(accession: str) -> dict:
             f"Tool failed: get_disease_associations(accession='{accession}') - {e}",
             exc_info=True,
         )
-        return f"Error calling UniProt API: {str(e)}"
+        return f"Error calling UniProt API: {e!s}"
 
 
 @medmcps_tool(name="uniprot_map_ids", servers=[uniprot_mcp, unified_mcp])
@@ -195,4 +195,4 @@ async def map_ids(from_db: str, to_db: str, ids: str) -> dict | str:
             f"Tool failed: map_ids(from_db='{from_db}', to_db='{to_db}') - {e}",
             exc_info=True,
         )
-        return f"Error calling UniProt API: {str(e)}"
+        return f"Error calling UniProt API: {e!s}"

@@ -5,7 +5,8 @@ Contains the unified FastMCP instance and the tool decorator that allows
 registering tools with multiple FastMCP servers simultaneously.
 """
 
-from typing import Callable
+from collections.abc import Callable
+
 from mcp.server.fastmcp import FastMCP
 
 # Create unified FastMCP server

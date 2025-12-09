@@ -7,11 +7,18 @@ Exposes ChEMBL API tools via MCP at /tools/chembl/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.chembl_client import ChEMBLClient
-from ..models.chembl import ChEMBLMolecule, ChEMBLTarget, ChEMBLActivity, ChEMBLMechanism, ChEMBLDrugIndication
-from .validation import validate_response, validate_list_response
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
+from ..models.chembl import (
+    ChEMBLActivity,
+    ChEMBLDrugIndication,
+    ChEMBLMechanism,
+    ChEMBLMolecule,
+    ChEMBLTarget,
+)
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +60,7 @@ async def get_molecule(molecule_chembl_id: str) -> dict:
             f"Tool failed: get_molecule(molecule_chembl_id='{molecule_chembl_id}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_search_molecules", servers=[chembl_mcp, unified_mcp])
@@ -83,7 +90,7 @@ async def search_molecules(query: str, limit: int = 20) -> dict:
             f"Tool failed: search_molecules(query='{query}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_get_target", servers=[chembl_mcp, unified_mcp])
@@ -113,7 +120,7 @@ async def get_target(target_chembl_id: str) -> dict:
             f"Tool failed: get_target(target_chembl_id='{target_chembl_id}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_search_targets", servers=[chembl_mcp, unified_mcp])
@@ -143,7 +150,7 @@ async def search_targets(query: str, limit: int = 20) -> dict:
             f"Tool failed: search_targets(query='{query}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_get_activities", servers=[chembl_mcp, unified_mcp])
@@ -180,7 +187,7 @@ async def get_activities(
         return result
     except Exception as e:
         logger.error(f"Tool failed: get_activities() - {e}", exc_info=True)
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_get_mechanism", servers=[chembl_mcp, unified_mcp])
@@ -209,7 +216,7 @@ async def get_mechanism(molecule_chembl_id: str) -> dict:
             f"Tool failed: get_mechanism(molecule_chembl_id='{molecule_chembl_id}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_find_drugs_by_target", servers=[chembl_mcp, unified_mcp])
@@ -241,7 +248,7 @@ async def find_drugs_by_target(target_chembl_id: str, limit: int = 50) -> dict:
             f"Tool failed: find_drugs_by_target(target_chembl_id='{target_chembl_id}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_find_drugs_by_indication", servers=[chembl_mcp, unified_mcp])
@@ -273,7 +280,7 @@ async def find_drugs_by_indication(disease_query: str, limit: int = 50) -> dict:
             f"Tool failed: find_drugs_by_indication(disease_query='{disease_query}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
 
 @medmcps_tool(name="chembl_get_drug_indications", servers=[chembl_mcp, unified_mcp])
@@ -306,5 +313,5 @@ async def get_drug_indications(molecule_chembl_id: str) -> dict:
             f"Tool failed: get_drug_indications(molecule_chembl_id='{molecule_chembl_id}') - {e}",
             exc_info=True,
         )
-        return f"Error calling ChEMBL API: {str(e)}"
+        return f"Error calling ChEMBL API: {e!s}"
 
