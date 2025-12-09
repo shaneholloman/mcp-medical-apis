@@ -41,7 +41,7 @@ from .servers import (  # noqa: E402
     kegg_server,
     myvariant_server,
     nci_server,
-    nodenorm_server,  # noqa: F401 - imported for side effects (tool registration)
+    nodenorm_server,
     omim_server,
     openfda_server,
     opentargets_server,
@@ -100,37 +100,23 @@ async def lifespan(app: Starlette):
 
     # Initialize all session managers using AsyncExitStack
     async with contextlib.AsyncExitStack() as stack:
-        await stack.enter_async_context(
-            reactome_server.reactome_mcp.session_manager.run()
-        )
+        await stack.enter_async_context(reactome_server.reactome_mcp.session_manager.run())
         await stack.enter_async_context(kegg_server.kegg_mcp.session_manager.run())
-        await stack.enter_async_context(
-            uniprot_server.uniprot_mcp.session_manager.run()
-        )
+        await stack.enter_async_context(uniprot_server.uniprot_mcp.session_manager.run())
         await stack.enter_async_context(omim_server.omim_mcp.session_manager.run())
         await stack.enter_async_context(gwas_server.gwas_mcp.session_manager.run())
         await stack.enter_async_context(
             pathwaycommons_server.pathwaycommons_mcp.session_manager.run()
         )
         await stack.enter_async_context(chembl_server.chembl_mcp.session_manager.run())
-        await stack.enter_async_context(
-            opentargets_server.opentargets_mcp.session_manager.run()
-        )
+        await stack.enter_async_context(opentargets_server.opentargets_mcp.session_manager.run())
         await stack.enter_async_context(ctg_server.ctg_mcp.session_manager.run())
         await stack.enter_async_context(pubmed_server.pubmed_mcp.session_manager.run())
-        await stack.enter_async_context(
-            openfda_server.openfda_mcp.session_manager.run()
-        )
-        await stack.enter_async_context(
-            myvariant_server.myvariant_mcp.session_manager.run()
-        )
-        await stack.enter_async_context(
-            biothings_server.biothings_mcp.session_manager.run()
-        )
+        await stack.enter_async_context(openfda_server.openfda_mcp.session_manager.run())
+        await stack.enter_async_context(myvariant_server.myvariant_mcp.session_manager.run())
+        await stack.enter_async_context(biothings_server.biothings_mcp.session_manager.run())
         await stack.enter_async_context(nci_server.nci_mcp.session_manager.run())
-        await stack.enter_async_context(
-            nodenorm_server.nodenorm_mcp.session_manager.run()
-        )
+        await stack.enter_async_context(nodenorm_server.nodenorm_mcp.session_manager.run())
         await stack.enter_async_context(unified_mcp.session_manager.run())
         yield
 

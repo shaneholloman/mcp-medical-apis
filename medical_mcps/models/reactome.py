@@ -5,8 +5,6 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Optional
-
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -15,78 +13,78 @@ from .base import MCPToolResult
 class ReactomeGOBiologicalProcess(BaseModel):
     """GO Biological Process information"""
 
-    dbId: Optional[int] = None
-    displayName: Optional[str] = None
-    accession: Optional[str] = None
-    databaseName: Optional[str] = None
-    definition: Optional[str] = None
-    name: Optional[str] = None
-    url: Optional[str] = None
-    className: Optional[str] = None
-    schemaClass: Optional[str] = None
+    dbId: int | None = None
+    displayName: str | None = None
+    accession: str | None = None
+    databaseName: str | None = None
+    definition: str | None = None
+    name: str | None = None
+    url: str | None = None
+    className: str | None = None
+    schemaClass: str | None = None
 
 
 class ReactomeFigure(BaseModel):
     """Figure information"""
 
-    dbId: Optional[int] = None
-    displayName: Optional[str] = None
-    url: Optional[str] = None
-    className: Optional[str] = None
-    schemaClass: Optional[str] = None
+    dbId: int | None = None
+    displayName: str | None = None
+    url: str | None = None
+    className: str | None = None
+    schemaClass: str | None = None
 
 
 class ReactomeSpecies(BaseModel):
     """Species information"""
 
-    dbId: Optional[int] = None
-    displayName: Optional[str] = None
-    name: Optional[list[str]] = None
-    taxId: Optional[str] = None
-    abbreviation: Optional[str] = None
-    className: Optional[str] = None
-    schemaClass: Optional[str] = None
+    dbId: int | None = None
+    displayName: str | None = None
+    name: list[str] | None = None
+    taxId: str | None = None
+    abbreviation: str | None = None
+    className: str | None = None
+    schemaClass: str | None = None
 
 
 class ReactomeSummation(BaseModel):
     """Summation information"""
 
-    dbId: Optional[int] = None
-    displayName: Optional[str] = None
-    text: Optional[str] = None
-    className: Optional[str] = None
-    schemaClass: Optional[str] = None
+    dbId: int | None = None
+    displayName: str | None = None
+    text: str | None = None
+    className: str | None = None
+    schemaClass: str | None = None
 
 
 class ReactomeReviewStatus(BaseModel):
     """Review status information"""
 
-    dbId: Optional[int] = None
-    displayName: Optional[str] = None
-    definition: Optional[str] = None
-    name: Optional[list[str]] = None
-    className: Optional[str] = None
-    schemaClass: Optional[str] = None
+    dbId: int | None = None
+    displayName: str | None = None
+    definition: str | None = None
+    name: list[str] | None = None
+    className: str | None = None
+    schemaClass: str | None = None
 
 
 class ReactomeOrthologousEvent(BaseModel):
     """Orthologous event information"""
 
-    dbId: Optional[int] = None
-    displayName: Optional[str] = None
-    stId: Optional[str] = None
-    stIdVersion: Optional[str] = None
-    isInDisease: Optional[bool] = None
-    isInferred: Optional[bool] = None
-    maxDepth: Optional[int] = None
-    name: Optional[list[str]] = None
-    releaseDate: Optional[str] = None
-    speciesName: Optional[str] = None
-    inferredFrom: Optional[list[int]] = None
-    hasDiagram: Optional[bool] = None
-    hasEHLD: Optional[bool] = None
-    schemaClass: Optional[str] = None
-    className: Optional[str] = None
+    dbId: int | None = None
+    displayName: str | None = None
+    stId: str | None = None
+    stIdVersion: str | None = None
+    isInDisease: bool | None = None
+    isInferred: bool | None = None
+    maxDepth: int | None = None
+    name: list[str] | None = None
+    releaseDate: str | None = None
+    speciesName: str | None = None
+    inferredFrom: list[int] | None = None
+    hasDiagram: bool | None = None
+    hasEHLD: bool | None = None
+    schemaClass: str | None = None
+    className: str | None = None
 
 
 class ReactomePathway(BaseModel):
@@ -97,37 +95,31 @@ class ReactomePathway(BaseModel):
     Supports both detailed pathway responses and query/search results.
     """
 
-    dbId: Optional[int | str] = None  # Can be int or string depending on endpoint
-    displayName: Optional[str] = None  # Not present in query results
+    dbId: int | str | None = None  # Can be int or string depending on endpoint
+    displayName: str | None = None  # Not present in query results
     stId: str  # Stable identifier (e.g., "R-HSA-1640170")
-    stIdVersion: Optional[str] = None
-    isInDisease: Optional[bool] = None
-    isInferred: Optional[bool] = None
-    maxDepth: Optional[int] = None
-    name: Optional[list[str] | str] = (
-        None  # Can be list[str] or str (with HTML in query results)
-    )
-    releaseDate: Optional[str] = None
-    releaseStatus: Optional[str] = None
-    speciesName: Optional[str] = None
-    species: Optional[list[ReactomeSpecies] | list[str]] = (
-        None  # Can be list of objects or strings
-    )
-    figure: Optional[list[ReactomeFigure]] = None
-    goBiologicalProcess: Optional[ReactomeGOBiologicalProcess] = None
-    orthologousEvent: Optional[list[ReactomeOrthologousEvent]] = None
-    summation: Optional[list[ReactomeSummation] | str] = (
-        None  # Can be list of objects or string
-    )
-    className: Optional[str] = None
-    schemaClass: Optional[str] = None
-    type: Optional[str] = None  # Present in query results (e.g., "Pathway")
-    exactType: Optional[str] = None  # Present in query results
-    id: Optional[str] = None  # Present in query results (duplicate of stId)
-    reviewStatus: Optional[ReactomeReviewStatus | str] = None  # Can be object or string
-    hasDiagram: Optional[bool] = None
-    hasEHLD: Optional[bool] = None
-    lastUpdatedDate: Optional[str] = None
+    stIdVersion: str | None = None
+    isInDisease: bool | None = None
+    isInferred: bool | None = None
+    maxDepth: int | None = None
+    name: list[str] | str | None = None  # Can be list[str] or str (with HTML in query results)
+    releaseDate: str | None = None
+    releaseStatus: str | None = None
+    speciesName: str | None = None
+    species: list[ReactomeSpecies] | list[str] | None = None  # Can be list of objects or strings
+    figure: list[ReactomeFigure] | None = None
+    goBiologicalProcess: ReactomeGOBiologicalProcess | None = None
+    orthologousEvent: list[ReactomeOrthologousEvent] | None = None
+    summation: list[ReactomeSummation] | str | None = None  # Can be list of objects or string
+    className: str | None = None
+    schemaClass: str | None = None
+    type: str | None = None  # Present in query results (e.g., "Pathway")
+    exactType: str | None = None  # Present in query results
+    id: str | None = None  # Present in query results (duplicate of stId)
+    reviewStatus: ReactomeReviewStatus | str | None = None  # Can be object or string
+    hasDiagram: bool | None = None
+    hasEHLD: bool | None = None
+    lastUpdatedDate: str | None = None
 
     class Config:
         extra = "allow"
@@ -136,8 +128,8 @@ class ReactomePathway(BaseModel):
 class ReactomePathwayQueryResult(BaseModel):
     """Search/query results structure"""
 
-    results: Optional[list[ReactomePathway]] = None
-    totalResults: Optional[int] = None
+    results: list[ReactomePathway] | None = None
+    totalResults: int | None = None
 
     class Config:
         extra = "allow"

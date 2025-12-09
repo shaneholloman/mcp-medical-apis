@@ -98,10 +98,8 @@ class ChEMBLClient(BaseAPIClient):
                 )
             return self.format_response(data)
         except Exception as e:
-            logger.error(
-                f"Error getting molecule {molecule_chembl_id}: {e}", exc_info=True
-            )
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            logger.error(f"Error getting molecule {molecule_chembl_id}: {e}", exc_info=True)
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
     async def search_molecules(self, query: str, limit: int = 20) -> dict:
         """
@@ -134,7 +132,7 @@ class ChEMBLClient(BaseAPIClient):
             return self.format_response(data, {"query": query, "count": len(data)})
         except Exception as e:
             logger.error(f"Error searching molecules: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
     async def get_target(self, target_chembl_id: str) -> dict:
         """
@@ -149,9 +147,7 @@ class ChEMBLClient(BaseAPIClient):
         logger.info(f"Getting target: {target_chembl_id}")
 
         def _sync_query():
-            targets = self.chembl_client.target.filter(
-                target_chembl_id=target_chembl_id
-            ).only(
+            targets = self.chembl_client.target.filter(target_chembl_id=target_chembl_id).only(
                 [
                     "target_chembl_id",
                     "pref_name",
@@ -165,13 +161,11 @@ class ChEMBLClient(BaseAPIClient):
         try:
             data = await self._run_sync(_sync_query)
             if data is None:
-                return self.format_response(
-                    None, {"error": f"Target {target_chembl_id} not found"}
-                )
+                return self.format_response(None, {"error": f"Target {target_chembl_id} not found"})
             return self.format_response(data)
         except Exception as e:
             logger.error(f"Error getting target {target_chembl_id}: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
     async def search_targets(self, query: str, limit: int = 20) -> dict:
         """
@@ -204,7 +198,7 @@ class ChEMBLClient(BaseAPIClient):
             return self.format_response(data, {"query": query, "count": len(data)})
         except Exception as e:
             logger.error(f"Error searching targets: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
     async def get_activities(
         self,
@@ -223,9 +217,7 @@ class ChEMBLClient(BaseAPIClient):
         Returns:
             Dict with activity data (includes api_source and metadata)
         """
-        logger.info(
-            f"Getting activities: target={target_chembl_id}, molecule={molecule_chembl_id}"
-        )
+        logger.info(f"Getting activities: target={target_chembl_id}, molecule={molecule_chembl_id}")
 
         def _sync_query():
             activities = self.chembl_client.activity
@@ -258,7 +250,7 @@ class ChEMBLClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Error getting activities: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
     async def get_mechanism(self, molecule_chembl_id: str) -> dict:
         """
@@ -294,11 +286,9 @@ class ChEMBLClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Error getting mechanism: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
-    async def find_drugs_by_target(
-        self, target_chembl_id: str, limit: int = 50
-    ) -> dict:
+    async def find_drugs_by_target(self, target_chembl_id: str, limit: int = 50) -> dict:
         """
         Find all drugs/compounds targeting a specific protein
 
@@ -313,28 +303,20 @@ class ChEMBLClient(BaseAPIClient):
 
         def _sync_query():
             # Get activities for this target
-            activities = self.chembl_client.activity.filter(
-                target_chembl_id=target_chembl_id
-            ).only(["molecule_chembl_id", "standard_value", "standard_type"])[:limit]
+            activities = self.chembl_client.activity.filter(target_chembl_id=target_chembl_id).only(
+                ["molecule_chembl_id", "standard_value", "standard_type"]
+            )[:limit]
             activity_list = list(activities)
 
             # Get unique molecule IDs
             mol_ids = list(
-                set(
-                    [
-                        a["molecule_chembl_id"]
-                        for a in activity_list
-                        if a.get("molecule_chembl_id")
-                    ]
-                )
+                set([a["molecule_chembl_id"] for a in activity_list if a.get("molecule_chembl_id")])
             )[:limit]
 
             # Get molecule details
             if not mol_ids:
                 return []
-            molecules = self.chembl_client.molecule.filter(
-                molecule_chembl_id__in=mol_ids
-            ).only(
+            molecules = self.chembl_client.molecule.filter(molecule_chembl_id__in=mol_ids).only(
                 [
                     "molecule_chembl_id",
                     "pref_name",
@@ -352,11 +334,9 @@ class ChEMBLClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Error finding drugs by target: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
-    async def find_drugs_by_indication(
-        self, disease_query: str, limit: int = 50
-    ) -> dict:
+    async def find_drugs_by_indication(self, disease_query: str, limit: int = 50) -> dict:
         """
         Find all drugs for a disease/indication
 
@@ -390,12 +370,10 @@ class ChEMBLClient(BaseAPIClient):
 
         try:
             data = await self._run_sync(_sync_query)
-            return self.format_response(
-                data, {"disease_query": disease_query, "count": len(data)}
-            )
+            return self.format_response(data, {"disease_query": disease_query, "count": len(data)})
         except Exception as e:
             logger.error(f"Error finding drugs by indication: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})
 
     async def get_drug_indications(self, molecule_chembl_id: str) -> dict:
         """
@@ -419,9 +397,9 @@ class ChEMBLClient(BaseAPIClient):
                 return []
 
             drug_id = mol_list[0]["drug_chembl_id"]
-            indications = self.chembl_client.drug_indication.filter(
-                drug_chembl_id=drug_id
-            ).only(["drug_chembl_id", "mesh_heading", "mesh_id"])
+            indications = self.chembl_client.drug_indication.filter(drug_chembl_id=drug_id).only(
+                ["drug_chembl_id", "mesh_heading", "mesh_id"]
+            )
             return list(indications)
 
         try:
@@ -432,4 +410,4 @@ class ChEMBLClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"Error getting drug indications: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"ChEMBL API error: {str(e)}"})
+            return self.format_response(None, {"error": f"ChEMBL API error: {e!s}"})

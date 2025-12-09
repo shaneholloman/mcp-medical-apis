@@ -14,10 +14,10 @@ class OMIMClient(BaseAPIClient):
     def __init__(self, api_key: str):
         """
         Initialize OMIM client with API key.
-        
+
         Args:
             api_key: OMIM API key (required)
-        
+
         Raises:
             ValueError: If api_key is None or empty
         """
@@ -41,11 +41,11 @@ class OMIMClient(BaseAPIClient):
     async def get_entry(self, mim_number: str, include: str = "text") -> dict:
         """
         Get entry information by MIM number
-        
+
         Args:
             mim_number: MIM number (e.g., '104300')
             include: Fields to include ('text', 'allelicVariantList', 'geneMap', etc.)
-        
+
         Returns:
             Dict with entry data
         """
@@ -54,41 +54,32 @@ class OMIMClient(BaseAPIClient):
         return self.format_response(data)
 
     async def search_entries(
-        self,
-        search: str,
-        include: str = "text",
-        limit: int = 20,
-        start: int = 0
+        self, search: str, include: str = "text", limit: int = 20, start: int = 0
     ) -> dict:
         """
         Search entries
-        
+
         Args:
             search: Search query
             include: Fields to include
             limit: Maximum number of results
             start: Starting index for pagination
-        
+
         Returns:
             Dict with search results (includes metadata)
         """
-        params = {
-            "search": search,
-            "include": include,
-            "limit": limit,
-            "start": start
-        }
+        params = {"search": search, "include": include, "limit": limit, "start": start}
         data = await self._get_omim("/entry/search", params=params)
         return self.format_response(data, {"limit": limit, "start": start})
 
     async def get_gene(self, gene_symbol: str, include: str = "geneMap") -> dict:
         """
         Get gene information by gene symbol
-        
+
         Args:
             gene_symbol: Gene symbol (e.g., 'BRCA1')
             include: Fields to include
-        
+
         Returns:
             Dict with gene data
         """
@@ -97,41 +88,32 @@ class OMIMClient(BaseAPIClient):
         return self.format_response(data)
 
     async def search_genes(
-        self,
-        search: str,
-        include: str = "geneMap",
-        limit: int = 20,
-        start: int = 0
+        self, search: str, include: str = "geneMap", limit: int = 20, start: int = 0
     ) -> dict:
         """
         Search genes
-        
+
         Args:
             search: Search query
             include: Fields to include
             limit: Maximum number of results
             start: Starting index for pagination
-        
+
         Returns:
             Dict with search results (includes metadata)
         """
-        params = {
-            "search": search,
-            "include": include,
-            "limit": limit,
-            "start": start
-        }
+        params = {"search": search, "include": include, "limit": limit, "start": start}
         data = await self._get_omim("/gene/search", params=params)
         return self.format_response(data, {"limit": limit, "start": start})
 
     async def get_phenotype(self, mim_number: str, include: str = "text") -> dict:
         """
         Get phenotype information by MIM number
-        
+
         Args:
             mim_number: MIM number
             include: Fields to include
-        
+
         Returns:
             Dict with phenotype data
         """
@@ -140,30 +122,20 @@ class OMIMClient(BaseAPIClient):
         return self.format_response(data)
 
     async def search_phenotypes(
-        self,
-        search: str,
-        include: str = "text",
-        limit: int = 20,
-        start: int = 0
+        self, search: str, include: str = "text", limit: int = 20, start: int = 0
     ) -> dict:
         """
         Search phenotypes
-        
+
         Args:
             search: Search query
             include: Fields to include
             limit: Maximum number of results
             start: Starting index for pagination
-        
+
         Returns:
             Dict with search results (includes metadata)
         """
-        params = {
-            "search": search,
-            "include": include,
-            "limit": limit,
-            "start": start
-        }
+        params = {"search": search, "include": include, "limit": limit, "start": start}
         data = await self._get_omim("/phenotypeMap/search", params=params)
         return self.format_response(data, {"limit": limit, "start": start})
-

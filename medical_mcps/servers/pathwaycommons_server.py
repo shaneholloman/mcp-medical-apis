@@ -7,11 +7,12 @@ Exposes Pathway Commons API tools via MCP at /tools/pathwaycommons/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.pathwaycommons_client import PathwayCommonsClient
-from ..models.pathwaycommons import PathwayCommonsPathway, PathwayCommonsSearchResult
-from .validation import validate_response, validate_list_response
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
+from ..models.pathwaycommons import PathwayCommonsPathway
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ async def search_pathwaycommons(
     type: str = "Pathway",
     format: str = "json",
     page: int = 0,
-    datasource: str = None,
+    datasource: str | None = None,
 ) -> dict:
     """Search Pathway Commons for pathways, proteins, or other biological entities.
 
@@ -74,7 +75,7 @@ async def search_pathwaycommons(
         logger.error(
             f"Tool failed: search_pathwaycommons(q='{q}', type='{type}') - {e}", exc_info=True
         )
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_get_pathway_by_uri", servers=[pathwaycommons_mcp, unified_mcp])
@@ -100,15 +101,13 @@ async def get_pathway_by_uri(uri: str, format: str = "json") -> dict | str:
         logger.info(f"Tool succeeded: get_pathway_by_uri(uri='{uri}')")
         return result
     except Exception as e:
-        logger.error(
-            f"Tool failed: get_pathway_by_uri(uri='{uri}') - {e}", exc_info=True
-        )
-        return f"Error calling Pathway Commons API: {str(e)}"
+        logger.error(f"Tool failed: get_pathway_by_uri(uri='{uri}') - {e}", exc_info=True)
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_top_pathways", servers=[pathwaycommons_mcp, unified_mcp])
 async def top_pathways(
-    gene: str = None, datasource: str = None, limit: int = 10
+    gene: str | None = None, datasource: str | None = None, limit: int = 10
 ) -> dict:
     """Get top-level pathways from Pathway Commons using v2 POST API.
 
@@ -119,7 +118,7 @@ async def top_pathways(
     of another biological process. Trivial pathways are excluded.
 
     Args:
-        gene: Gene symbol or ID to search for in pathways (used as Lucene query). 
+        gene: Gene symbol or ID to search for in pathways (used as Lucene query).
               If not provided, returns all top pathways. Optional
         datasource: Data source filter (e.g., 'reactome', 'kegg'). Optional
         limit: Maximum number of results. Default: 10
@@ -138,19 +137,17 @@ async def top_pathways(
             list_key="data",
             api_name="Pathway Commons",
         )
-        logger.info(
-            f"Tool succeeded: top_pathways(gene='{gene}', datasource='{datasource}')"
-        )
+        logger.info(f"Tool succeeded: top_pathways(gene='{gene}', datasource='{datasource}')")
         return result
     except Exception as e:
         logger.error(f"Tool failed: top_pathways(gene='{gene}') - {e}", exc_info=True)
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_graph", servers=[pathwaycommons_mcp, unified_mcp])
 async def graph(
     source: str,
-    target: str = None,
+    target: str | None = None,
     kind: str = "neighborhood",
     limit: int = 1,
     format: str = "json",
@@ -198,7 +195,7 @@ async def graph(
         return result
     except Exception as e:
         logger.error(f"Tool failed: graph(source='{source}') - {e}", exc_info=True)
-        return f"Error calling Pathway Commons API: {str(e)}"
+        return f"Error calling Pathway Commons API: {e!s}"
 
 
 @medmcps_tool(name="pathwaycommons_traverse", servers=[pathwaycommons_mcp, unified_mcp])
@@ -217,15 +214,11 @@ async def traverse(uri: str, path: str, format: str = "json") -> dict | str:
     Returns:
         Traversal results with requested property values
     """
-    logger.info(
-        f"Tool invoked: traverse(uri='{uri}', path='{path}', format='{format}')"
-    )
+    logger.info(f"Tool invoked: traverse(uri='{uri}', path='{path}', format='{format}')")
     try:
         result = await pathwaycommons_client.traverse(uri, path, format)
         logger.info(f"Tool succeeded: traverse(uri='{uri}', path='{path}')")
         return result
     except Exception as e:
-        logger.error(
-            f"Tool failed: traverse(uri='{uri}', path='{path}') - {e}", exc_info=True
-        )
-        return f"Error calling Pathway Commons API: {str(e)}"
+        logger.error(f"Tool failed: traverse(uri='{uri}', path='{path}') - {e}", exc_info=True)
+        return f"Error calling Pathway Commons API: {e!s}"

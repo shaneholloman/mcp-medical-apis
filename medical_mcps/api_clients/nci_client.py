@@ -67,9 +67,7 @@ class NCIClient(BaseAPIClient):
         if not self.api_key:
             return self.format_response(
                 [],
-                {
-                    "error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"
-                },
+                {"error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"},
             )
 
         params: dict[str, Any] = {
@@ -115,7 +113,7 @@ class NCIClient(BaseAPIClient):
             )
         except Exception as e:
             logger.error(f"NCI trial search failed: {e}", exc_info=True)
-            return self.format_response([], {"error": f"NCI API error: {str(e)}"})
+            return self.format_response([], {"error": f"NCI API error: {e!s}"})
 
     async def get_trial(self, trial_id: str) -> dict[str, Any]:
         """
@@ -130,9 +128,7 @@ class NCIClient(BaseAPIClient):
         if not self.api_key:
             return self.format_response(
                 None,
-                {
-                    "error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"
-                },
+                {"error": "NCI API key required. Get one at https://clinicaltrialsapi.cancer.gov/"},
             )
 
         try:
@@ -149,4 +145,4 @@ class NCIClient(BaseAPIClient):
             return self.format_response(response)
         except Exception as e:
             logger.error(f"Failed to fetch NCI trial {trial_id}: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"NCI API error: {str(e)}"})
+            return self.format_response(None, {"error": f"NCI API error: {e!s}"})

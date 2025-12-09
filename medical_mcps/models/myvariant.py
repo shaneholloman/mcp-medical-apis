@@ -5,7 +5,8 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -13,28 +14,31 @@ from .base import MCPToolResult
 
 class MyVariantVariant(BaseModel):
     """MyVariant variant model"""
-    _id: Optional[str] = None
-    query: Optional[str] = None
-    dbsnp: Optional[dict[str, Any]] = None
-    clinvar: Optional[dict[str, Any]] = None
-    gnomad_exome: Optional[dict[str, Any]] = None
-    gnomad_genome: Optional[dict[str, Any]] = None
-    cadd: Optional[dict[str, Any]] = None
-    dbnsfp: Optional[dict[str, Any]] = None
-    
+
+    _id: str | None = None
+    query: str | None = None
+    dbsnp: dict[str, Any] | None = None
+    clinvar: dict[str, Any] | None = None
+    gnomad_exome: dict[str, Any] | None = None
+    gnomad_genome: dict[str, Any] | None = None
+    cadd: dict[str, Any] | None = None
+    dbnsfp: dict[str, Any] | None = None
+
     class Config:
         extra = "allow"
 
 
 class MyVariantSearchResult(BaseModel):
     """MyVariant search result model"""
-    hits: Optional[list[MyVariantVariant]] = None
-    total: Optional[int] = None
-    
+
+    hits: list[MyVariantVariant] | None = None
+    total: int | None = None
+
     class Config:
         extra = "allow"
 
 
 class MyVariantToolResult(MCPToolResult[MyVariantVariant]):
     """MyVariant-specific MCP tool result"""
+
     pass

@@ -3,7 +3,7 @@ Shared validation utilities for API responses.
 """
 
 import logging
-from typing import Type, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseModel)
 
 
-def validate_response(
+def validate_response[T: BaseModel](
     result: dict,
-    model_class: Type[T],
+    model_class: type[T],
     key_field: str | None = None,
     api_name: str = "API",
     context: str = "",
@@ -67,9 +67,9 @@ def validate_response(
         raise ValueError(f"Invalid {api_name} API response structure: {ve}") from ve
 
 
-def validate_list_response(
+def validate_list_response[T: BaseModel](
     result: dict,
-    model_class: Type[T],
+    model_class: type[T],
     list_key: str = "results",
     api_name: str = "API",
 ) -> dict:
@@ -110,8 +110,6 @@ def validate_list_response(
                 logger.debug(f"Validated {api_name} list response structure")
             except ValidationError as ve:
                 logger.error(f"{api_name} list response validation failed: {ve}")
-                raise ValueError(
-                    f"Invalid {api_name} API response structure: {ve}"
-                ) from ve
+                raise ValueError(f"Invalid {api_name} API response structure: {ve}") from ve
 
     return result

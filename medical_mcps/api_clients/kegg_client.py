@@ -44,7 +44,9 @@ class KEGGClient(BaseAPIClient):
             List of pathways with IDs and names
         """
         if organism:
-            data = await self._request("GET", endpoint=f"/list/pathway/{organism}", return_json=False)
+            data = await self._request(
+                "GET", endpoint=f"/list/pathway/{organism}", return_json=False
+            )
         else:
             data = await self._request("GET", endpoint="/list/pathway", return_json=False)
 
@@ -96,7 +98,9 @@ class KEGGClient(BaseAPIClient):
             Matching genes
         """
         if organism:
-            data = await self._request("GET", endpoint=f"/find/{organism}/{query}", return_json=False)
+            data = await self._request(
+                "GET", endpoint=f"/find/{organism}/{query}", return_json=False
+            )
         else:
             data = await self._request("GET", endpoint=f"/find/genes/{query}", return_json=False)
 
@@ -168,28 +172,36 @@ class KEGGClient(BaseAPIClient):
         # Organism codes are typically 3 letters, sometimes 4
         if pathway_id.startswith("map"):
             # Reference pathway - use 'genes' as target (finds all organisms with this pathway)
-            data = await self._request("GET", endpoint=f"/link/genes/{pathway_id}", return_json=False)
+            data = await self._request(
+                "GET", endpoint=f"/link/genes/{pathway_id}", return_json=False
+            )
         elif len(pathway_id) >= 8:
             # Organism-specific pathway (e.g., 'hsa04658', 'mmu00010')
             # Try 3-letter org code first (most common)
             if pathway_id[3:8].isdigit():
                 organism = pathway_id[:3]
-                data = await self._request("GET", endpoint=f"/link/{organism}/{pathway_id}", return_json=False)
+                data = await self._request(
+                    "GET", endpoint=f"/link/{organism}/{pathway_id}", return_json=False
+                )
             # Try 4-letter org code if 3 doesn't work
             elif len(pathway_id) >= 9 and pathway_id[4:9].isdigit():
                 organism = pathway_id[:4]
-                data = await self._request("GET", endpoint=f"/link/{organism}/{pathway_id}", return_json=False)
+                data = await self._request(
+                    "GET", endpoint=f"/link/{organism}/{pathway_id}", return_json=False
+                )
             else:
                 # Fallback: try with 'genes' target
-                data = await self._request("GET", endpoint=f"/link/genes/{pathway_id}", return_json=False)
+                data = await self._request(
+                    "GET", endpoint=f"/link/genes/{pathway_id}", return_json=False
+                )
         else:
             # Try as-is, might be a valid format we don't recognize
-            data = await self._request("GET", endpoint=f"/link/genes/{pathway_id}", return_json=False)
+            data = await self._request(
+                "GET", endpoint=f"/link/genes/{pathway_id}", return_json=False
+            )
 
         # Check for no results
         if not data.strip():
-            return self.format_response(
-                f"No genes found linked to pathway '{pathway_id}'."
-            )
+            return self.format_response(f"No genes found linked to pathway '{pathway_id}'.")
 
         return self.format_response(data)

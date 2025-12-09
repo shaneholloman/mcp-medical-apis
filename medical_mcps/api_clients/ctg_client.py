@@ -46,9 +46,7 @@ class CTGClient(BaseAPIClient):
         """Helper to run synchronous requests calls in a separate thread."""
         return await asyncio.to_thread(func, *args, **kwargs)
 
-    async def _get(
-        self, endpoint: str, params: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    async def _get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Make a GET request using requests library (which works with CTG API)
         """
@@ -76,13 +74,13 @@ class CTGClient(BaseAPIClient):
                             error_msg += f" - {error_detail[field]}"
                             break
                     else:
-                        error_msg += f" - {str(e)}"
+                        error_msg += f" - {e!s}"
             except Exception:
-                error_msg += f" - {str(e)}"
+                error_msg += f" - {e!s}"
             raise Exception(error_msg) from e
         except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP Error: {str(e)}")
-            raise Exception(f"{self.api_name} API error: {str(e)}") from e
+            logger.error(f"HTTP Error: {e!s}")
+            raise Exception(f"{self.api_name} API error: {e!s}") from e
 
     async def search_studies(
         self,
@@ -154,9 +152,7 @@ class CTGClient(BaseAPIClient):
             return self.format_response(data, metadata)
         except Exception as e:
             logger.error(f"Error searching studies: {e}", exc_info=True)
-            return self.format_response(
-                None, {"error": f"ClinicalTrials.gov API error: {str(e)}"}
-            )
+            return self.format_response(None, {"error": f"ClinicalTrials.gov API error: {e!s}"})
 
     async def get_study(
         self,
@@ -197,12 +193,8 @@ class CTGClient(BaseAPIClient):
             logger.error(f"Error getting study {nct_id}: {e}", exc_info=True)
             # Check if it's a 404
             if "404" in str(e) or "Not Found" in str(e):
-                return self.format_response(
-                    None, {"error": f"Study {nct_id} not found"}
-                )
-            return self.format_response(
-                None, {"error": f"ClinicalTrials.gov API error: {str(e)}"}
-            )
+                return self.format_response(None, {"error": f"Study {nct_id} not found"})
+            return self.format_response(None, {"error": f"ClinicalTrials.gov API error: {e!s}"})
 
     async def search_by_condition(
         self,
@@ -274,9 +266,7 @@ class CTGClient(BaseAPIClient):
                 data = await self._get("/studies/metadata", params=params)
                 return self.format_response(data)
             except Exception as e2:
-                logger.warning(
-                    f"Metadata endpoint not available: {e2}. Returning error response."
-                )
+                logger.warning(f"Metadata endpoint not available: {e2}. Returning error response.")
                 return self.format_response(
                     None,
                     {
@@ -298,6 +288,4 @@ class CTGClient(BaseAPIClient):
             return self.format_response(data)
         except Exception as e:
             logger.error(f"Error getting search areas: {e}", exc_info=True)
-            return self.format_response(
-                None, {"error": f"ClinicalTrials.gov API error: {str(e)}"}
-            )
+            return self.format_response(None, {"error": f"ClinicalTrials.gov API error: {e!s}"})

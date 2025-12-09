@@ -18,6 +18,7 @@ env/
 htmlcov/
 *.cover
 **/test_reports/*
+.testmondata
 
 # IDEs
 .vscode/
@@ -43,6 +44,7 @@ htmlcov/
 *.code-workspace
 
 user_testing/*
+.alure/
 todo.md
 
 .claude/settings.local.json

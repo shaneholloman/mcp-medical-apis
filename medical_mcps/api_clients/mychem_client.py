@@ -53,7 +53,12 @@ class MyChemClient(BaseAPIClient):
                 params = {}
                 if fields:
                     params["fields"] = ",".join(fields)
-                response = await self._request("GET", url=f"{MYCHEM_GET_URL}/{drug_id_or_name}", params=params, return_json=False)
+                response = await self._request(
+                    "GET",
+                    url=f"{MYCHEM_GET_URL}/{drug_id_or_name}",
+                    params=params,
+                    return_json=False,
+                )
                 data = json.loads(response)
                 return self.format_response(data)
 
@@ -65,16 +70,16 @@ class MyChemClient(BaseAPIClient):
             if fields:
                 params["fields"] = ",".join(fields)
 
-            response = await self._request("GET", url=MYCHEM_QUERY_URL, params=params, return_json=False)
+            response = await self._request(
+                "GET", url=MYCHEM_QUERY_URL, params=params, return_json=False
+            )
             data = json.loads(response)
 
             hits = data.get("hits", [])
             best_hit = hits[0] if hits else None
 
             if not best_hit:
-                return self.format_response(
-                    None, {"error": f"Drug '{drug_id_or_name}' not found"}
-                )
+                return self.format_response(None, {"error": f"Drug '{drug_id_or_name}' not found"})
 
             # Get full details by ID
             drug_id = best_hit.get("_id")
@@ -82,16 +87,13 @@ class MyChemClient(BaseAPIClient):
                 params = {}
                 if fields:
                     params["fields"] = ",".join(fields)
-                full_response = await self._request("GET", url=f"{MYCHEM_GET_URL}/{drug_id}", params=params, return_json=False)
+                full_response = await self._request(
+                    "GET", url=f"{MYCHEM_GET_URL}/{drug_id}", params=params, return_json=False
+                )
                 full_data = json.loads(full_response)
                 return self.format_response(full_data)
 
             return self.format_response(best_hit)
         except Exception as e:
             logger.error(f"Failed to fetch drug {drug_id_or_name}: {e}", exc_info=True)
-            return self.format_response(None, {"error": f"MyChem API error: {str(e)}"})
-
-
-
-
-
+            return self.format_response(None, {"error": f"MyChem API error: {e!s}"})

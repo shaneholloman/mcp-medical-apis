@@ -7,11 +7,12 @@ Exposes OpenFDA tools via MCP at /tools/openfda/mcp
 import logging
 
 from mcp.server.fastmcp import FastMCP
-from ..med_mcp_server import unified_mcp, tool as medmcps_tool
 
 from ..api_clients.openfda_client import OpenFDAClient
+from ..med_mcp_server import tool as medmcps_tool
+from ..med_mcp_server import unified_mcp
 from ..models.openfda import OpenFDAAdverseEvent, OpenFDADrugLabel
-from .validation import validate_response, validate_list_response
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ async def search_adverse_events(
         return {
             "api_source": "OpenFDA",
             "data": [],
-            "error": f"Error calling OpenFDA API: {str(e)}",
+            "error": f"Error calling OpenFDA API: {e!s}",
         }
 
 
@@ -108,7 +109,7 @@ async def get_adverse_event(report_id: str, api_key: str | None = None) -> dict:
         return {
             "api_source": "OpenFDA",
             "data": None,
-            "error": f"Error calling OpenFDA API: {str(e)}",
+            "error": f"Error calling OpenFDA API: {e!s}",
         }
 
 
@@ -159,7 +160,7 @@ async def search_drug_labels(
         return {
             "api_source": "OpenFDA",
             "data": [],
-            "error": f"Error calling OpenFDA API: {str(e)}",
+            "error": f"Error calling OpenFDA API: {e!s}",
         }
 
 
@@ -179,9 +180,7 @@ async def get_drug_label(
     """
     logger.info(f"Tool invoked: get_drug_label(set_id='{set_id}', sections={sections})")
     try:
-        result = await openfda_client.get_drug_label(
-            set_id, sections=sections, api_key=api_key
-        )
+        result = await openfda_client.get_drug_label(set_id, sections=sections, api_key=api_key)
         result = validate_response(
             result,
             OpenFDADrugLabel,
@@ -199,7 +198,7 @@ async def get_drug_label(
         return {
             "api_source": "OpenFDA",
             "data": None,
-            "error": f"Error calling OpenFDA API: {str(e)}",
+            "error": f"Error calling OpenFDA API: {e!s}",
         }
 
 
@@ -244,5 +243,5 @@ async def search_device_events(
         return {
             "api_source": "OpenFDA",
             "data": [],
-            "error": f"Error calling OpenFDA API: {str(e)}",
+            "error": f"Error calling OpenFDA API: {e!s}",
         }

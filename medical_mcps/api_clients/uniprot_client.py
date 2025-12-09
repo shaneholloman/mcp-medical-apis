@@ -4,10 +4,23 @@ Documentation: https://www.uniprot.org/help/api
 Base URL: https://rest.uniprot.org
 """
 
-import asyncio
 import json
 
+from tenacity import (
+    retry,
+    retry_if_result,
+    stop_after_delay,
+    wait_exponential,
+)
+
+from ..settings import settings
 from .base_client import BaseAPIClient
+
+
+class JobNotReadyError(Exception):
+    """Exception raised when a UniProt job is not yet ready"""
+
+    pass
 
 
 class UniProtClient(BaseAPIClient):
@@ -25,7 +38,7 @@ class UniProtClient(BaseAPIClient):
         Safely extracts a nested field value from a dictionary using a dot-separated path.
         e.g., _extract_field_value(data, "organism.scientificName")
         """
-        keys = field_path.split('.')
+        keys = field_path.split(".")
         value = data
         for key in keys:
             if isinstance(value, dict) and key in value:
@@ -42,7 +55,6 @@ class UniProtClient(BaseAPIClient):
             else:
                 return None
         return value
-
 
     async def get_protein(
         self, accession: str, format: str = "json", fields: list[str] | None = None
@@ -66,9 +78,9 @@ class UniProtClient(BaseAPIClient):
                     "uniProtkbId",
                     "organism.scientificName",
                     "proteinDescription.recommendedName.fullName.value",
-                    "genes.0.geneName.value", # Assuming first gene name is often sufficient
+                    "genes.0.geneName.value",  # Assuming first gene name is often sufficient
                 ]
-                
+
                 # Use provided fields or default fields if none are specified
                 fields_to_extract = fields if fields else default_fields
 
@@ -77,13 +89,13 @@ class UniProtClient(BaseAPIClient):
                     value = self._extract_field_value(data, field_path)
                     if value is not None:
                         # Create a flat key for the filtered data
-                        flat_key = field_path.replace('.', '_')
+                        flat_key = field_path.replace(".", "_")
                         # Use the last part of the path as the key if it's descriptive enough
-                        if '.' in field_path:
-                            final_key_part = field_path.split('.')[-1]
+                        if "." in field_path:
+                            final_key_part = field_path.split(".")[-1]
                             # Handle special case for '.value' at the end
-                            if final_key_part == 'value' and len(field_path.split('.')) > 1:
-                                flat_key = field_path.split('.')[-2]
+                            if final_key_part == "value" and len(field_path.split(".")) > 1:
+                                flat_key = field_path.split(".")[-2]
                             else:
                                 flat_key = final_key_part
                         else:
@@ -125,9 +137,7 @@ class UniProtClient(BaseAPIClient):
         params = {"query": query, "size": limit, "from": offset}
         if format == "json":
             data = await self._request("GET", endpoint="/uniprotkb/search", params=params)
-            result_count = (
-                len(data.get("results", [])) if isinstance(data, dict) else None
-            )
+            result_count = len(data.get("results", [])) if isinstance(data, dict) else None
             metadata = {"results": result_count} if result_count is not None else None
             return self.format_response(data, metadata)
         else:
@@ -200,33 +210,42 @@ class UniProtClient(BaseAPIClient):
 
         job_id = response.get("jobId")
 
-        # Poll for results
-        result_url = f"{self.base_url}/idmapping/status/{job_id}"
-        for _ in range(30):  # Max 30 attempts
-            await asyncio.sleep(1)
+        # Poll for results using tenacity retry logic
+        @retry(
+            stop=stop_after_delay(settings.retry_max_delay_seconds),
+            wait=wait_exponential(
+                multiplier=0.5,
+                min=settings.retry_min_wait_seconds,
+                max=min(settings.retry_max_wait_seconds, 2.0),  # Cap at 2s for polling
+            ),
+            retry=retry_if_result(lambda result: result is None),  # Retry if job not ready
+            reraise=True,
+        )
+        async def _poll_job_status():
+            """Poll job status until ready"""
+            result_url = f"{self.base_url}/idmapping/status/{job_id}"
             status_text = await self._request("GET", url=result_url, return_json=False)
             status = json.loads(status_text)
 
+            # Return None if job not ready (will trigger retry), status dict if ready
             if status.get("results") or status.get("failedIds"):
-                # Get results
-                results_url = f"{self.base_url}/idmapping/stream/{job_id}"
-                results_text = await self._request("GET", url=results_url, return_json=False)
+                return status
+            return None  # Job not ready yet
 
-                # Parse and count mappings
-                try:
-                    results_data = json.loads(results_text)
-                    mapping_count = (
-                        len(results_data.get("results", []))
-                        if isinstance(results_data, dict)
-                        else None
-                    )
-                    metadata = (
-                        {"mappings": mapping_count}
-                        if mapping_count is not None
-                        else None
-                    )
-                    return self.format_response(results_data, metadata)
-                except json.JSONDecodeError:
-                    return self.format_response(results_text)
+        # Poll until job is ready (tenacity will retry until status indicates ready)
+        await _poll_job_status()
 
-        return self.format_response("Error: Mapping job timed out after 30 seconds")
+        # Get results
+        results_url = f"{self.base_url}/idmapping/stream/{job_id}"
+        results_text = await self._request("GET", url=results_url, return_json=False)
+
+        # Parse and count mappings
+        try:
+            results_data = json.loads(results_text)
+            mapping_count = (
+                len(results_data.get("results", [])) if isinstance(results_data, dict) else None
+            )
+            metadata = {"mappings": mapping_count} if mapping_count is not None else None
+            return self.format_response(results_data, metadata)
+        except json.JSONDecodeError:
+            return self.format_response(results_text)

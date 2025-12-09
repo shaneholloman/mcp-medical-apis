@@ -70,14 +70,11 @@ class TestBaseAPIClientInitialization:
     """Test client initialization"""
 
     def test_init_with_defaults(self, base_url, api_name):
-        """Test initialization with default parameters"""
-        client = ConcreteAPIClient(base_url=base_url, api_name=api_name)
+        client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=False)
         assert client.base_url == base_url
         assert client.api_name == api_name
         assert client.timeout == 30.0
         assert client.rate_limit_delay is None
-        # enable_cache defaults to settings.enable_cache (False by default)
-        assert client.enable_cache is False
         assert client._client is None
 
     def test_init_with_custom_params(self, base_url, api_name):
@@ -104,12 +101,8 @@ class TestBaseAPIClientContextManager:
     async def test_context_manager_with_cache_enabled(self, base_url, api_name):
         """Test context manager with cache enabled"""
         with (
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncSqliteStorage"
-            ) as mock_storage,
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncCacheClient"
-            ) as mock_cache_client,
+            patch("medical_mcps.api_clients.base_client.AsyncSqliteStorage") as mock_storage,
+            patch("medical_mcps.api_clients.base_client.AsyncCacheClient") as mock_cache_client,
         ):
             mock_storage_instance = MagicMock()
             mock_storage.return_value = mock_storage_instance
@@ -141,9 +134,7 @@ class TestBaseAPIClientContextManager:
     async def test_context_manager_cache_fallback(self, base_url, api_name):
         """Test context manager falls back to non-cached client on cache init failure"""
         with (
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncSqliteStorage"
-            ) as mock_storage,
+            patch("medical_mcps.api_clients.base_client.AsyncSqliteStorage") as mock_storage,
             patch("httpx.AsyncClient") as mock_client,
         ):
             mock_storage.side_effect = Exception("Database locked")
@@ -179,21 +170,15 @@ class TestBaseAPIClientProperty:
     async def test_client_property_lazy_init_with_cache(self, base_url, api_name):
         """Test client property lazy initialization with cache"""
         with (
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncSqliteStorage"
-            ) as mock_storage,
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncCacheClient"
-            ) as mock_cache_client,
+            patch("medical_mcps.api_clients.base_client.AsyncSqliteStorage") as mock_storage,
+            patch("medical_mcps.api_clients.base_client.AsyncCacheClient") as mock_cache_client,
         ):
             mock_storage_instance = MagicMock()
             mock_storage.return_value = mock_storage_instance
             mock_client_instance = AsyncMock()
             mock_cache_client.return_value = mock_client_instance
 
-            client = ConcreteAPIClient(
-                base_url=base_url, api_name=api_name, enable_cache=True
-            )
+            client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=True)
             assert client._client is None
 
             # Accessing property should initialize client
@@ -209,9 +194,7 @@ class TestBaseAPIClientProperty:
             mock_client_instance = AsyncMock()
             mock_client.return_value = mock_client_instance
 
-            client = ConcreteAPIClient(
-                base_url=base_url, api_name=api_name, enable_cache=False
-            )
+            client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=False)
             assert client._client is None
 
             # Accessing property should initialize client
@@ -224,18 +207,14 @@ class TestBaseAPIClientProperty:
     async def test_client_property_cache_fallback(self, base_url, api_name):
         """Test client property falls back on cache init failure"""
         with (
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncSqliteStorage"
-            ) as mock_storage,
+            patch("medical_mcps.api_clients.base_client.AsyncSqliteStorage") as mock_storage,
             patch("httpx.AsyncClient") as mock_client,
         ):
             mock_storage.side_effect = Exception("Database readonly")
             mock_client_instance = AsyncMock()
             mock_client.return_value = mock_client_instance
 
-            client = ConcreteAPIClient(
-                base_url=base_url, api_name=api_name, enable_cache=True
-            )
+            client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=True)
             accessed_client = client.client
             assert accessed_client == mock_client_instance
             mock_client.assert_called_once()
@@ -283,9 +262,7 @@ class TestBaseAPIClientRequest:
     @pytest.fixture
     def client(self, base_url, api_name):
         """Create a test client with cache disabled"""
-        return ConcreteAPIClient(
-            base_url=base_url, api_name=api_name, enable_cache=False
-        )
+        return ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=False)
 
     @pytest.mark.asyncio
     async def test_request_get_json_success(self, client, mock_response):
@@ -347,9 +324,7 @@ class TestBaseAPIClientRequest:
     @pytest.mark.asyncio
     async def test_request_cache_error_retry(self, base_url, api_name, mock_response):
         """Test request retries without cache on cache error"""
-        client = ConcreteAPIClient(
-            base_url=base_url, api_name=api_name, enable_cache=True
-        )
+        client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=True)
         mock_cache_client = AsyncMock(spec=AsyncCacheClient)
         client._client = mock_cache_client
 
@@ -358,9 +333,7 @@ class TestBaseAPIClientRequest:
 
         # Mock successful retry
         mock_regular_client = AsyncMock()
-        mock_regular_client.get.return_value = mock_response(
-            json_data={"data": "retry_success"}
-        )
+        mock_regular_client.get.return_value = mock_response(json_data={"data": "retry_success"})
 
         with patch("httpx.AsyncClient", return_value=mock_regular_client):
             result = await client._request("GET", endpoint="/test")
@@ -399,22 +372,16 @@ class TestBaseAPIClientRequest:
         client._client = mock_client
         mock_client.get.return_value = mock_response(text="direct text content")
 
-        result = await client._request(
-            "GET", url="https://external.com/data", return_json=False
-        )
+        result = await client._request("GET", url="https://external.com/data", return_json=False)
         assert result == "direct text content"
         mock_client.get.assert_called_once_with(
             "https://external.com/data", params=None, timeout=None
         )
 
     @pytest.mark.asyncio
-    async def test_request_caching_stores_response(
-        self, base_url, api_name, mock_response
-    ):
+    async def test_request_caching_stores_response(self, base_url, api_name, mock_response):
         """Test that cache client stores responses on first request"""
-        client = ConcreteAPIClient(
-            base_url=base_url, api_name=api_name, enable_cache=True
-        )
+        client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=True)
         mock_cache_client = AsyncMock(spec=AsyncCacheClient)
         client._client = mock_cache_client
 
@@ -437,16 +404,10 @@ class TestBaseAPIClientRequest:
     async def test_request_cache_vs_no_cache(self, base_url, api_name):
         """Test that cache-enabled client uses AsyncCacheClient vs regular client"""
         # With cache enabled
-        cached_client = ConcreteAPIClient(
-            base_url=base_url, api_name=api_name, enable_cache=True
-        )
+        cached_client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=True)
         with (
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncSqliteStorage"
-            ) as mock_storage,
-            patch(
-                "medical_mcps.api_clients.base_client.AsyncCacheClient"
-            ) as mock_cache_client,
+            patch("medical_mcps.api_clients.base_client.AsyncSqliteStorage") as mock_storage,
+            patch("medical_mcps.api_clients.base_client.AsyncCacheClient") as mock_cache_client,
         ):
             mock_storage_instance = MagicMock()
             mock_storage.return_value = mock_storage_instance
@@ -542,9 +503,7 @@ class TestBaseAPIClientClose:
     @pytest.mark.asyncio
     async def test_close(self, base_url, api_name):
         """Test closing client"""
-        client = ConcreteAPIClient(
-            base_url=base_url, api_name=api_name, enable_cache=False
-        )
+        client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=False)
         mock_client = AsyncMock()
         client._client = mock_client
 

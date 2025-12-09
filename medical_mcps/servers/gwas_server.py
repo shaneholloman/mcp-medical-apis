@@ -45,18 +45,16 @@ async def get_association(association_id: str) -> dict:
         )
         return result
     except Exception as e:
-        logger.error(
-            f"Error calling GWAS Catalog API (get_association): {e}", exc_info=True
-        )
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        logger.error(f"Error calling GWAS Catalog API (get_association): {e}", exc_info=True)
+        return f"Error calling GWAS Catalog API: {e!s}"
 
 
 @medmcps_tool(name="gwas_search_associations", servers=[gwas_mcp, unified_mcp])
 async def search_associations(
-    query: str = None,
-    variant_id: str = None,
-    study_id: str = None,
-    trait: str = None,
+    query: str | None = None,
+    variant_id: str | None = None,
+    study_id: str | None = None,
+    trait: str | None = None,
     size: int = 20,
     page: int = 0,
 ) -> dict:
@@ -71,14 +69,10 @@ async def search_associations(
         page: Page number (0-indexed). Default: 0
     """
     try:
-        return await gwas_client.search_associations(
-            query, variant_id, study_id, trait, size, page
-        )
+        return await gwas_client.search_associations(query, variant_id, study_id, trait, size, page)
     except Exception as e:
-        logger.error(
-            f"Error calling GWAS Catalog API (search_associations): {e}", exc_info=True
-        )
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        logger.error(f"Error calling GWAS Catalog API (search_associations): {e}", exc_info=True)
+        return f"Error calling GWAS Catalog API: {e!s}"
 
 
 @medmcps_tool(name="gwas_get_variant", servers=[gwas_mcp, unified_mcp])
@@ -105,14 +99,12 @@ async def get_variant(variant_id: str) -> dict:
         )
         return result
     except Exception as e:
-        logger.error(
-            f"Error calling GWAS Catalog API (get_variant): {e}", exc_info=True
-        )
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        logger.error(f"Error calling GWAS Catalog API (get_variant): {e}", exc_info=True)
+        return f"Error calling GWAS Catalog API: {e!s}"
 
 
 @medmcps_tool(name="gwas_search_variants", servers=[gwas_mcp, unified_mcp])
-async def search_variants(query: str = None, size: int = 20, page: int = 0) -> dict:
+async def search_variants(query: str | None = None, size: int = 20, page: int = 0) -> dict:
     """Search for SNPs/variants in GWAS Catalog by rsId.
 
     IMPORTANT: The 'query' parameter should be an rsId (e.g., 'rs3093017'). This searches
@@ -130,10 +122,8 @@ async def search_variants(query: str = None, size: int = 20, page: int = 0) -> d
     try:
         return await gwas_client.search_variants(query, size, page)
     except Exception as e:
-        logger.error(
-            f"Error calling GWAS Catalog API (search_variants): {e}", exc_info=True
-        )
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        logger.error(f"Error calling GWAS Catalog API (search_variants): {e}", exc_info=True)
+        return f"Error calling GWAS Catalog API: {e!s}"
 
 
 @medmcps_tool(name="gwas_get_study", servers=[gwas_mcp, unified_mcp])
@@ -147,12 +137,12 @@ async def get_study(study_id: str) -> dict:
         return await gwas_client.get_study(study_id)
     except Exception as e:
         logger.error(f"Error calling GWAS Catalog API (get_study): {e}", exc_info=True)
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        return f"Error calling GWAS Catalog API: {e!s}"
 
 
 @medmcps_tool(name="gwas_search_studies", servers=[gwas_mcp, unified_mcp])
 async def search_studies(
-    query: str = None, trait: str = None, size: int = 20, page: int = 0
+    query: str | None = None, trait: str | None = None, size: int = 20, page: int = 0
 ) -> dict:
     """Search for studies in GWAS Catalog.
 
@@ -165,10 +155,8 @@ async def search_studies(
     try:
         return await gwas_client.search_studies(query, trait, size, page)
     except Exception as e:
-        logger.error(
-            f"Error calling GWAS Catalog API (search_studies): {e}", exc_info=True
-        )
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        logger.error(f"Error calling GWAS Catalog API (search_studies): {e}", exc_info=True)
+        return f"Error calling GWAS Catalog API: {e!s}"
 
 
 @medmcps_tool(name="gwas_get_trait", servers=[gwas_mcp, unified_mcp])
@@ -182,11 +170,11 @@ async def get_trait(trait_id: str) -> dict:
         return await gwas_client.get_trait(trait_id)
     except Exception as e:
         logger.error(f"Error calling GWAS Catalog API (get_trait): {e}", exc_info=True)
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        return f"Error calling GWAS Catalog API: {e!s}"
 
 
 @medmcps_tool(name="gwas_search_traits", servers=[gwas_mcp, unified_mcp])
-async def search_traits(query: str = None, size: int = 20, page: int = 0) -> dict:
+async def search_traits(query: str | None = None, size: int = 20, page: int = 0) -> dict:
     """Search for traits in GWAS Catalog.
 
     Args:
@@ -197,7 +185,5 @@ async def search_traits(query: str = None, size: int = 20, page: int = 0) -> dic
     try:
         return await gwas_client.search_traits(query, size, page)
     except Exception as e:
-        logger.error(
-            f"Error calling GWAS Catalog API (search_traits): {e}", exc_info=True
-        )
-        return f"Error calling GWAS Catalog API: {str(e)}"
+        logger.error(f"Error calling GWAS Catalog API (search_traits): {e}", exc_info=True)
+        return f"Error calling GWAS Catalog API: {e!s}"

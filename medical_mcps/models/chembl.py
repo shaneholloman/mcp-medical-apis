@@ -5,7 +5,8 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -13,71 +14,77 @@ from .base import MCPToolResult
 
 class ChEMBLMolecule(BaseModel):
     """ChEMBL molecule model"""
+
     molecule_chembl_id: str
-    pref_name: Optional[str] = None
-    molecule_type: Optional[str] = None
-    max_phase: Optional[int] = None
-    first_approval: Optional[int] = None
-    molecular_weight: Optional[float] = None
-    alogp: Optional[float] = None
-    
+    pref_name: str | None = None
+    molecule_type: str | None = None
+    max_phase: int | None = None
+    first_approval: int | None = None
+    molecular_weight: float | None = None
+    alogp: float | None = None
+
     class Config:
         extra = "allow"
 
 
 class ChEMBLTarget(BaseModel):
     """ChEMBL target model"""
+
     target_chembl_id: str
-    pref_name: Optional[str] = None
-    target_type: Optional[str] = None
-    organism: Optional[str] = None
-    
+    pref_name: str | None = None
+    target_type: str | None = None
+    organism: str | None = None
+
     class Config:
         extra = "allow"
 
 
 class ChEMBLActivity(BaseModel):
     """ChEMBL activity model"""
-    activity_id: Optional[int] = None
-    molecule_chembl_id: Optional[str] = None
-    target_chembl_id: Optional[str] = None
-    standard_value: Optional[float] = None
-    standard_type: Optional[str] = None
-    standard_units: Optional[str] = None
-    assay_chembl_id: Optional[str] = None
-    
+
+    activity_id: int | None = None
+    molecule_chembl_id: str | None = None
+    target_chembl_id: str | None = None
+    standard_value: float | None = None
+    standard_type: str | None = None
+    standard_units: str | None = None
+    assay_chembl_id: str | None = None
+
     class Config:
         extra = "allow"
 
 
 class ChEMBLMechanism(BaseModel):
     """ChEMBL mechanism model"""
-    mechanism_id: Optional[int] = None
-    molecule_chembl_id: Optional[str] = None
-    target_chembl_id: Optional[str] = None
-    mechanism_of_action: Optional[str] = None
-    action_type: Optional[str] = None
-    
+
+    mechanism_id: int | None = None
+    molecule_chembl_id: str | None = None
+    target_chembl_id: str | None = None
+    mechanism_of_action: str | None = None
+    action_type: str | None = None
+
     class Config:
         extra = "allow"
 
 
 class ChEMBLDrugIndication(BaseModel):
     """ChEMBL drug indication model"""
-    drug_chembl_id: Optional[str] = None
-    molecule_chembl_id: Optional[str] = None
-    parent_molecule_chembl_id: Optional[str] = None
-    mesh_heading: Optional[str] = None
-    mesh_id: Optional[str] = None
-    efo_id: Optional[str] = None
-    efo_term: Optional[str] = None
-    max_phase_for_ind: Optional[int] = None
-    indication_refs: Optional[list[Any]] = None
-    
+
+    drug_chembl_id: str | None = None
+    molecule_chembl_id: str | None = None
+    parent_molecule_chembl_id: str | None = None
+    mesh_heading: str | None = None
+    mesh_id: str | None = None
+    efo_id: str | None = None
+    efo_term: str | None = None
+    max_phase_for_ind: int | None = None
+    indication_refs: list[Any] | None = None
+
     class Config:
         extra = "allow"
 
 
 class ChEMBLToolResult(MCPToolResult[ChEMBLMolecule]):
     """ChEMBL-specific MCP tool result"""
+
     pass

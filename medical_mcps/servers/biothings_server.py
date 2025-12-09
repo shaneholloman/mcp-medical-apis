@@ -13,7 +13,7 @@ from ..api_clients.mydisease_client import MyDiseaseClient
 from ..api_clients.mygene_client import MyGeneClient
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
-from ..models.biothings import MyGeneGene, MyDiseaseDisease, MyChemDrug
+from ..models.biothings import MyChemDrug, MyDiseaseDisease, MyGeneGene
 from .validation import validate_response
 
 logger = logging.getLogger(__name__)
@@ -30,13 +30,9 @@ biothings_mcp = FastMCP(
 
 
 @medmcps_tool(name="mygene_get_gene", servers=[biothings_mcp, unified_mcp])
-async def mygene_get_gene(
-    gene_id_or_symbol: str, fields: list[str] | None = None
-) -> dict:
+async def mygene_get_gene(gene_id_or_symbol: str, fields: list[str] | None = None) -> dict:
     """Get gene information from MyGene.info by ID or symbol."""
-    logger.info(
-        f"Tool invoked: mygene_get_gene(gene_id_or_symbol='{gene_id_or_symbol}')"
-    )
+    logger.info(f"Tool invoked: mygene_get_gene(gene_id_or_symbol='{gene_id_or_symbol}')")
     try:
         result = await mygene_client.get_gene(gene_id_or_symbol, fields=fields)
         result = validate_response(
@@ -49,17 +45,13 @@ async def mygene_get_gene(
         return result
     except Exception as e:
         logger.error(f"Tool failed: mygene_get_gene() - {e}", exc_info=True)
-        return {"api_source": "MyGene", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "MyGene", "data": None, "error": f"Error: {e!s}"}
 
 
 @medmcps_tool(name="mydisease_get_disease", servers=[biothings_mcp, unified_mcp])
-async def mydisease_get_disease(
-    disease_id_or_name: str, fields: list[str] | None = None
-) -> dict:
+async def mydisease_get_disease(disease_id_or_name: str, fields: list[str] | None = None) -> dict:
     """Get disease information from MyDisease.info by ID or name."""
-    logger.info(
-        f"Tool invoked: mydisease_get_disease(disease_id_or_name='{disease_id_or_name}')"
-    )
+    logger.info(f"Tool invoked: mydisease_get_disease(disease_id_or_name='{disease_id_or_name}')")
     try:
         result = await mydisease_client.get_disease(disease_id_or_name, fields=fields)
         result = validate_response(
@@ -72,13 +64,11 @@ async def mydisease_get_disease(
         return result
     except Exception as e:
         logger.error(f"Tool failed: mydisease_get_disease() - {e}", exc_info=True)
-        return {"api_source": "MyDisease", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "MyDisease", "data": None, "error": f"Error: {e!s}"}
 
 
 @medmcps_tool(name="mychem_get_drug", servers=[biothings_mcp, unified_mcp])
-async def mychem_get_drug(
-    drug_id_or_name: str, fields: list[str] | None = None
-) -> dict:
+async def mychem_get_drug(drug_id_or_name: str, fields: list[str] | None = None) -> dict:
     """Get drug/chemical information from MyChem.info by ID or name."""
     logger.info(f"Tool invoked: mychem_get_drug(drug_id_or_name='{drug_id_or_name}')")
     try:
@@ -93,4 +83,4 @@ async def mychem_get_drug(
         return result
     except Exception as e:
         logger.error(f"Tool failed: mychem_get_drug() - {e}", exc_info=True)
-        return {"api_source": "MyChem", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "MyChem", "data": None, "error": f"Error: {e!s}"}

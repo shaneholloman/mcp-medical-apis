@@ -1,4 +1,4 @@
-.PHONY: server server-no-reload help test-watch test docker install build publish deploy-cloud-run get-service-url
+.PHONY: server server-no-reload help test-watch test test-slow test-all test-cov lint format docker install build publish deploy-cloud-run get-service-url inspector
 
 # Cloud Run deployment configuration
 SERVICE_NAME ?= medical-mcps
@@ -13,6 +13,11 @@ MAX_INSTANCES ?= 100
 MIN_INSTANCES ?= 0
 SENTRY_DSN ?=
 ENVIRONMENT ?= production
+
+# test retries
+RETRY_MAX_WAIT_SECONDS ?= 10.0
+RETRY_MAX_DELAY_SECONDS ?= 30.0
+RETRY_MIN_WAIT_SECONDS ?= 1.0
 
 install:
 	uv sync
@@ -29,9 +34,16 @@ server-no-reload:
 test-watch:
 	uv run ptw --runner "uv run pytest"
 
+test-debug: install
+	uv run pytest tests/test_base_client.py
+
 # Run all tests (excluding slow Pathway Commons tests)
 test: install
 	uv run pytest tests/ -m "not slow"
+
+# Run tests with pytest-testmon (only changed tests)
+test-testmon: install
+	uv run pytest tests/ --testmon -m "not slow"
 
 # Run slow tests (Pathway Commons) with extended timeout
 test-slow: install
@@ -40,6 +52,19 @@ test-slow: install
 # Run all tests including slow ones
 test-all: install
 	uv run pytest tests/ --timeout=200
+
+# Run tests with coverage report
+test-cov: install
+	uv run pytest tests/ -m "not slow" --cov=medical_mcps --cov-report=html --cov-report=term-missing
+
+# Lint code with ruff
+lint: install
+	uv run ruff check medical_mcps tests
+
+# Format code with ruff
+format: install
+	uv run ruff format medical_mcps tests
+	uv run ruff check --fix medical_mcps tests
 
 # Build the package
 build:

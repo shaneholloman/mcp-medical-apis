@@ -30,9 +30,7 @@ logger = logging.getLogger(__name__)
 
 # Default cache directory - use per-process subdirectory to avoid SQLite locking issues
 _process_id = os.getpid()
-CACHE_DIR = (
-    Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{_process_id}"
-)
+CACHE_DIR = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{_process_id}"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Cache TTL: 30 days in seconds
@@ -76,9 +74,7 @@ class BaseAPIClient(ABC):
         self.timeout = timeout
         self.rate_limit_delay = rate_limit_delay
         # Use settings.enable_cache if enable_cache is not explicitly provided
-        self.enable_cache = (
-            enable_cache if enable_cache is not None else settings.enable_cache
-        )
+        self.enable_cache = enable_cache if enable_cache is not None else settings.enable_cache
         self.cache_dir = cache_dir or CACHE_DIR
         self._client: httpx.AsyncClient | None = None
 
@@ -128,16 +124,11 @@ class BaseAPIClient(ABC):
         if self._client is None or not isinstance(self._client, AsyncCacheClient):
             return False
         error_str = str(error).lower()
-        return any(
-            keyword in error_str
-            for keyword in ["readonly", "database", "sqlite", "locked"]
-        )
+        return any(keyword in error_str for keyword in ["readonly", "database", "sqlite", "locked"])
 
     async def _handle_cache_error_retry(self, request_func) -> Any:
         """Handle cache error by retrying request without cache."""
-        logger.warning(
-            f"Cache database error for {self.api_name}. Retrying request without cache."
-        )
+        logger.warning(f"Cache database error for {self.api_name}. Retrying request without cache.")
         try:
             if self._client:
                 await self._client.aclose()
@@ -158,7 +149,7 @@ class BaseAPIClient(ABC):
                         return error_msg
         except Exception:
             pass
-        error_msg += f" - {str(error)}"
+        error_msg += f" - {error!s}"
         return error_msg
 
     async def _request(
@@ -203,12 +194,19 @@ class BaseAPIClient(ABC):
         # Create request function with retry decorator
         # Retry on network errors (HTTPError, TimeoutException, ConnectError) but not on HTTP status errors
         # Limit retries to prevent hanging in tests - use stop_after_attempt to limit retry count
+        # Retry delays are configurable via settings (can be overridden with env vars for CI)
         @retry(
             stop=stop_after_attempt(3)
-            | stop_after_delay(120),  # Stop after 3 attempts or 120 seconds
+            | stop_after_delay(
+                settings.retry_max_delay_seconds
+            ),  # Stop after 3 attempts or max delay
             wait=wait_fixed(self.rate_limit_delay)
             if self.rate_limit_delay
-            else wait_exponential(multiplier=1, min=5, max=60),
+            else wait_exponential(
+                multiplier=1,
+                min=settings.retry_min_wait_seconds,
+                max=settings.retry_max_wait_seconds,
+            ),
             retry=retry_if_exception_type(
                 (httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError)
             )
@@ -217,9 +215,7 @@ class BaseAPIClient(ABC):
         )
         async def make_request():
             if method == "GET":
-                response = await self.client.get(
-                    request_url, params=params, timeout=timeout
-                )
+                response = await self.client.get(request_url, params=params, timeout=timeout)
             elif method == "POST":
                 if form_data is not None:
                     response = await self.client.post(
@@ -233,22 +229,18 @@ class BaseAPIClient(ABC):
                 raise ValueError(f"Unsupported HTTP method: {method}")
 
             response.raise_for_status()
-            logger.info(
-                f"HTTP Response: {response.status_code} {response.reason_phrase}"
-            )
+            logger.info(f"HTTP Response: {response.status_code} {response.reason_phrase}")
             return response.json() if return_json else response.text
 
         # Execute request with error handling
         try:
             return await make_request()
         except httpx.HTTPStatusError as e:
-            logger.error(
-                f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}"
-            )
+            logger.error(f"HTTP Response: {e.response.status_code} {e.response.reason_phrase}")
             raise Exception(self._extract_error_message(e)) from e
         except httpx.HTTPError as e:
-            logger.error(f"HTTP Error: {str(e)}")
-            raise Exception(f"{self.api_name} API error: {str(e)}") from e
+            logger.error(f"HTTP Error: {e!s}")
+            raise Exception(f"{self.api_name} API error: {e!s}") from e
         except Exception as e:
             if self._is_cache_error(e):
                 return await self._handle_cache_error_retry(make_request)

@@ -5,7 +5,7 @@ These models provide structure validation and documentation for UniProt API resp
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -16,36 +16,36 @@ class UniProtOrganism(BaseModel):
     """Organism information"""
 
     scientificName: str
-    commonName: Optional[str] = None
+    commonName: str | None = None
     taxonId: int
-    lineage: Optional[list[str]] = None
+    lineage: list[str] | None = None
 
 
 class UniProtProteinDescription(BaseModel):
     """Protein description"""
 
-    recommendedName: Optional[dict[str, Any]] = None
-    alternativeNames: Optional[list[dict[str, Any]]] = None
+    recommendedName: dict[str, Any] | None = None
+    alternativeNames: list[dict[str, Any]] | None = None
 
 
 class UniProtEntryAudit(BaseModel):
     """Entry audit information"""
 
-    firstPublicDate: Optional[str] = None
-    lastAnnotationUpdateDate: Optional[str] = None
-    lastSequenceUpdateDate: Optional[str] = None
-    entryVersion: Optional[int] = None
-    sequenceVersion: Optional[int] = None
+    firstPublicDate: str | None = None
+    lastAnnotationUpdateDate: str | None = None
+    lastSequenceUpdateDate: str | None = None
+    entryVersion: int | None = None
+    sequenceVersion: int | None = None
 
 
 class UniProtSequence(BaseModel):
     """Protein sequence information"""
 
-    value: Optional[str] = None
-    length: Optional[int] = None
-    molWeight: Optional[int] = None
-    crc64: Optional[str] = None
-    md5: Optional[str] = None
+    value: str | None = None
+    length: int | None = None
+    molWeight: int | None = None
+    crc64: str | None = None
+    md5: str | None = None
 
 
 class UniProtProtein(BaseModel):
@@ -56,23 +56,23 @@ class UniProtProtein(BaseModel):
     Many fields are optional to handle variations in API responses.
     """
 
-    entryType: Optional[str] = None
+    entryType: str | None = None
     primaryAccession: str
-    secondaryAccessions: Optional[list[str]] = None
-    uniProtkbId: Optional[str] = None
-    entryAudit: Optional[UniProtEntryAudit] = None
-    annotationScore: Optional[float] = None
-    organism: Optional[UniProtOrganism] = None
-    proteinExistence: Optional[str] = None
-    proteinDescription: Optional[UniProtProteinDescription] = None
-    genes: Optional[list[dict[str, Any]]] = None
-    comments: Optional[list[dict[str, Any]]] = None
-    features: Optional[list[dict[str, Any]]] = None
-    keywords: Optional[list[dict[str, Any]]] = None
-    references: Optional[list[dict[str, Any]]] = None
-    uniProtKBCrossReferences: Optional[list[dict[str, Any]]] = None
-    sequence: Optional[UniProtSequence] = None
-    extraAttributes: Optional[dict[str, Any]] = None
+    secondaryAccessions: list[str] | None = None
+    uniProtkbId: str | None = None
+    entryAudit: UniProtEntryAudit | None = None
+    annotationScore: float | None = None
+    organism: UniProtOrganism | None = None
+    proteinExistence: str | None = None
+    proteinDescription: UniProtProteinDescription | None = None
+    genes: list[dict[str, Any]] | None = None
+    comments: list[dict[str, Any]] | None = None
+    features: list[dict[str, Any]] | None = None
+    keywords: list[dict[str, Any]] | None = None
+    references: list[dict[str, Any]] | None = None
+    uniProtKBCrossReferences: list[dict[str, Any]] | None = None
+    sequence: UniProtSequence | None = None
+    extraAttributes: dict[str, Any] | None = None
 
     class Config:
         extra = "allow"  # Allow extra fields for flexibility
@@ -81,9 +81,9 @@ class UniProtProtein(BaseModel):
 class UniProtSearchResult(BaseModel):
     """UniProt search results"""
 
-    results: Optional[list[UniProtProtein]] = None
-    facets: Optional[list[dict[str, Any]]] = None
-    totalResults: Optional[int] = None
+    results: list[UniProtProtein] | None = None
+    facets: list[dict[str, Any]] | None = None
+    totalResults: int | None = None
 
     class Config:
         extra = "allow"

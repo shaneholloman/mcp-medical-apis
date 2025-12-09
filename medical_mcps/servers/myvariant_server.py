@@ -12,7 +12,7 @@ from ..api_clients.myvariant_client import MyVariantClient
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..models.myvariant import MyVariantVariant
-from .validation import validate_response, validate_list_response
+from .validation import validate_list_response, validate_response
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ async def search_variants(
         return result
     except Exception as e:
         logger.error(f"Tool failed: search_variants() - {e}", exc_info=True)
-        return {"api_source": "MyVariant", "data": [], "error": f"Error: {str(e)}"}
+        return {"api_source": "MyVariant", "data": [], "error": f"Error: {e!s}"}
 
 
 @medmcps_tool(name="myvariant_get_variant", servers=[myvariant_mcp, unified_mcp])
@@ -70,9 +70,7 @@ async def get_variant(variant_id: str, include_external: bool = False) -> dict:
     """Get comprehensive variant details by ID."""
     logger.info(f"Tool invoked: get_variant(variant_id='{variant_id}')")
     try:
-        result = await myvariant_client.get_variant(
-            variant_id, include_external=include_external
-        )
+        result = await myvariant_client.get_variant(variant_id, include_external=include_external)
         result = validate_response(
             result,
             MyVariantVariant,
@@ -83,4 +81,4 @@ async def get_variant(variant_id: str, include_external: bool = False) -> dict:
         return result
     except Exception as e:
         logger.error(f"Tool failed: get_variant() - {e}", exc_info=True)
-        return {"api_source": "MyVariant", "data": None, "error": f"Error: {str(e)}"}
+        return {"api_source": "MyVariant", "data": None, "error": f"Error: {e!s}"}

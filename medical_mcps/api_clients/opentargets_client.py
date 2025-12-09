@@ -22,9 +22,7 @@ class OpenTargetsClient(BaseAPIClient):
             enable_cache=enable_cache,
         )
 
-    async def search(
-        self, query: str, entity: str | None = None, size: int = 10
-    ) -> dict[str, Any]:
+    async def search(self, query: str, entity: str | None = None, size: int = 10) -> dict[str, Any]:
         """Search across targets, diseases, and drugs."""
         params: dict[str, Any] = {"q": query, "size": size}
         if entity:
@@ -45,9 +43,7 @@ class OpenTargetsClient(BaseAPIClient):
             params["target"] = target_id
         if disease_id:
             params["disease"] = disease_id
-        return await self._request(
-            "GET", endpoint="/platform/public/association", params=params
-        )
+        return await self._request("GET", endpoint="/platform/public/association", params=params)
 
     async def get_evidence(
         self,

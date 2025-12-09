@@ -24,9 +24,7 @@ async def test_biothings_fastmcp_isolation():
     async with biothings_mcp.session_manager.run():
         # Use httpx.AsyncClient with ASGI transport
         transport = ASGITransport(app=app)
-        async with httpx.AsyncClient(
-            transport=transport, base_url="http://testserver"
-        ) as client:
+        async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
             # Try root path first
             request_data = {
                 "jsonrpc": "2.0",
@@ -45,9 +43,7 @@ async def test_biothings_fastmcp_isolation():
             }
 
             start = time.time()
-            response = await client.post(
-                "/mcp", json=request_data, headers=headers, timeout=30.0
-            )
+            response = await client.post("/mcp", json=request_data, headers=headers, timeout=30.0)
             elapsed = time.time() - start
 
             print(f"Request took {elapsed:.2f}s, status={response.status_code}")

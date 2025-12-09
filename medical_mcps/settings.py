@@ -54,6 +54,11 @@ class ServerSettings(BaseSettings):
         # See: https://github.com/pascalwhoop/medical-mcps/issues/1
     )
 
+    # Retry configuration (for faster CI runs, set lower values)
+    retry_max_wait_seconds: float = 60.0  # Maximum wait time between retries
+    retry_max_delay_seconds: float = 120.0  # Maximum total delay for all retries
+    retry_min_wait_seconds: float = 1.0  # Minimum wait time between retries
+
     def get_port(self) -> int:
         """Get port from PORT env var (Railway) or mcp_port setting"""
         import os

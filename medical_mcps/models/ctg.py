@@ -5,7 +5,8 @@ Models derived from sample API responses.
 Following 80/20 principle: capture main structure, allow flexibility for edge cases.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 from .base import MCPToolResult
@@ -13,25 +14,28 @@ from .base import MCPToolResult
 
 class CTGStudy(BaseModel):
     """ClinicalTrials.gov study model"""
-    nctId: Optional[str] = None
-    protocolSection: Optional[dict[str, Any]] = None
-    derivedSection: Optional[dict[str, Any]] = None
-    hasResults: Optional[bool] = None
-    
+
+    nctId: str | None = None
+    protocolSection: dict[str, Any] | None = None
+    derivedSection: dict[str, Any] | None = None
+    hasResults: bool | None = None
+
     class Config:
         extra = "allow"
 
 
 class CTGSearchResult(BaseModel):
     """ClinicalTrials.gov search result model"""
-    studies: Optional[list[CTGStudy]] = None
-    nextPageToken: Optional[str] = None
-    totalCount: Optional[int] = None
-    
+
+    studies: list[CTGStudy] | None = None
+    nextPageToken: str | None = None
+    totalCount: int | None = None
+
     class Config:
         extra = "allow"
 
 
 class CTGToolResult(MCPToolResult[CTGStudy]):
     """ClinicalTrials.gov-specific MCP tool result"""
+
     pass

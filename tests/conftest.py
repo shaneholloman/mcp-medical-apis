@@ -2,13 +2,55 @@
 
 import logging
 import os
+import socket
 import subprocess
 import time
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
 
 logger = logging.getLogger(__name__)
+
+
+def _wait_for_server_ready(
+    process: subprocess.Popen,
+    host: str,
+    port: int,
+    server_url: str,
+    max_wait_seconds: int = 10,
+    check_interval: float = 0.5,
+) -> None:
+    """Wait for server to be ready by checking if port is accessible."""
+    deadline = time.time() + max_wait_seconds
+
+    while time.time() < deadline:
+        # Check if process has died
+        if process.poll() is not None:
+            stdout, _ = process.communicate(timeout=1)
+            logger.error(f"Server process died. Output: {stdout}")
+            raise RuntimeError(f"MCP server process terminated unexpectedly: {stdout}")
+
+        # Check if port is accessible
+        if _is_port_open(host, port):
+            logger.info(f"MCP server is ready at {server_url}")
+            time.sleep(1)  # Give server a moment to fully initialize
+            return
+
+        time.sleep(check_interval)
+
+    # Timeout reached
+    process.terminate()
+    raise RuntimeError(f"MCP server failed to start within {max_wait_seconds} seconds")
+
+
+def _is_port_open(host: str, port: int, timeout: float = 1.0) -> bool:
+    """Check if a TCP port is open and accepting connections."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout)
+            return sock.connect_ex((host, port)) == 0
+    except Exception:
+        return False
 
 
 @pytest.fixture(scope="session")
@@ -22,6 +64,8 @@ def server_process(server_url: str) -> Generator[subprocess.Popen, None, None]:
     """
     Start the MCP server as a subprocess for the entire test session.
     The server will be available at the server_url.
+
+    The server is stateless HTTP and can handle concurrent requests.
     """
     # Extract host and port from URL
     if server_url.startswith("http://"):
@@ -42,6 +86,13 @@ def server_process(server_url: str) -> Generator[subprocess.Popen, None, None]:
     env = os.environ.copy()
     env["MCP_HOST"] = host
     env["MCP_PORT"] = str(port)
+    # Suppress pkg_resources deprecation warning from chembl_webresource_client
+    # This warning is harmless but causes CI failures when captured by subprocess
+    pythonwarnings = env.get("PYTHONWARNINGS", "")
+    if pythonwarnings:
+        env["PYTHONWARNINGS"] = f"{pythonwarnings},ignore:pkg_resources:UserWarning"
+    else:
+        env["PYTHONWARNINGS"] = "ignore:pkg_resources:UserWarning"
 
     # Start the server process
     logger.info(f"Starting MCP server at {server_url}")
@@ -55,47 +106,7 @@ def server_process(server_url: str) -> Generator[subprocess.Popen, None, None]:
     )
 
     # Wait for server to be ready
-    # FastMCP doesn't have a /health endpoint, so we just wait for the process to start
-    # and check if the port is accessible
-    max_attempts = 10  # Increased to 60 attempts (30 seconds)
-    for attempt in range(max_attempts):
-        # Check if process has died
-        if process.poll() is not None:
-            stdout, _ = process.communicate(timeout=1)
-            logger.error(f"Server process died. Output: {stdout}")
-            raise RuntimeError(f"MCP server process terminated unexpectedly: {stdout}")
-
-        try:
-            # Try to connect to the MCP endpoint - it should return 405 for GET without proper headers
-            # but at least it proves the server is running
-            import socket
-
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(1)
-            result = sock.connect_ex((host, port))
-            sock.close()
-            if result == 0:
-                logger.info(f"MCP server is ready at {server_url}")
-                # Give it a moment to fully initialize
-                time.sleep(2)
-                break
-        except Exception:
-            pass
-
-        if attempt < max_attempts - 1:
-            time.sleep(0.5)
-        else:
-            # Get error output if server failed to start
-            try:
-                stdout, _ = process.communicate(timeout=2)
-                logger.error(f"Server failed to start. Output: {stdout}")
-            except subprocess.TimeoutExpired:
-                logger.error("Server process did not produce output")
-            process.terminate()
-            raise RuntimeError("MCP server failed to start within timeout period")
-    else:
-        process.terminate()
-        raise RuntimeError("MCP server failed to start within timeout period")
+    _wait_for_server_ready(process, host, port, server_url, max_wait_seconds=10)
 
     yield process
 
