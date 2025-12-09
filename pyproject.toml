@@ -64,6 +64,8 @@ dev = [
     "requests>=2.31.0",
     "ruff>=0.8.0",
     "pre-commit>=3.5.0",
+    "pytest-profiling>=1.8.1",
+    "snakeviz>=2.2.2",
 ]
 
 [project.scripts]
@@ -82,6 +84,9 @@ timeout_method = "thread"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "tavern: marks tests as tavern YAML tests",
+]
+filterwarnings = [
+    "ignore:.*pkg_resources.*:UserWarning",
 ]
 
 [tool.coverage.run]

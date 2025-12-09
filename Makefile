@@ -14,6 +14,11 @@ MIN_INSTANCES ?= 0
 SENTRY_DSN ?=
 ENVIRONMENT ?= production
 
+# test retries
+RETRY_MAX_WAIT_SECONDS ?= 10.0
+RETRY_MAX_DELAY_SECONDS ?= 30.0
+RETRY_MIN_WAIT_SECONDS ?= 1.0
+
 install:
 	uv sync
 
@@ -29,30 +34,27 @@ server-no-reload:
 test-watch:
 	uv run ptw --runner "uv run pytest"
 
+test-debug: install
+	uv run pytest tests/test_base_client.py
+
 # Run all tests (excluding slow Pathway Commons tests)
 test: install
-	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ -m "not slow"
-
 
 # Run tests with pytest-testmon (only changed tests)
 test-testmon: install
-	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ --testmon -m "not slow"
 
 # Run slow tests (Pathway Commons) with extended timeout
 test-slow: install
-	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ -m "slow" --timeout=200
 
 # Run all tests including slow ones
 test-all: install
-	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ --timeout=200
 
 # Run tests with coverage report
 test-cov: install
-	RETRY_MAX_WAIT_SECONDS=10.0 RETRY_MAX_DELAY_SECONDS=30.0 RETRY_MIN_WAIT_SECONDS=1.0 \
 	uv run pytest tests/ -m "not slow" --cov=medical_mcps --cov-report=html --cov-report=term-missing
 
 # Lint code with ruff

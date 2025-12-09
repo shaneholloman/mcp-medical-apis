@@ -106,7 +106,9 @@ async def get_pathway_by_uri(uri: str, format: str = "json") -> dict | str:
 
 
 @medmcps_tool(name="pathwaycommons_top_pathways", servers=[pathwaycommons_mcp, unified_mcp])
-async def top_pathways(gene: str | None = None, datasource: str | None = None, limit: int = 10) -> dict:
+async def top_pathways(
+    gene: str | None = None, datasource: str | None = None, limit: int = 10
+) -> dict:
     """Get top-level pathways from Pathway Commons using v2 POST API.
 
     WARNING: This tool may take up to 2-3 minutes to respond. The upstream Pathway Commons API

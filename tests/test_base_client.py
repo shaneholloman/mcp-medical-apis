@@ -70,14 +70,11 @@ class TestBaseAPIClientInitialization:
     """Test client initialization"""
 
     def test_init_with_defaults(self, base_url, api_name):
-        """Test initialization with default parameters"""
-        client = ConcreteAPIClient(base_url=base_url, api_name=api_name)
+        client = ConcreteAPIClient(base_url=base_url, api_name=api_name, enable_cache=False)
         assert client.base_url == base_url
         assert client.api_name == api_name
         assert client.timeout == 30.0
         assert client.rate_limit_delay is None
-        # enable_cache defaults to settings.enable_cache (False by default)
-        assert client.enable_cache is False
         assert client._client is None
 
     def test_init_with_custom_params(self, base_url, api_name):

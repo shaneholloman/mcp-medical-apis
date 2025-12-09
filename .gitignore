@@ -44,6 +44,7 @@ htmlcov/
 *.code-workspace
 
 user_testing/*
+.alure/
 todo.md
 
 .claude/settings.local.json
