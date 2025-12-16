@@ -50,7 +50,7 @@ from .servers import (  # noqa: E402
     reactome_server,
     uniprot_server,
 )
-from .servers import (
+from .servers import (  # noqa: E402
     neo4j_server as everycure_kg_server,
 )
 
