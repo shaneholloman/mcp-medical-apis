@@ -50,6 +50,9 @@ from .servers import (  # noqa: E402
     reactome_server,
     uniprot_server,
 )
+from .servers import (  # noqa: E402
+    neo4j_server as everycure_kg_server,
+)
 
 
 # Suppress anyio.ClosedResourceError from FastMCP streamable HTTP transport
@@ -97,6 +100,7 @@ async def lifespan(app: Starlette):
     logger.info("  - BioThings: /tools/biothings/mcp")
     logger.info("  - NCI Clinical Trials: /tools/nci/mcp (requires API key)")
     logger.info("  - Node Normalization: /tools/nodenorm/mcp")
+    logger.info("  - Every Cure Matrix Knowledge Graph: /tools/everycure-kg/mcp")
 
     # Initialize all session managers using AsyncExitStack
     async with contextlib.AsyncExitStack() as stack:
@@ -116,6 +120,7 @@ async def lifespan(app: Starlette):
         await stack.enter_async_context(myvariant_server.myvariant_mcp.session_manager.run())
         await stack.enter_async_context(biothings_server.biothings_mcp.session_manager.run())
         await stack.enter_async_context(nci_server.nci_mcp.session_manager.run())
+        await stack.enter_async_context(everycure_kg_server.everycure_kg_mcp.session_manager.run())
         await stack.enter_async_context(nodenorm_server.nodenorm_mcp.session_manager.run())
         await stack.enter_async_context(unified_mcp.session_manager.run())
         yield
@@ -147,6 +152,10 @@ app = Starlette(
         Mount( "/tools/myvariant", app=myvariant_server.myvariant_mcp.streamable_http_app()),
         Mount( "/tools/biothings", app=biothings_server.biothings_mcp.streamable_http_app()),
         Mount("/tools/nci", app=nci_server.nci_mcp.streamable_http_app()),
+        Mount(
+            "/tools/everycure-kg",
+            app=everycure_kg_server.everycure_kg_mcp.streamable_http_app(),
+        ),
         Mount( "/tools/nodenorm", app=nodenorm_server.nodenorm_mcp.streamable_http_app()),
     ],
     lifespan=lifespan,
@@ -199,6 +208,8 @@ def entry_point():
     biothings_server.biothings_mcp.settings.port = port
     nci_server.nci_mcp.settings.host = host
     nci_server.nci_mcp.settings.port = port
+    everycure_kg_server.everycure_kg_mcp.settings.host = host
+    everycure_kg_server.everycure_kg_mcp.settings.port = port
     unified_mcp.settings.host = host
     unified_mcp.settings.port = port
 
@@ -219,6 +230,9 @@ def entry_point():
     logger.info(f"  - MyVariant: http://{host}:{port}/tools/myvariant/mcp")
     logger.info(f"  - BioThings: http://{host}:{port}/tools/biothings/mcp")
     logger.info(f"  - NCI Clinical Trials: http://{host}:{port}/tools/nci/mcp")
+    logger.info(
+        f"  - Every Cure Matrix Knowledge Graph: http://{host}:{port}/tools/everycure-kg/mcp"
+    )
     logger.info(f"  - Node Normalization: http://{host}:{port}/tools/nodenorm/mcp")
 
     # Run the Starlette app with uvicorn
