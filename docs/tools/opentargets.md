@@ -6,7 +6,7 @@ This server provides access to the OpenTargets Platform, a comprehensive resourc
 
 - **Name:** `opentargets-api-server`
 - **Path:** `/tools/opentargets/mcp`
-- **Base URL:** `http://localhost:8000/tools/opentargets/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/opentargets/mcp`
 - **API:** OpenTargets Platform v4 GraphQL API
 
 ## Tools

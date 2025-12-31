@@ -6,7 +6,7 @@ This server provides access to biomedical literature via PubMed and PubTator3, i
 
 - **Name:** `pubmed-api-server`
 - **Path:** `/tools/pubmed/mcp`
-- **Base URL:** `http://localhost:8000/tools/pubmed/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/pubmed/mcp`
 
 ## Tools
 

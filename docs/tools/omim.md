@@ -6,7 +6,7 @@ This server provides access to Online Mendelian Inheritance in Man (OMIM), a com
 
 - **Name:** `omim-api-server`
 - **Path:** `/tools/omim/mcp`
-- **Base URL:** `http://localhost:8000/tools/omim/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/omim/mcp`
 
 ## Tools
 

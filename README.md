@@ -14,7 +14,7 @@ MCP server that integrates multiple biological and medical databases for researc
 The easiest way to use this MCP server is to connect to the production deployment. All APIs are
 available through a **unified endpoint** that gives you access to all tools in one place.
 
-**Production URL:** `https://medical-mcps-production.up.railway.app/tools/unified/mcp`
+**Production URL:** `https://mcp.cloud.curiloo.com/tools/unified/mcp`
 
 ### Configure in Cursor (or other MCP client)
 
@@ -24,7 +24,7 @@ Add this to your `.cursor/mcp.json` (or equivalent MCP client configuration):
 {
     "mcpServers": {
         "medical-apis": {
-            "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+            "url": "https://mcp.cloud.curiloo.com/tools/unified/mcp"
         }
     }
 }
@@ -211,7 +211,7 @@ optional SSE streams).
 
 The MCP servers are deployed and available at:
 
-**Production Base URL:** `https://medical-mcps-production.up.railway.app`
+**Production Base URL:** `https://mcp.cloud.curiloo.com`
 
 ### Unified Endpoint (Recommended)
 
@@ -219,7 +219,7 @@ The MCP servers are deployed and available at:
 
 ```json
 {
-    "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+    "url": "https://mcp.cloud.curiloo.com/tools/unified/mcp"
 }
 ```
 
@@ -233,7 +233,7 @@ If you prefer to use individual APIs separately, each API has its own endpoint:
 
 ```json
 {
-    "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
+    "url": "https://mcp.cloud.curiloo.com/tools/reactome/mcp"
 }
 ```
 
@@ -277,7 +277,7 @@ Access all APIs through one connection:
 {
     "mcpServers": {
         "medical-apis": {
-            "url": "https://medical-mcps-production.up.railway.app/tools/unified/mcp"
+            "url": "https://mcp.cloud.curiloo.com/tools/unified/mcp"
         }
     }
 }
@@ -291,13 +291,13 @@ If you prefer separate connections for each API:
 {
     "mcpServers": {
         "reactome": {
-            "url": "https://medical-mcps-production.up.railway.app/tools/reactome/mcp"
+            "url": "https://mcp.cloud.curiloo.com/tools/reactome/mcp"
         },
         "chembl": {
-            "url": "https://medical-mcps-production.up.railway.app/tools/chembl/mcp"
+            "url": "https://mcp.cloud.curiloo.com/tools/chembl/mcp"
         },
         "pubmed": {
-            "url": "https://medical-mcps-production.up.railway.app/tools/pubmed/mcp"
+            "url": "https://mcp.cloud.curiloo.com/tools/pubmed/mcp"
         }
     }
 }
@@ -309,13 +309,13 @@ You can test if the production server is accessible by making a simple HTTP requ
 
 ```bash
 # Test unified endpoint (recommended)
-curl https://medical-mcps-production.up.railway.app/tools/unified/mcp \
+curl https://mcp.cloud.curiloo.com/tools/unified/mcp \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "method": "initialize", "params": {}, "id": 1}'
 
 # Or test individual API endpoint
-curl https://medical-mcps-production.up.railway.app/tools/reactome/mcp \
+curl https://mcp.cloud.curiloo.com/tools/reactome/mcp \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "method": "initialize", "params": {}, "id": 1}'

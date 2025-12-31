@@ -6,7 +6,7 @@ This server provides access to the ChEMBL database, a manually curated database 
 
 - **Name:** `chembl-api-server`
 - **Path:** `/tools/chembl/mcp`
-- **Base URL:** `http://localhost:8000/tools/chembl/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/chembl/mcp`
 
 ## Tools
 

@@ -6,7 +6,7 @@ This server provides access to MyVariant.info, a high-performance variant query 
 
 - **Name:** `myvariant-api-server`
 - **Path:** `/tools/myvariant/mcp`
-- **Base URL:** `http://localhost:8000/tools/myvariant/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/myvariant/mcp`
 
 ## Tools
 

@@ -6,7 +6,7 @@ This server provides access to the NHGRI-EBI GWAS Catalog, a quality-controlled,
 
 - **Name:** `gwas-api-server`
 - **Path:** `/tools/gwas/mcp`
-- **Base URL:** `http://localhost:8000/tools/gwas/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/gwas/mcp`
 
 ## Tools
 

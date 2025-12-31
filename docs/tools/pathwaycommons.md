@@ -6,7 +6,7 @@ This server provides access to Pathway Commons, a convenient point of access to 
 
 - **Name:** `pathwaycommons-api-server`
 - **Path:** `/tools/pathwaycommons/mcp`
-- **Base URL:** `http://localhost:8000/tools/pathwaycommons/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/pathwaycommons/mcp`
 
 ## Tools
 

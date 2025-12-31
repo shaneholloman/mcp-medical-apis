@@ -6,7 +6,7 @@ This server provides access to the BioThings suite of APIs, offering unified acc
 
 - **Name:** `biothings-api-server`
 - **Path:** `/tools/biothings/mcp`
-- **Base URL:** `http://localhost:8000/tools/biothings/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/biothings/mcp`
 
 ## Tools
 

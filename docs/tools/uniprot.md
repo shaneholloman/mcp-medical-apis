@@ -6,7 +6,7 @@ This server provides access to UniProt, the world's leading high-quality, compre
 
 - **Name:** `uniprot-api-server`
 - **Path:** `/tools/uniprot/mcp`
-- **Base URL:** `http://localhost:8000/tools/uniprot/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/uniprot/mcp`
 
 ## Tools
 

@@ -6,7 +6,7 @@ This server provides access to ClinicalTrials.gov (version 2 API), the largest r
 
 - **Name:** `ctg-api-server`
 - **Path:** `/tools/ctg/mcp`
-- **Base URL:** `http://localhost:8000/tools/ctg/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/ctg/mcp`
 
 ## Tools
 

@@ -6,7 +6,7 @@ This server provides access to Reactome, a curated database of biological pathwa
 
 - **Name:** `reactome-api-server`
 - **Path:** `/tools/reactome/mcp`
-- **Base URL:** `http://localhost:8000/tools/reactome/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/reactome/mcp`
 
 ## Tools
 
