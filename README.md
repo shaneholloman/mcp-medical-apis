@@ -614,9 +614,8 @@ used.
 -   `opentargets_get_evidence` - Fetch evidence linking a target to a disease
 
 This server follows the same FastMCP + `med_mcp_server` pattern used across the codebase rather than
-copying an external implementation, and its client calls the official OpenTargets v4 REST endpoints
-with the documented parameters (`q`/`entity` for search, `target`/`disease` for association and
-evidence) to stay API-compatible.
+copying an external implementation, and its client calls the official OpenTargets Platform v4 GraphQL API
+with proper GraphQL queries for search, associations, and evidence retrieval.
 
 ### ClinicalTrials.gov Tools
 
