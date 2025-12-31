@@ -1,0 +1,284 @@
+---
+test_name: OpenTargets API Tools Test Suite
+
+marks:
+  - tavern
+  - usefixtures:
+      - server_process
+
+stages:
+  # Test 1: opentargets_search - Happy Path (target) - expects real data
+  - name: Search for target (TP53) - should return results
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "opentargets_search"
+          arguments:
+            query: "TP53"
+            entity: "target"
+            size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+              text: !re_search "(?s)TP53.*ENSG00000141510|ENSG00000141510.*TP53|\\\"id\\\":\\s*\\\"ENSG"
+          isError: false
+
+  # Test 2: opentargets_search - Happy Path (disease) - expects real data
+  - name: Search for disease (multiple sclerosis) - should return results
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "opentargets_search"
+          arguments:
+            query: "multiple sclerosis"
+            entity: "disease"
+            size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+              text: !re_search "(?s)multiple sclerosis.*EFO|EFO.*multiple sclerosis|\\\"id\\\":\\s*\\\"EFO"
+          isError: false
+
+  # Test 3: opentargets_search - Happy Path (drug) - expects real data
+  - name: Search for drug (imatinib) - should return results
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "opentargets_search"
+          arguments:
+            query: "imatinib"
+            entity: "drug"
+            size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+              text: !re_search "(?s)imatinib.*CHEMBL|CHEMBL.*imatinib|\\\"id\\\":\\s*\\\"CHEMBL"
+          isError: false
+
+  # Test 4: opentargets_get_associations - Happy Path (by target) - expects real data
+  - name: Get associations by target (TP53) - should return results
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "opentargets_get_associations"
+          arguments:
+            target_id: "ENSG00000141510"
+            size: 20
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+              text: !re_search "(?s)\\\"data\\\":\\s*\\[.*disease|disease.*\\\"data\\\":\\s*\\["
+          isError: false
+
+  # Test 5: opentargets_get_associations - Happy Path (by disease) - expects real data
+  - name: Get associations by disease (multiple sclerosis) - should return results
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "opentargets_get_associations"
+          arguments:
+            disease_id: "EFO_0003767"
+            size: 20
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+              text: !re_search "(?s)\\\"data\\\":\\s*\\[.*target|target.*\\\"data\\\":\\s*\\["
+          isError: false
+
+  # Test 6: opentargets_get_evidence - Happy Path - expects real data
+  # Using BRAF and melanoma - a well-known strong association
+  - name: Get evidence for target-disease association (BRAF-melanoma) - should return results
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        method: "tools/call"
+        params:
+          name: "opentargets_get_evidence"
+          arguments:
+            target_id: "ENSG00000157764"
+            disease_id: "EFO_0000756"
+            size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 6
+        result:
+          content:
+            - type: "text"
+              text: !re_search "(?s)\\\"data\\\":\\s*\\[.*melanoma|melanoma.*\\\"data\\\":\\s*\\[|EFO_0000756"
+          isError: false
+
+  # Test 7: opentargets_search - Edge Case (empty query returns empty data, not an error)
+  - name: Search with empty query returns empty data
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        method: "tools/call"
+        params:
+          name: "opentargets_search"
+          arguments:
+            query: ""
+            size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 7
+        result:
+          content:
+            - type: "text"
+              text: !re_search "data"
+          isError: false
+
+  # Test 8: opentargets_get_associations - Error Case (no parameters - invalid invocation)
+  - name: Get associations without target or disease (invalid - should error)
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        method: "tools/call"
+        params:
+          name: "opentargets_get_associations"
+          arguments:
+            size: 20
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 8
+        result:
+          content:
+            - type: "text"
+              text: !re_search "error|Error|target_id|disease_id|required|Provide at least one"
+          isError: false
+
+  # Test 9: opentargets_get_evidence - Edge Case (valid query but no evidence found - empty data OK)
+  - name: Get evidence for target-disease with no known association (empty data is valid)
+    request:
+      url: "http://localhost:8000/tools/opentargets/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 9
+        method: "tools/call"
+        params:
+          name: "opentargets_get_evidence"
+          arguments:
+            target_id: "ENSG00000141510"
+            disease_id: "EFO_0000002"
+            size: 10
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        jsonrpc: "2.0"
+        id: 9
+        result:
+          content:
+            - type: "text"
+              text: !re_search "data"
+          isError: false
+

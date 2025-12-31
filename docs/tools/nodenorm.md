@@ -6,7 +6,7 @@ This server provides access to the Node Normalization service, which standardize
 
 - **Name:** `nodenorm-api-server`
 - **Path:** `/tools/nodenorm/mcp`
-- **Base URL:** `http://localhost:8000/tools/nodenorm/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/nodenorm/mcp`
 
 ## Tools
 

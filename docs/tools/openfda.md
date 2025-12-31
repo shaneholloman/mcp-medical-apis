@@ -6,7 +6,7 @@ This server provides access to OpenFDA, an interface to public FDA datasets incl
 
 - **Name:** `openfda-api-server`
 - **Path:** `/tools/openfda/mcp`
-- **Base URL:** `http://localhost:8000/tools/openfda/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/openfda/mcp`
 
 ## Tools
 

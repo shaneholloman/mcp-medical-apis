@@ -7,8 +7,8 @@ containing biomedical data for drug repurposing research.
 
 -   **Name:** `everycure-matrix-kg-server`
 -   **Path:** `/tools/everycure-kg/mcp`
--   **Base URL:** `http://localhost:8000/tools/everycure-kg/mcp` (default)
--   **Production URL:** `https://medical-mcps-production.up.railway.app/tools/everycure-kg/mcp`
+-   **Base URL:** `https://mcp.cloud.curiloo.com/tools/everycure-kg/mcp`
+-   **Production URL:** `https://mcp.cloud.curiloo.com/tools/everycure-kg/mcp`
 
 ## Database Versions
 

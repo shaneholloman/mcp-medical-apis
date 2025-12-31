@@ -8,7 +8,7 @@ This server provides access to the National Cancer Institute (NCI) Clinical Tria
 
 - **Name:** `nci-api-server`
 - **Path:** `/tools/nci/mcp`
-- **Base URL:** `http://localhost:8000/tools/nci/mcp` (default)
+- **Base URL:** `https://mcp.cloud.curiloo.com/tools/nci/mcp`
 
 ## Tools
 
