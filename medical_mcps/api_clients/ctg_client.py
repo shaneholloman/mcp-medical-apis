@@ -9,6 +9,7 @@ blocks httpx's HTTP client signature but allows requests/urllib3.
 """
 
 import asyncio
+import json
 import logging
 from typing import Any
 
@@ -18,6 +19,31 @@ from hishel.requests import CacheAdapter
 from .base_client import BaseAPIClient
 
 logger = logging.getLogger(__name__)
+
+# Default fields for search operations to keep response sizes manageable
+# These essential fields provide enough information for listing/searching studies
+# without the massive overhead of full study details
+DEFAULT_SEARCH_FIELDS = [
+    "NCTId",
+    "BriefTitle",
+    "OfficialTitle",
+    "OverallStatus",
+    "Condition",
+    "InterventionName",
+    "Phase",
+    "StartDate",
+    "CompletionDate",
+    "EnrollmentCount",
+    "BriefSummary",
+    "EligibilityCriteria",
+    "LocationCity",
+    "LocationCountry",
+    "LeadSponsorName",
+]
+
+# Maximum response size in bytes (150KB) as safety net
+# With default fields, responses should be much smaller, but this prevents edge cases
+MAX_RESPONSE_SIZE_BYTES = 150 * 1024
 
 
 class CTGClient(BaseAPIClient):
@@ -132,14 +158,17 @@ class CTGClient(BaseAPIClient):
         if page_token:
             params["pageToken"] = page_token
 
-        # Add field selection
+        # Add field selection - use default fields if none specified
+        # This dramatically reduces response size (from ~460KB to ~16-34KB for 20 studies)
+        if fields is None:
+            fields = DEFAULT_SEARCH_FIELDS
         if fields:
             params["fields"] = "|".join(fields)
 
         try:
             data = await self._get("/studies", params=params)
 
-            # Extract metadata
+            # Build initial metadata
             metadata = {
                 "page_size": page_size,
                 "has_next_page": "nextPageToken" in data,
@@ -148,6 +177,59 @@ class CTGClient(BaseAPIClient):
                 metadata["next_page_token"] = data["nextPageToken"]
             if "studies" in data:
                 metadata["count"] = len(data["studies"])
+
+            # Safety net: Check response size and truncate if necessary
+            # This should rarely trigger with default fields, but protects against edge cases
+            formatted_response = self.format_response(data, metadata)
+            response_json = json.dumps(formatted_response)
+            response_size = len(response_json.encode("utf-8"))
+
+            original_count = len(data.get("studies", []))
+            truncated = False
+
+            if response_size > MAX_RESPONSE_SIZE_BYTES:
+                logger.warning(
+                    f"Response size ({response_size} bytes) exceeds limit ({MAX_RESPONSE_SIZE_BYTES} bytes). "
+                    f"Truncating studies from {original_count} to fit within limit."
+                )
+
+                # Binary search to find max studies that fit
+                studies = data.get("studies", [])
+                low, high = 1, len(studies)
+                max_fitting = 0
+
+                while low <= high:
+                    mid = (low + high) // 2
+                    test_data = {**data, "studies": studies[:mid]}
+                    test_metadata = {**metadata, "count": mid}
+                    test_response = self.format_response(test_data, test_metadata)
+                    test_json = json.dumps(test_response)
+                    test_size = len(test_json.encode("utf-8"))
+
+                    if test_size <= MAX_RESPONSE_SIZE_BYTES:
+                        max_fitting = mid
+                        low = mid + 1
+                    else:
+                        high = mid - 1
+
+                if max_fitting > 0:
+                    data["studies"] = studies[:max_fitting]
+                    truncated = True
+                    metadata["count"] = max_fitting
+                else:
+                    logger.error(
+                        "Cannot fit even 1 study within size limit. Returning empty result."
+                    )
+                    data["studies"] = []
+                    metadata["count"] = 0
+
+            if truncated:
+                metadata["truncated"] = True
+                metadata["original_count"] = original_count
+                metadata["warning"] = (
+                    f"Response truncated from {original_count} to {len(data['studies'])} "
+                    f"studies to fit within size limit"
+                )
 
             return self.format_response(data, metadata)
         except Exception as e:
