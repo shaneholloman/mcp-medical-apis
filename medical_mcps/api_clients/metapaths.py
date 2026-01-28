@@ -27,40 +27,81 @@ DEFAULT_METAPATHS = {
     },
     "drug_to_disease_via_pathway": {
         "name": "Drug → Disease (Via Pathway)",
-        "description": "Drug interacts with protein in pathway associated with disease",
+        "description": (
+            "Drug interacts with protein in pathway with disease basis "
+            "(CORRECTED: uses has_participant and disease_has_basis_in)"
+        ),
         "pattern": [
             "Drug",
             "directly_physically_interacts_with",
             "Protein",
-            "actively_involved_in",
+            # FIXED: was actively_involved_in (23.9K) -> now has_participant (312K - 13x more!)
+            "has_participant",
             "Pathway",
-            "associated_with",
+            # FIXED: was associated_with -> now disease_has_basis_in
+            "disease_has_basis_in",
             "Disease",
         ],
         "hops": 3,
+        "direction_hints": {
+            # Protein <- Pathway (Pathway has_participant Protein)
+            "step_2_reversed": True,
+            # Pathway <- Disease (Disease disease_has_basis_in Pathway)
+            "step_3_reversed": True,
+        },
     },
     "disease_to_disease_shared_gene": {
         "name": "Disease → Disease (Shared Gene)",
-        "description": "Two diseases associated with same gene",
-        "pattern": ["Disease1", "associated_with", "Gene", "associated_with", "Disease2"],
+        "description": (
+            "Two diseases with shared genetic basis "
+            "(CORRECTED: uses gene_associated_with_condition)"
+        ),
+        "pattern": [
+            "Disease",
+            # FIXED: was associated_with (38.6K) -> now gene_associated_with_condition
+            # (52.8K - 37% more!)
+            "gene_associated_with_condition",
+            "Gene",
+            "gene_associated_with_condition",
+            "Disease",
+        ],
         "hops": 2,
+        "direction_hints": {
+            # Disease <- Gene (Gene gene_associated_with_condition Disease)
+            "step_1_reversed": True,
+            # Gene <- Disease (Disease has gene that is Gene gene_associated_with_condition Disease)
+            "step_2_reversed": True,
+        },
     },
     "drug_side_effect_path": {
-        "name": "Drug → Side Effect → Disease",
-        "description": "Drug causes side effect (phenotypic feature) associated with disease",
-        "pattern": ["Drug", "causes", "PhenotypicFeature", "associated_with", "Disease"],
-        "hops": 2,
+        "name": "Drug → Disease (Side Effect)",
+        "description": (
+            "Drug causes disease as side effect "
+            "(CORRECTED: simplified to 1-hop, side effects are Disease nodes)"
+        ),
+        "pattern": [
+            "Drug",
+            # Direct: side effects are modeled as Disease nodes
+            "causes",
+            "Disease",
+        ],
+        "hops": 1,
     },
     "drug_to_disease_via_gene": {
         "name": "Drug → Disease (Via Gene)",
-        "description": "Drug interacts with protein that is product of gene associated with disease",
+        "description": (
+            "Drug interacts with protein that is product of gene associated with disease "
+            "(CORRECTED: uses gene_associated_with_condition)"
+        ),
         "pattern": [
             "Drug",
             "directly_physically_interacts_with",
             "Protein",
             "gene_product_of",
             "Gene",
-            "associated_with",
+            # FIXED: was associated_with (38.6K) -> now gene_associated_with_condition
+            # (52.8K - 37% more!)
+            "gene_associated_with_condition",
             "Disease",
         ],
         "hops": 3,
