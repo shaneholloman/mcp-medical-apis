@@ -25,6 +25,7 @@ from ..api_clients.metapaths import (
     parse_metapath_string,
 )
 from ..api_clients.neo4j_client import Neo4jClient
+from ..api_clients.safety_validator import check_metapath_safety, check_node_degree
 from ..med_mcp_server import tool as medmcps_tool
 from ..med_mcp_server import unified_mcp
 from ..settings import settings
@@ -79,9 +80,8 @@ async def execute_cypher(
     try:
         client = get_neo4j_client()
         result = await client.execute_cypher(query, parameters, db_name)
-        logger.info(
-            f"Tool succeeded: execute_cypher() - returned {result.get('metadata', {}).get('record_count', 0)} records"
-        )
+        record_count = result.get("metadata", {}).get("record_count", 0)
+        logger.info(f"Tool succeeded: execute_cypher() - returned {record_count} records")
         return result
     except Exception as e:
         return handle_neo4j_error(e, db_name, "execute_cypher")
@@ -238,6 +238,24 @@ async def get_neighborhood(
 
     try:
         client = get_neo4j_client()
+
+        # Safety check: Prevent path explosion on high-degree nodes
+        if max_hops > 1:
+            safety = await check_node_degree(client, node_id, db_name, max_hops)
+            if safety["blocked"]:
+                logger.warning(f"Blocked get_neighborhood query: {safety['warning']}")
+                return neo4j_response(
+                    data=None,
+                    error=safety["warning"],
+                    metadata={
+                        "database": db_name,
+                        "node_id": node_id,
+                        "max_hops": max_hops,
+                        "safety_check": safety,
+                    },
+                )
+            if safety["warning"]:
+                logger.warning(safety["warning"])
 
         # Build Cypher query
         # Start with MATCH for source node
@@ -450,7 +468,8 @@ async def get_weighted_neighborhood(
     """
     db_name = database or settings.everycure_kg_default_database
     logger.info(
-        f"Tool invoked: get_weighted_neighborhood(node_id='{node_id}', sort_by='{sort_by}', limit={limit})"
+        f"Tool invoked: get_weighted_neighborhood(node_id='{node_id}', "
+        f"sort_by='{sort_by}', limit={limit})"
     )
 
     try:
@@ -552,17 +571,25 @@ async def find_paths_by_metapath(
 
     Available metapaths include:
     - drug_to_disease_direct: Drug -> treats -> Disease (1 hop)
-    - drug_to_disease_via_target: Drug -> interacts_with -> Protein -> associated_with -> Disease (2 hops)
-    - drug_to_disease_via_pathway: Drug -> interacts_with -> Protein -> part_of -> Pathway -> associated_with -> Disease (3 hops)
-    - drug_to_disease_via_gene: Drug -> interacts_with -> Protein -> gene_product_of -> Gene -> associated_with -> Disease (3 hops)
-    - disease_to_disease_shared_gene: Disease -> associated_with -> Gene -> associated_with -> Disease (2 hops)
-    - drug_side_effect_path: Drug -> causes -> PhenotypicFeature -> associated_with -> Disease (2 hops)
+    - drug_to_disease_via_target: Drug -> interacts_with -> Protein ->
+      associated_with -> Disease (2 hops)
+    - drug_to_disease_via_pathway: Drug -> interacts_with -> Protein -> part_of ->
+      Pathway -> associated_with -> Disease (3 hops)
+    - drug_to_disease_via_gene: Drug -> interacts_with -> Protein ->
+      gene_product_of -> Gene -> associated_with -> Disease (3 hops)
+    - disease_to_disease_shared_gene: Disease -> associated_with -> Gene ->
+      associated_with -> Disease (2 hops)
+    - drug_side_effect_path: Drug -> causes -> PhenotypicFeature ->
+      associated_with -> Disease (2 hops)
 
     Args:
-        source_id: Source node ID (e.g., "CHEMBL123" for a drug, "MONDO:0007113" for a disease)
-        target_id: Target node ID (e.g., "MONDO:0007113" for a disease, "HGNC:1100" for a gene)
-        metapath_name: Name of predefined metapath. Must be one of the metapaths returned by get_supported_metapaths().
-                      Examples: "drug_to_disease_direct", "drug_to_disease_via_target"
+        source_id: Source node ID (e.g., "CHEMBL123" for a drug,
+                  "MONDO:0007113" for a disease)
+        target_id: Target node ID (e.g., "MONDO:0007113" for a disease,
+                  "HGNC:1100" for a gene)
+        metapath_name: Name of predefined metapath. Must be one of the metapaths
+                      returned by get_supported_metapaths(). Examples:
+                      "drug_to_disease_direct", "drug_to_disease_via_target"
         max_paths: Maximum number of paths to return (default: 10)
         database: Database version (defaults to latest: everycure-v0.13.0)
 
@@ -592,7 +619,10 @@ async def find_paths_by_metapath(
             return neo4j_response(
                 data=None,
                 metadata={"database": db_name},
-                error=f"Unknown metapath: {metapath_name}. Use get_supported_metapaths() to see available metapaths.",
+                error=(
+                    f"Unknown metapath: {metapath_name}. "
+                    f"Use get_supported_metapaths() to see available metapaths."
+                ),
             )
 
         # Parse metapath pattern
@@ -601,17 +631,59 @@ async def find_paths_by_metapath(
 
         client = get_neo4j_client()
 
+        # Safety check: Prevent path explosion before executing query
+        if hops > 1:
+            safety = await check_metapath_safety(client, source_id, target_id, hops, db_name)
+            if safety["blocked"]:
+                logger.warning(f"Blocked metapath query: {safety['warning']}")
+                return neo4j_response(
+                    data=None,
+                    error=safety["warning"],
+                    metadata={
+                        "database": db_name,
+                        "source_id": source_id,
+                        "target_id": target_id,
+                        "metapath_name": metapath_name,
+                        "hops": hops,
+                        "safety_check": safety,
+                    },
+                )
+            if safety["warning"]:
+                logger.warning(f"Metapath safety warning: {safety['warning']}")
+
+        # Get direction hints from metapath (for corrected metapaths with reversed relationships)
+        direction_hints = metapath.get("direction_hints", {})
+
+        # Helper function to get relationship direction pattern
+        def get_rel_pattern(step_num: int, rel_type: str) -> str:
+            """Get relationship pattern with correct direction.
+
+            Args:
+                step_num: Step number (1-indexed)
+                rel_type: Relationship type
+
+            Returns:
+                String like "-[r1:rel_type]->" or "<-[r1:rel_type]-" or "-[r1:rel_type]-"
+            """
+            is_reversed = direction_hints.get(f"step_{step_num}_reversed", False)
+            if is_reversed:
+                return f"<-[r{step_num}:{rel_type}]-"
+            else:
+                # Default: forward direction (or bidirectional for compatibility)
+                return f"-[r{step_num}:{rel_type}]-"
+
         # Build Cypher query based on number of hops
         if hops == 1:
             # 1-hop: Direct relationship
             rel_type = relationship_types[0]
             source_label = node_labels[0]
             target_label = node_labels[1]
+            rel_pattern = get_rel_pattern(1, rel_type)
 
             query = f"""
-            MATCH (source {{id: $source_id}})-[r:{rel_type}]-(target {{id: $target_id}})
+            MATCH (source {{id: $source_id}}){rel_pattern}(target {{id: $target_id}})
             WHERE '{source_label}' IN labels(source) AND '{target_label}' IN labels(target)
-            RETURN source, r, target, 1 as path_length
+            RETURN source, r1 as r, target, 1 as path_length
             LIMIT {max_paths}
             """
         elif hops == 2:
@@ -621,9 +693,12 @@ async def find_paths_by_metapath(
             source_label = node_labels[0]
             intermediate_label = node_labels[1]
             target_label = node_labels[2]
+            rel_pattern1 = get_rel_pattern(1, rel_type1)
+            rel_pattern2 = get_rel_pattern(2, rel_type2)
 
             query = f"""
-            MATCH (source {{id: $source_id}})-[r1:{rel_type1}]-(intermediate)-[r2:{rel_type2}]-(target {{id: $target_id}})
+            MATCH (source {{id: $source_id}}){rel_pattern1}(intermediate)
+              {rel_pattern2}(target {{id: $target_id}})
             WHERE '{source_label}' IN labels(source)
               AND '{intermediate_label}' IN labels(intermediate)
               AND '{target_label}' IN labels(target)
@@ -639,14 +714,19 @@ async def find_paths_by_metapath(
             intermediate1_label = node_labels[1]
             intermediate2_label = node_labels[2]
             target_label = node_labels[3]
+            rel_pattern1 = get_rel_pattern(1, rel_type1)
+            rel_pattern2 = get_rel_pattern(2, rel_type2)
+            rel_pattern3 = get_rel_pattern(3, rel_type3)
 
             query = f"""
-            MATCH (source {{id: $source_id}})-[r1:{rel_type1}]-(intermediate1)-[r2:{rel_type2}]-(intermediate2)-[r3:{rel_type3}]-(target {{id: $target_id}})
+            MATCH (source {{id: $source_id}}){rel_pattern1}(intermediate1)
+              {rel_pattern2}(intermediate2){rel_pattern3}(target {{id: $target_id}})
             WHERE '{source_label}' IN labels(source)
               AND '{intermediate1_label}' IN labels(intermediate1)
               AND '{intermediate2_label}' IN labels(intermediate2)
               AND '{target_label}' IN labels(target)
-            RETURN source, r1, intermediate1, r2, intermediate2, r3, target, 3 as path_length
+            RETURN source, r1, intermediate1, r2, intermediate2, r3, target,
+                   3 as path_length
             LIMIT {max_paths}
             """
         else:
@@ -763,7 +843,8 @@ async def find_drugs_for_disease(
     """
     db_name = database or settings.everycure_kg_default_database
     logger.info(
-        f"Tool invoked: find_drugs_for_disease(disease_id='{disease_id}', include_indirect={include_indirect})"
+        f"Tool invoked: find_drugs_for_disease(disease_id='{disease_id}', "
+        f"include_indirect={include_indirect})"
     )
 
     try:
@@ -797,11 +878,16 @@ async def find_drugs_for_disease(
         if include_indirect:
             # Via target metapath (simplified - find drugs via proteins)
             via_target_query = f"""
-            MATCH (drug)-[:directly_physically_interacts_with]-(protein)-[:associated_with]-(disease {{id: $disease_id}})
+            MATCH (drug)-[:directly_physically_interacts_with]-(protein)
+              -[:associated_with]-(disease {{id: $disease_id}})
             WHERE 'biolink:Drug' IN labels(drug)
               AND 'biolink:Protein' IN labels(protein)
               AND 'biolink:Disease' IN labels(disease)
-            RETURN DISTINCT drug.id as drug_id, drug.name as drug_name, protein.id as protein_id, 'via_target' as path_type
+            RETURN DISTINCT
+                drug.id as drug_id,
+                drug.name as drug_name,
+                protein.id as protein_id,
+                'via_target' as path_type
             LIMIT {max_paths_per_metapath}
             """
 
@@ -880,7 +966,8 @@ async def find_diseases_for_drug(
     db_name = database or settings.everycure_kg_default_database
     logger.info(
         f"Tool invoked: find_diseases_for_drug(drug_id='{drug_id}', "
-        f"include_indications={include_indications}, include_contraindications={include_contraindications})"
+        f"include_indications={include_indications}, "
+        f"include_contraindications={include_contraindications})"
     )
 
     try:
@@ -896,7 +983,10 @@ async def find_diseases_for_drug(
             indications_query = """
             MATCH (drug {id: $drug_id})-[r:treats_or_applied_or_studied_to_treat]-(disease)
             WHERE 'biolink:Drug' IN labels(drug) AND 'biolink:Disease' IN labels(disease)
-            RETURN DISTINCT disease.id as disease_id, disease.name as disease_name, type(r) as rel_type
+            RETURN DISTINCT
+                disease.id as disease_id,
+                disease.name as disease_name,
+                type(r) as rel_type
             LIMIT 100
             """
             indications_result = await client.execute_cypher(
@@ -917,7 +1007,10 @@ async def find_diseases_for_drug(
             contraindications_query = """
             MATCH (drug {id: $drug_id})-[r:contraindicated_in]-(disease)
             WHERE 'biolink:Drug' IN labels(drug) AND 'biolink:Disease' IN labels(disease)
-            RETURN DISTINCT disease.id as disease_id, disease.name as disease_name, type(r) as rel_type
+            RETURN DISTINCT
+                disease.id as disease_id,
+                disease.name as disease_name,
+                type(r) as rel_type
             LIMIT 100
             """
             contraindications_result = await client.execute_cypher(
@@ -940,7 +1033,10 @@ async def find_diseases_for_drug(
             WHERE 'biolink:Drug' IN labels(drug)
               AND 'biolink:PhenotypicFeature' IN labels(phenotype)
               AND 'biolink:Disease' IN labels(disease)
-            RETURN DISTINCT disease.id as disease_id, disease.name as disease_name, phenotype.id as phenotype_id
+            RETURN DISTINCT
+                disease.id as disease_id,
+                disease.name as disease_name,
+                phenotype.id as phenotype_id
             LIMIT 100
             """
             adverse_events_result = await client.execute_cypher(
@@ -1040,7 +1136,7 @@ async def find_paths_by_custom_metapath(
     """Find paths between two nodes using a custom metapath pattern.
 
     Allows users to specify custom metapath patterns like:
-    "Drug->directly_physically_interacts_with->Protein->gene_product_of->Gene->associated_with->Disease"
+    "Drug->directly_physically_interacts_with->Protein->gene_product_of->Gene"
 
     All node types and relationship types are validated against Biolink Model
     to ensure they exist before constructing the query.
@@ -1055,8 +1151,9 @@ async def find_paths_by_custom_metapath(
                          "NodeType->RelType->NodeType->RelType->NodeType"
                          Examples:
                          - "Drug->treats->Disease"
-                         - "Drug->directly_physically_interacts_with->Protein->associated_with->Disease"
-                         - "Drug->directly_physically_interacts_with->Protein->gene_product_of->Gene->associated_with->Disease"
+                         - "Drug->directly_physically_interacts_with->Protein"
+                         - "Drug->directly_physically_interacts_with->Protein"
+                           "->gene_product_of->Gene->associated_with->Disease"
         max_paths: Maximum number of paths to return (default: 10)
         max_hops: Maximum allowed hops for safety (default: 5, max: 5)
         database: Database version (defaults to latest: everycure-v0.13.0)
@@ -1107,8 +1204,8 @@ async def find_paths_by_custom_metapath(
             is_valid, normalized = validate_node_type(node_type)
             if not is_valid:
                 validation_errors.append(
-                    f"Node type '{node_type}' at position {i + 1} is not valid in Biolink Model. "
-                    f"Use get_supported_types() to see available node types."
+                    f"Node type '{node_type}' at position {i + 1} is not valid in Biolink Model."
+                    f" Use get_supported_types() to see available node types."
                 )
             else:
                 validated_node_labels.append(normalized)
@@ -1120,8 +1217,8 @@ async def find_paths_by_custom_metapath(
             is_valid, normalized = validate_relationship_type(rel_type)
             if not is_valid:
                 validation_errors.append(
-                    f"Relationship type '{rel_type}' at position {i + 1} is not valid in Biolink Model. "
-                    f"Use get_supported_types() to see available relationship types."
+                    f"Relationship type '{rel_type}' at position {i + 1} is not valid "
+                    f"in Biolink Model. Use get_supported_types() to see available types."
                 )
             else:
                 validated_rel_types.append(normalized)
