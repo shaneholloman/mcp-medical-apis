@@ -74,6 +74,26 @@ mcp_logger.addFilter(SuppressClosedResourceErrorFilter())
 logger = logging.getLogger(__name__)
 
 
+class RejectMcpSseMiddleware:
+    """Reject GET requests to MCP endpoints to disable SSE streams."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            method = scope.get("method", "").upper()
+            path = scope.get("path", "")
+            is_mcp_endpoint = path.endswith("/mcp") or path.endswith("/mcp/")
+            if method == "GET" and is_mcp_endpoint:
+                body = b'{"error":"SSE transport disabled; use POST"}'
+                headers = [(b"content-type", b"application/json")]
+                await send({"type": "http.response.start", "status": 405, "headers": headers})
+                await send({"type": "http.response.body", "body": body})
+                return
+        await self.app(scope, receive, send)
+
+
 async def health_check(request):
     """Health check endpoint for Cloud Run"""
     return JSONResponse({"status": "ok"})
@@ -161,6 +181,9 @@ app = Starlette(
     lifespan=lifespan,
 )
 # fmt: on
+
+# Disable long-lived SSE connections on MCP endpoints.
+app.add_middleware(RejectMcpSseMiddleware)
 
 # add CORS
 app.add_middleware(
