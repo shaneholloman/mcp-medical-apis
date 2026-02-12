@@ -67,7 +67,7 @@ class ServerSettings(BaseSettings):
     # Password MUST be set via EVERYCURE_KG_PASSWORD environment variable or .env file
     # Never commit passwords to code! Add to .env file (which is gitignored)
     everycure_kg_password: str | None = None  # Required - must be set via env var or .env
-    everycure_kg_default_database: str = "everycure-v0.13.0"  # Latest version
+    everycure_kg_default_database: str = "everycure-orchard-feb-26-t3"  # Latest version
 
     def get_port(self) -> int:
         """Get port from PORT env var (Railway) or mcp_port setting"""
