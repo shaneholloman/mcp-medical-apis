@@ -50,3 +50,4 @@ todo.md
 .claude/settings.local.json
 
 workbench/**
+.ai/
