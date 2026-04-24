@@ -4,12 +4,20 @@ import logging
 import os
 import socket
 import subprocess
+import tempfile
 import time
 from collections.abc import Generator
 
 import pytest
 
 logger = logging.getLogger(__name__)
+
+
+# Set a writable cache dir before any medical_mcps imports so base_client.py
+# can create its per-process cache subdirectory without needing ~/.cache.
+if not os.environ.get("MEDICAL_MCPS_CACHE_DIR"):
+    _tmp_cache = tempfile.mkdtemp(prefix="medical_mcps_test_cache_")
+    os.environ["MEDICAL_MCPS_CACHE_DIR"] = _tmp_cache
 
 
 def _wait_for_server_ready(

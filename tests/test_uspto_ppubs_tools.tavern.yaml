@@ -1,5 +1,5 @@
 ---
-test_name: Patent API Tools Test Suite
+test_name: USPTO PPUBS Patent Public Search Tools Test Suite
 
 marks:
   - tavern
@@ -7,9 +7,9 @@ marks:
       - server_process
 
 stages:
-  - name: Search Orange Book patent signals by active ingredient
+  - name: Search granted patents via dedicated PPUBS endpoint
     request:
-      url: "http://localhost:8000/tools/patent/mcp"
+      url: "http://localhost:8000/tools/uspto-ppubs/mcp"
       method: POST
       headers:
         Content-Type: "application/json"
@@ -19,9 +19,9 @@ stages:
         id: 1
         method: "tools/call"
         params:
-          name: "patent_search_orange_book"
+          name: "uspto_ppubs_search_patents"
           arguments:
-            active_ingredient: "losartan"
+            query: "pembrolizumab"
             limit: 3
     response:
       status_code: 200
@@ -31,13 +31,13 @@ stages:
         $ext:
           function: tests.tavern_utils:parse_and_validate_mcp_json
           extra_kwargs:
-            expected_api_source: "FDA_orange_book"
+            expected_api_source: "USPTO_PPUBS"
       verify_response_with:
         - function: tests.tavern_utils:validate_saved_json
           extra_kwargs:
             variable_name: "parsed_json"
             expected_body:
-              api_source: "FDA_orange_book"
+              api_source: "USPTO_PPUBS"
               data:
                 type: list
                 min_length: 1
@@ -45,8 +45,10 @@ stages:
                 type: dict
                 required:
                   - total
+                  - offset
+                  - limit
                   - query
-                  - suggested_next_steps
+                  - sources
       json:
         jsonrpc: "2.0"
         id: 1
@@ -55,7 +57,7 @@ stages:
             - type: "text"
           isError: false
 
-  - name: Search Orange Book patent signals through unified MCP
+  - name: Search granted patents via unified MCP endpoint
     request:
       url: "http://localhost:8000/tools/unified/mcp"
       method: POST
@@ -67,9 +69,9 @@ stages:
         id: 2
         method: "tools/call"
         params:
-          name: "patent_search_orange_book"
+          name: "uspto_ppubs_search_patents"
           arguments:
-            active_ingredient: "losartan"
+            query: "pembrolizumab"
             limit: 2
     response:
       status_code: 200
@@ -79,13 +81,13 @@ stages:
         $ext:
           function: tests.tavern_utils:parse_and_validate_mcp_json
           extra_kwargs:
-            expected_api_source: "FDA_orange_book"
+            expected_api_source: "USPTO_PPUBS"
       verify_response_with:
         - function: tests.tavern_utils:validate_saved_json
           extra_kwargs:
             variable_name: "parsed_json"
             expected_body:
-              api_source: "FDA_orange_book"
+              api_source: "USPTO_PPUBS"
               data:
                 type: list
                 min_length: 1
@@ -93,7 +95,7 @@ stages:
                 type: dict
                 required:
                   - total
-                  - query
+                  - sources
       json:
         jsonrpc: "2.0"
         id: 2
@@ -102,9 +104,9 @@ stages:
             - type: "text"
           isError: false
 
-  - name: Get exclusivity signals by active ingredient
+  - name: Search published patent applications (pre-grant)
     request:
-      url: "http://localhost:8000/tools/patent/mcp"
+      url: "http://localhost:8000/tools/uspto-ppubs/mcp"
       method: POST
       headers:
         Content-Type: "application/json"
@@ -114,9 +116,10 @@ stages:
         id: 3
         method: "tools/call"
         params:
-          name: "patent_get_exclusivities"
+          name: "uspto_ppubs_search_applications"
           arguments:
-            active_ingredient: "losartan"
+            query: "pembrolizumab"
+            limit: 3
     response:
       status_code: 200
       strict:
@@ -125,21 +128,20 @@ stages:
         $ext:
           function: tests.tavern_utils:parse_and_validate_mcp_json
           extra_kwargs:
-            expected_api_source: "FDA_orange_book"
+            expected_api_source: "USPTO_PPUBS"
       verify_response_with:
         - function: tests.tavern_utils:validate_saved_json
           extra_kwargs:
             variable_name: "parsed_json"
             expected_body:
-              api_source: "FDA_orange_book"
+              api_source: "USPTO_PPUBS"
               data:
                 type: list
               metadata:
                 type: dict
                 required:
                   - total
-                  - query
-                  - suggested_next_steps
+                  - sources
       json:
         jsonrpc: "2.0"
         id: 3
@@ -148,9 +150,9 @@ stages:
             - type: "text"
           isError: false
 
-  - name: Patent exclusivities request without required arguments returns validation error payload
+  - name: Search with field qualifier syntax TTL/(term) returns results
     request:
-      url: "http://localhost:8000/tools/patent/mcp"
+      url: "http://localhost:8000/tools/uspto-ppubs/mcp"
       method: POST
       headers:
         Content-Type: "application/json"
@@ -160,8 +162,10 @@ stages:
         id: 4
         method: "tools/call"
         params:
-          name: "patent_get_exclusivities"
-          arguments: {}
+          name: "uspto_ppubs_search_patents"
+          arguments:
+            query: "TTL/(aspirin)"
+            limit: 3
     response:
       status_code: 200
       strict:
@@ -170,19 +174,18 @@ stages:
         $ext:
           function: tests.tavern_utils:parse_and_validate_mcp_json
           extra_kwargs:
-            expected_api_source: "FDA_orange_book"
+            expected_api_source: "USPTO_PPUBS"
       verify_response_with:
         - function: tests.tavern_utils:validate_saved_json
           extra_kwargs:
             variable_name: "parsed_json"
             expected_body:
-              api_source: "FDA_orange_book"
+              api_source: "USPTO_PPUBS"
               data:
                 type: list
+                min_length: 1
               metadata:
                 type: dict
-                required:
-                  - error
       json:
         jsonrpc: "2.0"
         id: 4

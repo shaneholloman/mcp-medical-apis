@@ -1,4 +1,4 @@
-.PHONY: server server-no-reload help test-watch test test-slow test-all test-cov lint format docker install build publish deploy-cloud-run get-service-url inspector
+.PHONY: server server-no-reload help test-watch test test-slow test-all test-cov lint format docker install build publish deploy-cloud-run get-service-url inspector download-orangebook
 
 # Cloud Run deployment configuration
 SERVICE_NAME ?= medical-mcps
@@ -19,7 +19,11 @@ RETRY_MAX_WAIT_SECONDS ?= 10.0
 RETRY_MAX_DELAY_SECONDS ?= 30.0
 RETRY_MIN_WAIT_SECONDS ?= 1.0
 
-install:
+# Download FDA Orange Book flat files for patent/exclusivity lookups
+download-orangebook:
+	bash scripts/download_orangebook.sh
+
+install: download-orangebook
 	uv sync
 
 # Start the MCP server with uvicorn and livereload

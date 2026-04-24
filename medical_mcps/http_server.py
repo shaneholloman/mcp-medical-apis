@@ -37,6 +37,7 @@ from .servers import (  # noqa: E402
     biothings_server,
     chembl_server,
     ctg_server,
+    fda_orphan_server,
     gwas_server,
     kegg_server,
     myvariant_server,
@@ -50,6 +51,7 @@ from .servers import (  # noqa: E402
     pubmed_server,
     reactome_server,
     uniprot_server,
+    uspto_ppubs_server,
 )
 from .servers import (  # noqa: E402
     neo4j_server as everycure_kg_server,
@@ -123,6 +125,8 @@ async def lifespan(app: Starlette):
     logger.info("  - NCI Clinical Trials: /tools/nci/mcp (requires API key)")
     logger.info("  - Node Normalization: /tools/nodenorm/mcp")
     logger.info("  - Every Cure Matrix Knowledge Graph: /tools/everycure-kg/mcp")
+    logger.info("  - USPTO PPUBS (Patent Public Search): /tools/uspto-ppubs/mcp")
+    logger.info("  - FDA Orphan Drug: /tools/fda-orphan/mcp")
 
     # Initialize all session managers using AsyncExitStack
     async with contextlib.AsyncExitStack() as stack:
@@ -145,6 +149,8 @@ async def lifespan(app: Starlette):
         await stack.enter_async_context(nci_server.nci_mcp.session_manager.run())
         await stack.enter_async_context(everycure_kg_server.everycure_kg_mcp.session_manager.run())
         await stack.enter_async_context(nodenorm_server.nodenorm_mcp.session_manager.run())
+        await stack.enter_async_context(uspto_ppubs_server.uspto_ppubs_mcp.session_manager.run())
+        await stack.enter_async_context(fda_orphan_server.fda_orphan_mcp.session_manager.run())
         await stack.enter_async_context(unified_mcp.session_manager.run())
         yield
 
@@ -181,6 +187,8 @@ app = Starlette(
             app=everycure_kg_server.everycure_kg_mcp.streamable_http_app(),
         ),
         Mount( "/tools/nodenorm", app=nodenorm_server.nodenorm_mcp.streamable_http_app()),
+        Mount("/tools/uspto-ppubs", app=uspto_ppubs_server.uspto_ppubs_mcp.streamable_http_app()),
+        Mount("/tools/fda-orphan", app=fda_orphan_server.fda_orphan_mcp.streamable_http_app()),
     ],
     lifespan=lifespan,
 )
@@ -239,6 +247,10 @@ def entry_point():
     nci_server.nci_mcp.settings.port = port
     everycure_kg_server.everycure_kg_mcp.settings.host = host
     everycure_kg_server.everycure_kg_mcp.settings.port = port
+    uspto_ppubs_server.uspto_ppubs_mcp.settings.host = host
+    uspto_ppubs_server.uspto_ppubs_mcp.settings.port = port
+    fda_orphan_server.fda_orphan_mcp.settings.host = host
+    fda_orphan_server.fda_orphan_mcp.settings.port = port
     unified_mcp.settings.host = host
     unified_mcp.settings.port = port
 

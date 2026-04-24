@@ -1,150 +1,162 @@
-import json
-
 import pytest
 
-from medical_mcps.api_clients.patent_client import PatentClient
+import medical_mcps.api_clients.patent_client as pc
 
 
-@pytest.mark.asyncio
-async def test_patent_search_orange_book_parses_patents():
-    client = PatentClient()
-
-    async def fake_request(*args, **kwargs):
-        return json.dumps(
-            {
-                "results": [
-                    {
-                        "sponsor_name": "Merck",
-                        "products": [
-                            {
-                                "application_number": "NDA020386",
-                                "brand_name": "COZAAR",
-                                "active_ingredients": [{"name": "LOSARTAN POTASSIUM"}],
-                                "patents": [
-                                    {
-                                        "patent_number": "5608075",
-                                        "patent_expire_date": "Apr 06, 2010",
-                                        "patent_use_code": "U-546",
-                                        "patent_use_description": "Method of treatment",
-                                    }
-                                ],
-                            }
-                        ],
-                        "submissions": [{"submission_status_date": "1995-04-14"}],
-                    }
-                ]
-            }
-        )
-
-    client._request = fake_request
-    resp = await client.patent_search_orange_book(active_ingredient="losartan")
-
-    assert resp["api_source"] == "FDA_drugsfda"
-    assert resp["data"][0]["application_number"] == "NDA020386"
-    assert resp["data"][0]["patents"][0]["patent_number"] == "5608075"
-    assert resp["data"][0]["patents"][0]["is_expired"] is True
+@pytest.fixture(autouse=True)
+def _reset_caches():
+    """Reset lazy-loaded caches between tests."""
+    pc._patents = None
+    pc._exclusivities = None
+    pc._products = None
+    yield
+    pc._patents = None
+    pc._exclusivities = None
+    pc._products = None
 
 
-@pytest.mark.asyncio
-async def test_patent_search_orange_book_prefers_matching_active_ingredient_and_item_level_application_number():
-    client = PatentClient()
-
-    async def fake_request(*args, **kwargs):
-        return json.dumps(
-            {
-                "results": [
-                    {
-                        "application_number": "ANDA218015",
-                        "sponsor_name": "Granules",
-                        "products": [
-                            {
-                                "brand_name": "LOSARTAN POTASSIUM AND HYDROCHLOROTHIAZIDE",
-                                "active_ingredients": [
-                                    {"name": "HYDROCHLOROTHIAZIDE"},
-                                    {"name": "LOSARTAN POTASSIUM"},
-                                ],
-                                "patents": [],
-                            }
-                        ],
-                        "submissions": [{"submission_status_date": "2023-09-29"}],
-                    }
-                ]
-            }
-        )
-
-    client._request = fake_request
-    resp = await client.patent_search_orange_book(active_ingredient="losartan")
-
-    assert resp["data"][0]["application_number"] == "ANDA218015"
-    assert resp["data"][0]["active_ingredient"] == "LOSARTAN POTASSIUM"
-    assert resp["data"][0]["active_ingredients"] == [
-        "HYDROCHLOROTHIAZIDE",
-        "LOSARTAN POTASSIUM",
+@pytest.fixture()
+def _fake_ob_data():
+    """Inject fake Orange Book data into the module-level caches."""
+    pc._products = [
+        {
+            "Ingredient": "LOSARTAN POTASSIUM",
+            "DF;Route": "TABLET;ORAL",
+            "Trade_Name": "COZAAR",
+            "Applicant": "MERCK",
+            "Applicant_Full_Name": "MERCK SHARP & DOHME",
+            "Strength": "50MG",
+            "Appl_Type": "N",
+            "Appl_No": "020386",
+            "Product_No": "001",
+            "TE_Code": "",
+            "Approval_Date": "Apr 14, 1995",
+            "RLD": "Yes",
+            "RS": "Yes",
+            "Type": "RX",
+        },
+        {
+            "Ingredient": "HYDROCHLOROTHIAZIDE; LOSARTAN POTASSIUM",
+            "DF;Route": "TABLET;ORAL",
+            "Trade_Name": "HYZAAR",
+            "Applicant": "MERCK",
+            "Applicant_Full_Name": "MERCK SHARP & DOHME",
+            "Strength": "12.5MG;50MG",
+            "Appl_Type": "N",
+            "Appl_No": "020387",
+            "Product_No": "001",
+            "TE_Code": "",
+            "Approval_Date": "Apr 14, 1995",
+            "RLD": "Yes",
+            "RS": "Yes",
+            "Type": "RX",
+        },
+    ]
+    pc._patents = [
+        {
+            "Appl_Type": "N",
+            "Appl_No": "020386",
+            "Product_No": "001",
+            "Patent_No": "5608075",
+            "Patent_Expire_Date_Text": "Apr 06, 2010",
+            "Drug_Substance_Flag": "Y",
+            "Drug_Product_Flag": "",
+            "Patent_Use_Code": "U-546",
+            "Delist_Flag": "",
+            "Submission_Date": "",
+        },
+    ]
+    pc._exclusivities = [
+        {
+            "Appl_Type": "N",
+            "Appl_No": "020386",
+            "Product_No": "001",
+            "Exclusivity_Code": "NCE",
+            "Exclusivity_Date": "Apr 14, 2000",
+        },
+        {
+            "Appl_Type": "N",
+            "Appl_No": "020386",
+            "Product_No": "001",
+            "Exclusivity_Code": "ODE",
+            "Exclusivity_Date": "2099-01-01",
+        },
     ]
 
 
 @pytest.mark.asyncio
-async def test_patent_get_exclusivities_parses_activity_flag():
-    client = PatentClient()
+@pytest.mark.usefixtures("_fake_ob_data")
+async def test_patent_search_finds_patents_by_ingredient():
+    client = pc.PatentClient()
+    resp = await client.patent_search_orange_book(active_ingredient="losartan")
 
-    async def fake_request(*args, **kwargs):
-        return json.dumps(
-            {
-                "results": [
-                    {
-                        "products": [
-                            {
-                                "application_number": "NDA999999",
-                                "brand_name": "EXAMPLE",
-                                "exclusivity": [
-                                    {
-                                        "code": "NCE",
-                                        "description": "NEW CHEMICAL ENTITY",
-                                        "expiration_date": "2099-01-01",
-                                    }
-                                ],
-                            }
-                        ]
-                    }
-                ]
-            }
-        )
-
-    client._request = fake_request
-    resp = await client.patent_get_exclusivities(application_number="NDA999999")
-
-    assert resp["data"][0]["code"] == "NCE"
-    assert resp["data"][0]["is_active"] is True
+    assert resp["api_source"] == "FDA_orange_book"
+    assert len(resp["data"]) >= 1
+    cozaar = next(r for r in resp["data"] if r["product_name"] == "COZAAR")
+    assert cozaar["application_number"] == "N020386"
+    assert cozaar["patents"][0]["patent_number"] == "5608075"
+    assert cozaar["patents"][0]["is_expired"] is True
 
 
 @pytest.mark.asyncio
-async def test_patent_get_exclusivities_falls_back_to_item_level_application_number():
-    client = PatentClient()
+@pytest.mark.usefixtures("_fake_ob_data")
+async def test_patent_search_finds_by_drug_name():
+    client = pc.PatentClient()
+    resp = await client.patent_search_orange_book(drug_name="COZAAR")
 
-    async def fake_request(*args, **kwargs):
-        return json.dumps(
-            {
-                "results": [
-                    {
-                        "application_number": "NDA123456",
-                        "products": [
-                            {
-                                "brand_name": "EXAMPLE",
-                                "exclusivity": [
-                                    {
-                                        "code": "ODE",
-                                        "description": "ORPHAN DRUG EXCLUSIVITY",
-                                        "expiration_date": "2030-01-01",
-                                    }
-                                ],
-                            }
-                        ]
-                    }
-                ]
-            }
-        )
+    assert len(resp["data"]) == 1
+    assert resp["data"][0]["product_name"] == "COZAAR"
 
-    client._request = fake_request
-    resp = await client.patent_get_exclusivities(active_ingredient="example")
 
-    assert resp["data"][0]["application_number"] == "NDA123456"
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("_fake_ob_data")
+async def test_patent_search_finds_by_application_number():
+    client = pc.PatentClient()
+    resp = await client.patent_search_orange_book(application_number="NDA020386")
+
+    assert len(resp["data"]) >= 1
+    assert resp["data"][0]["application_number"] == "N020386"
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("_fake_ob_data")
+async def test_exclusivities_by_ingredient():
+    client = pc.PatentClient()
+    resp = await client.patent_get_exclusivities(active_ingredient="losartan")
+
+    assert resp["api_source"] == "FDA_orange_book"
+    assert len(resp["data"]) == 2
+    codes = {r["code"] for r in resp["data"]}
+    assert "NCE" in codes
+    assert "ODE" in codes
+
+    expired = next(r for r in resp["data"] if r["code"] == "NCE")
+    assert expired["is_active"] is False
+
+    future = next(r for r in resp["data"] if r["code"] == "ODE")
+    assert future["is_active"] is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures("_fake_ob_data")
+async def test_exclusivities_by_application_number():
+    client = pc.PatentClient()
+    resp = await client.patent_get_exclusivities(application_number="NDA020386")
+
+    assert len(resp["data"]) == 2
+    assert resp["data"][0]["application_number"] == "N020386"
+
+
+@pytest.mark.asyncio
+async def test_empty_when_no_data():
+    """When no Orange Book files are loaded (empty lists), return empty results."""
+    pc._patents = []
+    pc._exclusivities = []
+    pc._products = []
+
+    client = pc.PatentClient()
+    resp = await client.patent_search_orange_book(active_ingredient="nonexistent")
+    assert resp["data"] == []
+
+    resp = await client.patent_get_exclusivities(active_ingredient="nonexistent")
+    assert resp["data"] == []

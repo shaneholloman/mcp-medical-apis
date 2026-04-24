@@ -11,7 +11,7 @@ from ..med_mcp_server import unified_mcp
 
 logger = logging.getLogger(__name__)
 
-patent_client = PatentClient()
+patent_client = PatentClient()  # no network — reads local Orange Book flat files
 
 patent_mcp = FastMCP(
     "patent-api-server",
