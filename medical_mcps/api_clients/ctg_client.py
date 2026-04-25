@@ -303,23 +303,29 @@ class CTGClient(BaseAPIClient):
     async def search_by_intervention(
         self,
         intervention_query: str,
+        condition: str | None = None,
         status: list[str] | None = None,
         page_size: int = 20,
     ) -> dict:
         """
-        Search studies by intervention/treatment
+        Search studies by intervention/treatment, optionally narrowed by condition.
 
         Args:
             intervention_query: Intervention or treatment name (e.g., 'ocrelizumab')
+            condition: Optional disease/condition to AND-filter server-side (e.g., 'multiple sclerosis').
+                Strongly recommended for high-fan-out drugs to avoid oversized payloads.
             status: List of statuses to filter (optional)
             page_size: Number of results per page (default: 20)
 
         Returns:
             JSON string with study results
         """
-        logger.info(f"Searching by intervention: {intervention_query}")
+        logger.info(f"Searching by intervention: {intervention_query} (condition={condition})")
         return await self.search_studies(
-            intervention=intervention_query, status=status, page_size=page_size
+            intervention=intervention_query,
+            condition=condition,
+            status=status,
+            page_size=page_size,
         )
 
     async def get_study_metadata(self, include_indexed_only: bool = False) -> dict:

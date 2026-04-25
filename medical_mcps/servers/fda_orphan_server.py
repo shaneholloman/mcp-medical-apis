@@ -65,29 +65,37 @@ async def fda_orphan_search_exclusivity(
 
 @medmcps_tool(name="fda_orphan_search_oopd", servers=[fda_orphan_mcp, unified_mcp])
 async def fda_orphan_search_oopd(
-    drug_name: str,
+    drug_name: str | None = None,
+    disease_name: str | None = None,
 ) -> dict:
-    """Search the FDA Orphan Products Designation (OOPD) database for a drug.
+    """Search the FDA Orphan Products Designation (OOPD) database.
 
-    Returns all orphan designation records including pre-approval designations,
+    Returns orphan designation records including pre-approval designations,
     which the Orange Book ODE codes do not cover. The OOPD database is the
     authoritative source for orphan designations (e.g., ivacaftor has ~28 records).
 
-    Use this when you need to know whether a drug has an orphan designation for
-    a specific indication, regardless of approval status.
+    Searchable by drug, by disease/indication, or both (AND-filter). Use a
+    disease search to find **competing molecules** with orphan designation for
+    the proposed indication — they could attach 7-year ODE on approval and
+    become first-mover for that indication.
 
     Args:
-        drug_name: Drug or product name to search (e.g., "ivacaftor", "gleevec")
+        drug_name: Drug or product name (e.g., "ivacaftor", "gleevec")
+        disease_name: Disease / indication text (e.g., "cystinuria", "IgG4-related disease")
+
+    At least one of drug_name or disease_name must be provided.
     """
-    logger.info("Tool invoked: fda_orphan_search_oopd(drug=%s)", drug_name)
-    if not drug_name or not drug_name.strip():
+    drug = drug_name.strip() if drug_name else None
+    disease = disease_name.strip() if disease_name else None
+    logger.info("Tool invoked: fda_orphan_search_oopd(drug=%s, disease=%s)", drug, disease)
+    if not drug and not disease:
         return {
             "api_source": "FDA_OOPD",
             "data": [],
-            "metadata": {"error": "drug_name is required."},
+            "metadata": {"error": "Either drug_name or disease_name is required."},
         }
     try:
-        result = await _client.search_oopd_designations(drug_name=drug_name.strip())
+        result = await _client.search_oopd_designations(drug_name=drug, disease_name=disease)
         logger.info("Tool succeeded: fda_orphan_search_oopd")
         return result
     except Exception as e:

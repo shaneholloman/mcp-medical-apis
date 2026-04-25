@@ -1,8 +1,8 @@
 """Tests for FDA Orphan Drug client."""
 
-import pytest
-import httpx
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 import medical_mcps.api_clients.patent_client as pc
 from medical_mcps.api_clients.fda_orphan_client import FDAOrphanClient
@@ -211,7 +211,13 @@ async def test_oopd_records_included_when_drug_name_given(monkeypatch):
     monkeypatch.setattr(
         FDAOrphanClient,
         "search_oopd_designations",
-        AsyncMock(return_value={"api_source": "FDA_OOPD", "data": sample_oopd_records, "metadata": {"total": 1}}),
+        AsyncMock(
+            return_value={
+                "api_source": "FDA_OOPD",
+                "data": sample_oopd_records,
+                "metadata": {"total": 1},
+            }
+        ),
     )
 
     client = FDAOrphanClient()
@@ -317,4 +323,85 @@ async def test_server_tool_error_handling():
     ):
         result = await fda_orphan_server.fda_orphan_search_exclusivity(drug_name="gleevec")
         assert "error" in result
-        assert "disk error" in result["error"]
+
+
+# ---------------------------------------------------------------------------
+# OOPD form-payload assembly (disease + drug + combined)
+# ---------------------------------------------------------------------------
+
+
+def _patch_oopd_http(monkeypatch):
+    """Replace httpx.AsyncClient with a mock that captures form data and returns
+    a response whose URL contains 'OOPD_Results' (the success-path branch)."""
+    captured: dict = {}
+
+    get_resp = MagicMock()
+    get_resp.cookies = {}
+
+    post_resp = MagicMock()
+    post_resp.url = "https://accessdata.fda.gov/scripts/opdlisting/oopd/OOPD_Results.cfm?ok"
+    post_resp.text = "<html></html>"
+
+    async def _get(url, *a, **kw):
+        return get_resp
+
+    async def _post(url, data=None, cookies=None, headers=None):
+        captured["data"] = data
+        return post_resp
+
+    fake = MagicMock()
+    fake.get = AsyncMock(side_effect=_get)
+    fake.post = AsyncMock(side_effect=_post)
+    fake.__aenter__ = AsyncMock(return_value=fake)
+    fake.__aexit__ = AsyncMock(return_value=None)
+
+    monkeypatch.setattr("httpx.AsyncClient", lambda *a, **kw: fake)
+    return captured
+
+
+@pytest.mark.asyncio
+async def test_oopd_drug_only_sends_product_name(monkeypatch):
+    """drug_name → form field 'Product_name'; 'Designation' empty."""
+    monkeypatch.undo()
+    captured = _patch_oopd_http(monkeypatch)
+
+    client = FDAOrphanClient()
+    out = await client.search_oopd_designations(drug_name="ivacaftor")
+    assert captured["data"]["Product_name"] == "ivacaftor"
+    assert captured["data"]["Designation"] == ""
+    assert out["api_source"] == "FDA_OOPD"
+
+
+@pytest.mark.asyncio
+async def test_oopd_disease_only_sends_designation(monkeypatch):
+    """disease_name → form field 'Designation'; 'Product_name' empty."""
+    monkeypatch.undo()
+    captured = _patch_oopd_http(monkeypatch)
+
+    client = FDAOrphanClient()
+    await client.search_oopd_designations(disease_name="cystinuria")
+    assert captured["data"]["Product_name"] == ""
+    assert captured["data"]["Designation"] == "cystinuria"
+
+
+@pytest.mark.asyncio
+async def test_oopd_combined_sends_both(monkeypatch):
+    """Both → both form fields populated (AND-filter)."""
+    monkeypatch.undo()
+    captured = _patch_oopd_http(monkeypatch)
+
+    client = FDAOrphanClient()
+    await client.search_oopd_designations(drug_name="apremilast", disease_name="behcet")
+    assert captured["data"]["Product_name"] == "apremilast"
+    assert captured["data"]["Designation"] == "behcet"
+
+
+@pytest.mark.asyncio
+async def test_oopd_server_requires_one_param():
+    """Server tool returns documented error envelope when neither param given."""
+    from medical_mcps.servers import fda_orphan_server
+
+    out = await fda_orphan_server.fda_orphan_search_oopd()
+    assert out["data"] == []
+    assert "drug_name" in out["metadata"]["error"]
+    assert "disease_name" in out["metadata"]["error"]

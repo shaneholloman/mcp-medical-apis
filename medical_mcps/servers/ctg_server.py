@@ -152,20 +152,27 @@ async def search_by_condition(
 
 @medmcps_tool(name="ctg_search_by_intervention", servers=[ctg_mcp, unified_mcp])
 async def search_by_intervention(
-    intervention_query: str, status: str | None = None, page_size: int = 10
+    intervention_query: str,
+    condition: str | None = None,
+    status: str | None = None,
+    page_size: int = 10,
 ) -> dict:
-    """Search clinical trials by intervention/treatment.
+    """Search clinical trials by intervention/treatment, optionally narrowed by condition.
+
+    For high-fan-out drugs (apremilast, methotrexate, etc.) the unfiltered result can
+    exceed 100KB. Pass `condition` to AND-filter server-side (CT.gov v2 `query.cond`).
 
     Args:
         intervention_query: Intervention or treatment name (e.g., 'ocrelizumab')
+        condition: Optional disease/condition to narrow results (e.g., 'multiple sclerosis')
         status: Comma-separated list of statuses to filter (optional)
         page_size: Number of results per page (default: 10)
 
     Returns:
-        JSON with study results matching the intervention
+        JSON with study results matching the intervention (and condition, if set)
     """
     logger.info(
-        f"Tool invoked: search_by_intervention(intervention_query='{intervention_query}', status='{status}', page_size={page_size})"
+        f"Tool invoked: search_by_intervention(intervention_query='{intervention_query}', condition='{condition}', status='{status}', page_size={page_size})"
     )
 
     # Parse status if provided
@@ -175,7 +182,10 @@ async def search_by_intervention(
 
     try:
         result = await ctg_client.search_by_intervention(
-            intervention_query, status=status_list, page_size=page_size
+            intervention_query,
+            condition=condition,
+            status=status_list,
+            page_size=page_size,
         )
         result = validate_list_response(
             result,

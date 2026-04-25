@@ -4,9 +4,9 @@ The FDA publishes Orange Book data as tilde-delimited text files (updated monthl
   https://www.fda.gov/drugs/drug-approvals-and-databases/orange-book-data-files
 
 Files (~8 MB total):
-  patent.txt       – 20K rows, patent listings per product
-  exclusivity.txt  – 2K rows, exclusivity grants per product
-  products.txt     – 48K rows, all approved drug products
+  patent.txt       - 20K rows, patent listings per product
+  exclusivity.txt  - 2K rows, exclusivity grants per product
+  products.txt     - 48K rows, all approved drug products
 
 These are loaded lazily into memory on first call and searched with plain Python.
 
@@ -32,7 +32,11 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # Orange Book directory: env var > local data/ dir > fallback
-_OB_DIR = Path(os.environ.get("ORANGE_BOOK_DIR", Path(__file__).resolve().parent.parent.parent / "data" / "orangebook"))
+_OB_DIR = Path(
+    os.environ.get(
+        "ORANGE_BOOK_DIR", Path(__file__).resolve().parent.parent.parent / "data" / "orangebook"
+    )
+)
 
 # Lazy-loaded file contents (list of dicts per file)
 _patents: list[dict[str, str]] | None = None
@@ -111,7 +115,7 @@ def _normalize_app_number(raw: str) -> tuple[str | None, str]:
     s = raw.strip().upper()
     for prefix, code in [("NDA", "N"), ("ANDA", "A"), ("BLA", "B")]:
         if s.startswith(prefix):
-            return code, s[len(prefix):]
+            return code, s[len(prefix) :]
     # Already short form: "N020386"
     if s and s[0] in ("N", "A", "B") and s[1:].isdigit():
         return s[0], s[1:]
@@ -137,7 +141,9 @@ class PatentClient:
             return {
                 "api_source": "FDA_orange_book",
                 "data": [],
-                "metadata": {"error": "Provide drug_name, active_ingredient, or application_number."},
+                "metadata": {
+                    "error": "Provide drug_name, active_ingredient, or application_number."
+                },
             }
 
         products = _get_products()
@@ -150,12 +156,19 @@ class PatentClient:
             matched = [p for p in matched if q in p.get("Ingredient", "").casefold()]
         if drug_name:
             q = drug_name.casefold()
-            matched = [p for p in matched if q in p.get("Trade_Name", "").casefold() or q in p.get("Ingredient", "").casefold()]
+            matched = [
+                p
+                for p in matched
+                if q in p.get("Trade_Name", "").casefold()
+                or q in p.get("Ingredient", "").casefold()
+            ]
         if application_number:
             app_type, app_no = _normalize_app_number(application_number)
             matched = [
-                p for p in matched
-                if p.get("Appl_No", "") == app_no and (app_type is None or p.get("Appl_Type", "") == app_type)
+                p
+                for p in matched
+                if p.get("Appl_No", "") == app_no
+                and (app_type is None or p.get("Appl_Type", "") == app_type)
             ]
 
         # Build patent index keyed by (Appl_Type, Appl_No, Product_No)
@@ -167,7 +180,7 @@ class PatentClient:
         # Deduplicate matched products by (Appl_Type, Appl_No, Product_No)
         seen: set[tuple[str, str, str]] = set()
         output = []
-        for prod in matched[:limit * 3]:  # over-fetch then trim
+        for prod in matched[: limit * 3]:  # over-fetch then trim
             key = (prod.get("Appl_Type", ""), prod.get("Appl_No", ""), prod.get("Product_No", ""))
             if key in seen:
                 continue
@@ -177,28 +190,32 @@ class PatentClient:
             prod_patents = []
             for pat in patent_index.get(key, []):
                 exp = _parse_date(pat.get("Patent_Expire_Date_Text"))
-                prod_patents.append({
-                    "patent_number": pat.get("Patent_No", ""),
-                    "expiry_date": exp,
-                    "patent_use_code": pat.get("Patent_Use_Code", ""),
-                    "drug_substance_flag": pat.get("Drug_Substance_Flag", ""),
-                    "drug_product_flag": pat.get("Drug_Product_Flag", ""),
-                    "delist_flag": pat.get("Delist_Flag", ""),
-                    "is_expired": _is_expired(exp),
-                })
+                prod_patents.append(
+                    {
+                        "patent_number": pat.get("Patent_No", ""),
+                        "expiry_date": exp,
+                        "patent_use_code": pat.get("Patent_Use_Code", ""),
+                        "drug_substance_flag": pat.get("Drug_Substance_Flag", ""),
+                        "drug_product_flag": pat.get("Drug_Product_Flag", ""),
+                        "delist_flag": pat.get("Delist_Flag", ""),
+                        "is_expired": _is_expired(exp),
+                    }
+                )
 
-            output.append({
-                "application_number": app_number,
-                "product_name": prod.get("Trade_Name", ""),
-                "active_ingredient": prod.get("Ingredient", ""),
-                "applicant": prod.get("Applicant_Full_Name") or prod.get("Applicant", ""),
-                "strength": prod.get("Strength", ""),
-                "dosage_form_route": prod.get("DF;Route", ""),
-                "te_code": prod.get("TE_Code", ""),
-                "approval_date": _parse_date(prod.get("Approval_Date")),
-                "rld": prod.get("RLD", ""),
-                "patents": prod_patents,
-            })
+            output.append(
+                {
+                    "application_number": app_number,
+                    "product_name": prod.get("Trade_Name", ""),
+                    "active_ingredient": prod.get("Ingredient", ""),
+                    "applicant": prod.get("Applicant_Full_Name") or prod.get("Applicant", ""),
+                    "strength": prod.get("Strength", ""),
+                    "dosage_form_route": prod.get("DF;Route", ""),
+                    "te_code": prod.get("TE_Code", ""),
+                    "approval_date": _parse_date(prod.get("Approval_Date")),
+                    "rld": prod.get("RLD", ""),
+                    "patents": prod_patents,
+                }
+            )
             if len(output) >= limit:
                 break
 
@@ -250,17 +267,36 @@ class PatentClient:
             target_apps_by_num = {
                 (excl.get("Appl_Type", ""), excl.get("Appl_No", ""))
                 for excl in exclusivities
-                if excl.get("Appl_No", "") == app_no and (app_type is None or excl.get("Appl_Type", "") == app_type)
+                if excl.get("Appl_No", "") == app_no
+                and (app_type is None or excl.get("Appl_Type", "") == app_type)
             }
-            target_apps = target_apps_by_num if target_apps is None else target_apps & target_apps_by_num
+            target_apps = (
+                target_apps_by_num if target_apps is None else target_apps & target_apps_by_num
+            )
 
         records = []
         if target_apps is None:
-            return {"api_source": "FDA_orange_book", "data": [], "metadata": {"total": 0}}
+            return {
+                "api_source": "FDA_orange_book",
+                "data": [],
+                "metadata": {
+                    "total": 0,
+                    "note": (
+                        "No active exclusivities found. The Orange Book exclusivity.txt "
+                        "file lists only currently-in-force exclusivities — FDA removes "
+                        "records at expiry. An empty result means either (a) the application "
+                        "has no exclusivities, or (b) all exclusivities have already expired. "
+                        "For historical/expired exclusivity data, check Drugs@FDA approval "
+                        "letters or pharsight.greyb.com via web search."
+                    ),
+                },
+            }
 
         # Build product name lookup
         product_names: dict[tuple[str, str, str], str] = {
-            (p.get("Appl_Type", ""), p.get("Appl_No", ""), p.get("Product_No", "")): p.get("Trade_Name", "")
+            (p.get("Appl_Type", ""), p.get("Appl_No", ""), p.get("Product_No", "")): p.get(
+                "Trade_Name", ""
+            )
             for p in products
         }
 
@@ -269,27 +305,38 @@ class PatentClient:
             if key not in target_apps:
                 continue
             exp = _parse_date(excl.get("Exclusivity_Date"))
-            records.append({
-                "application_number": key[0] + key[1],
-                "product_number": excl.get("Product_No", ""),
-                "product_name": product_names.get((*key, excl.get("Product_No", "")), ""),
-                "code": excl.get("Exclusivity_Code", ""),
-                "expiry_date": exp,
-                "is_active": not _is_expired(exp) if exp else None,
-            })
+            records.append(
+                {
+                    "application_number": key[0] + key[1],
+                    "product_number": excl.get("Product_No", ""),
+                    "product_name": product_names.get((*key, excl.get("Product_No", "")), ""),
+                    "code": excl.get("Exclusivity_Code", ""),
+                    "expiry_date": exp,
+                    "is_active": not _is_expired(exp) if exp else None,
+                }
+            )
 
+        meta: dict[str, Any] = {
+            "total": len(records),
+            "query": {
+                "application_number": application_number,
+                "active_ingredient": active_ingredient,
+            },
+            "suggested_next_steps": [
+                "Use fda_orphan_search_exclusivity to check orphan drug exclusivity (ODE codes)",
+                "Use fda_orphan_search_oopd for full orphan designation history including pre-approval",
+            ],
+        }
+        if not records:
+            meta["note"] = (
+                "No active exclusivities found. The Orange Book exclusivity.txt file lists "
+                "only currently-in-force exclusivities — FDA removes records at expiry. An "
+                "empty result means either (a) the application has no exclusivities, or "
+                "(b) all exclusivities have already expired. For historical/expired data, "
+                "check Drugs@FDA approval letters or pharsight.greyb.com via web search."
+            )
         return {
             "api_source": "FDA_orange_book",
             "data": records,
-            "metadata": {
-                "total": len(records),
-                "query": {
-                    "application_number": application_number,
-                    "active_ingredient": active_ingredient,
-                },
-                "suggested_next_steps": [
-                    "Use fda_orphan_search_exclusivity to check orphan drug exclusivity (ODE codes)",
-                    "Use fda_orphan_search_oopd for full orphan designation history including pre-approval",
-                ],
-            },
+            "metadata": meta,
         }

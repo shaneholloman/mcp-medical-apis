@@ -175,7 +175,9 @@ class FDAOrphanClient(BaseAPIClient):
             return {
                 "api_source": "FDA_orange_book",
                 "data": [],
-                "metadata": {"error": "Provide drug_name, active_ingredient, or application_number."},
+                "metadata": {
+                    "error": "Provide drug_name, active_ingredient, or application_number."
+                },
             }
 
         output: list[dict[str, Any]] = []
@@ -192,20 +194,22 @@ class FDAOrphanClient(BaseAPIClient):
                     is_active: bool | None = None
                     if excl_end:
                         is_active = not _is_expired(_parse_date(excl_end) or excl_end)
-                    output.append({
-                        "drug_name": rec.get("trade_name") or rec.get("generic_name", ""),
-                        "active_ingredient": rec.get("generic_name", ""),
-                        "applicant": rec.get("sponsor", ""),
-                        "application_number": None,
-                        "designation_number": rec.get("designation_number"),
-                        "designation": rec.get("designation", ""),
-                        "designation_status": rec.get("designation_status", ""),
-                        "date_designated": rec.get("date_designated"),
-                        "date_approved": rec.get("date_approved"),
-                        "exclusivity_end_date": excl_end,
-                        "has_active_orphan_exclusivity": is_active,
-                        "source": "OOPD",
-                    })
+                    output.append(
+                        {
+                            "drug_name": rec.get("trade_name") or rec.get("generic_name", ""),
+                            "active_ingredient": rec.get("generic_name", ""),
+                            "applicant": rec.get("sponsor", ""),
+                            "application_number": None,
+                            "designation_number": rec.get("designation_number"),
+                            "designation": rec.get("designation", ""),
+                            "designation_status": rec.get("designation_status", ""),
+                            "date_designated": rec.get("date_designated"),
+                            "date_approved": rec.get("date_approved"),
+                            "exclusivity_end_date": excl_end,
+                            "has_active_orphan_exclusivity": is_active,
+                            "source": "OOPD",
+                        }
+                    )
             except Exception as e:
                 logger.warning("OOPD scrape failed, falling back to OB only: %s", e)
                 oopd_error = str(e)
@@ -231,14 +235,16 @@ class FDAOrphanClient(BaseAPIClient):
         if drug_name:
             q = drug_name.casefold()
             matched = [
-                p for p in matched
+                p
+                for p in matched
                 if q in p.get("Trade_Name", "").casefold()
                 or q in p.get("Ingredient", "").casefold()
             ]
         if application_number:
             app_type, app_no = _normalize_app_number(application_number)
             matched = [
-                p for p in matched
+                p
+                for p in matched
                 if p.get("Appl_No", "") == app_no
                 and (app_type is None or p.get("Appl_Type", "") == app_type)
             ]
@@ -258,23 +264,27 @@ class FDAOrphanClient(BaseAPIClient):
                     continue
                 seen_codes.add(code_key)
                 exp = _parse_date(excl.get("Exclusivity_Date"))
-                excl_records.append({
-                    "code": code_key,
-                    "expiry_date": exp,
-                    "is_active": not _is_expired(exp) if exp else None,
-                })
+                excl_records.append(
+                    {
+                        "code": code_key,
+                        "expiry_date": exp,
+                        "is_active": not _is_expired(exp) if exp else None,
+                    }
+                )
 
-            output.append({
-                "application_number": app_key[0] + app_key[1],
-                "drug_name": prod.get("Trade_Name", ""),
-                "active_ingredient": prod.get("Ingredient", ""),
-                "applicant": prod.get("Applicant_Full_Name") or prod.get("Applicant", ""),
-                "orphan_exclusivities": excl_records,
-                "has_active_orphan_exclusivity": any(
-                    r["is_active"] for r in excl_records if r["is_active"] is not None
-                ),
-                "source": "Orange_Book_ODE",
-            })
+            output.append(
+                {
+                    "application_number": app_key[0] + app_key[1],
+                    "drug_name": prod.get("Trade_Name", ""),
+                    "active_ingredient": prod.get("Ingredient", ""),
+                    "applicant": prod.get("Applicant_Full_Name") or prod.get("Applicant", ""),
+                    "orphan_exclusivities": excl_records,
+                    "has_active_orphan_exclusivity": any(
+                        r["is_active"] for r in excl_records if r["is_active"] is not None
+                    ),
+                    "source": "Orange_Book_ODE",
+                }
+            )
 
         meta: dict[str, Any] = {
             "total": len(output),
@@ -303,17 +313,22 @@ class FDAOrphanClient(BaseAPIClient):
 
     async def search_oopd_designations(
         self,
-        drug_name: str,
+        drug_name: str | None = None,
+        disease_name: str | None = None,
         records_per_page: int = 100,
     ) -> dict[str, Any]:
-        """Search the FDA Orphan Products Designation database (OOPD) for a drug.
+        """Search the FDA Orphan Products Designation database (OOPD).
 
         OOPD has no public REST API; this method scrapes the HTML form results.
         Returns all orphan designation records including pre-approval designations.
         Per the OOPD notes, ivacaftor has ~28 records across all Vertex products.
 
+        At least one of drug_name or disease_name must be provided. Both can be
+        supplied simultaneously (AND-filter).
+
         Args:
             drug_name: Drug/product name to search (e.g., "ivacaftor")
+            disease_name: Disease/indication text to search (e.g., "cystinuria")
             records_per_page: How many records to request per page (default 100)
         """
         import httpx
@@ -340,9 +355,9 @@ class FDAOrphanClient(BaseAPIClient):
 
                 # Step 2: POST form to get results; follow redirects to Detailed.cfm
                 form_data = {
-                    "Product_name": drug_name,
+                    "Product_name": drug_name or "",
                     "sponsor_name": "",
-                    "Designation": "",
+                    "Designation": disease_name or "",
                     "Designation_Start_Date": "01/01/1983",
                     "Designation_End_Date": today,
                     "Search_param": "DESDATE",
@@ -368,7 +383,7 @@ class FDAOrphanClient(BaseAPIClient):
                         "data": [],
                         "metadata": {
                             "total": 0,
-                            "query": {"drug_name": drug_name},
+                            "query": {"drug_name": drug_name, "disease_name": disease_name},
                             "note": "OOPD returned no results (redirected to index page)",
                         },
                     }
@@ -386,7 +401,12 @@ class FDAOrphanClient(BaseAPIClient):
         parser = _OOPDParser()
         parser.feed(html)
         raw_records = parser.records()
-        logger.info("OOPD parsed %d records for drug_name=%s", len(raw_records), drug_name)
+        logger.info(
+            "OOPD parsed %d records for drug_name=%s disease_name=%s",
+            len(raw_records),
+            drug_name,
+            disease_name,
+        )
 
         def _norm(r: dict[str, str]) -> dict[str, Any]:
             # Actual <th id> field names from OOPD Detailed.cfm DOM (verified 2026-04-25):
@@ -413,7 +433,7 @@ class FDAOrphanClient(BaseAPIClient):
             "data": data,
             "metadata": {
                 "total": len(data),
-                "query": {"drug_name": drug_name},
+                "query": {"drug_name": drug_name, "disease_name": disease_name},
                 "note": (
                     "Source: FDA Orphan Products Designation database (OOPD). "
                     "Includes pre-approval designations; not limited to approved drugs."
@@ -452,15 +472,15 @@ class FDAOrphanClient(BaseAPIClient):
         if active_ingredient:
             search_parts.append(f'openfda.generic_name:"{active_ingredient}"')
         if application_number:
-            # Strip NDA/BLA prefix for drugsfda search
-            app_no_clean = application_number.replace("NDA", "").replace("BLA", "").replace("ANDA", "").strip()
             search_parts.append(f'application_number:"{application_number}"')
 
         if not search_parts:
             return {
                 "api_source": "FDA_drugsfda",
                 "data": [],
-                "metadata": {"error": "Provide drug_name, active_ingredient, or application_number."},
+                "metadata": {
+                    "error": "Provide drug_name, active_ingredient, or application_number."
+                },
             }
 
         params = {
@@ -476,24 +496,26 @@ class FDAOrphanClient(BaseAPIClient):
             formatted = []
             for r in results:
                 openfda = r.get("openfda", {})
-                formatted.append({
-                    "application_number": r.get("application_number"),
-                    "sponsor_name": r.get("sponsor_name"),
-                    "brand_names": openfda.get("brand_name", []),
-                    "generic_names": openfda.get("generic_name", []),
-                    "products": [
-                        {
-                            "product_number": p.get("product_number"),
-                            "brand_name": p.get("brand_name"),
-                            "active_ingredients": p.get("active_ingredients", []),
-                            "dosage_form": p.get("dosage_form"),
-                            "route": p.get("route"),
-                            "marketing_status": p.get("marketing_status"),
-                            "reference_drug": p.get("reference_drug"),
-                        }
-                        for p in r.get("products", [])[:5]
-                    ],
-                })
+                formatted.append(
+                    {
+                        "application_number": r.get("application_number"),
+                        "sponsor_name": r.get("sponsor_name"),
+                        "brand_names": openfda.get("brand_name", []),
+                        "generic_names": openfda.get("generic_name", []),
+                        "products": [
+                            {
+                                "product_number": p.get("product_number"),
+                                "brand_name": p.get("brand_name"),
+                                "active_ingredients": p.get("active_ingredients", []),
+                                "dosage_form": p.get("dosage_form"),
+                                "route": p.get("route"),
+                                "marketing_status": p.get("marketing_status"),
+                                "reference_drug": p.get("reference_drug"),
+                            }
+                            for p in r.get("products", [])[:5]
+                        ],
+                    }
+                )
 
             return {
                 "api_source": "FDA_drugsfda",
