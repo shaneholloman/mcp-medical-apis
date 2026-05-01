@@ -1,0 +1,229 @@
+---
+test_name: FDA Orphan Drug Tools Test Suite
+
+marks:
+  - tavern
+  - usefixtures:
+      - server_process
+
+stages:
+  - name: Search orphan exclusivity by drug name via dedicated endpoint
+    request:
+      url: "http://localhost:8000/tools/fda-orphan/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "fda_orphan_search_exclusivity"
+          arguments:
+            drug_name: "ivacaftor"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "FDA_orange_book"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "FDA_orange_book"
+              data:
+                type: list
+                min_length: 1
+              metadata:
+                type: dict
+                required:
+                  - total
+                  - query
+                  - note
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+          isError: false
+
+  - name: Search orphan exclusivity via unified MCP endpoint
+    request:
+      url: "http://localhost:8000/tools/unified/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "fda_orphan_search_exclusivity"
+          arguments:
+            drug_name: "ivacaftor"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "FDA_orange_book"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "FDA_orange_book"
+              data:
+                type: list
+                min_length: 1
+              metadata:
+                type: dict
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+          isError: false
+
+  - name: Search by active ingredient returns matching results
+    request:
+      url: "http://localhost:8000/tools/fda-orphan/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "fda_orphan_search_exclusivity"
+          arguments:
+            active_ingredient: "ivacaftor"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "FDA_orange_book"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "FDA_orange_book"
+              data:
+                type: list
+                min_length: 1
+              metadata:
+                type: dict
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+          isError: false
+
+  - name: Missing arguments returns error metadata not exception
+    request:
+      url: "http://localhost:8000/tools/fda-orphan/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "fda_orphan_search_exclusivity"
+          arguments: {}
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "FDA_orange_book"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "FDA_orange_book"
+              data:
+                type: list
+              metadata:
+                type: dict
+                required:
+                  - error
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+          isError: false
+
+  - name: Get application details from FDA drugsfda
+    request:
+      url: "http://localhost:8000/tools/fda-orphan/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        method: "tools/call"
+        params:
+          name: "fda_orphan_get_application"
+          arguments:
+            drug_name: "kalydeco"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "FDA_drugsfda"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "FDA_drugsfda"
+              data:
+                type: list
+                min_length: 1
+              metadata:
+                type: dict
+                required:
+                  - total
+      json:
+        jsonrpc: "2.0"
+        id: 5
+        result:
+          content:
+            - type: "text"
+          isError: false

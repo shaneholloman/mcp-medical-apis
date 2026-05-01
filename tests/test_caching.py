@@ -12,17 +12,25 @@ from medical_mcps.api_clients.reactome_client import ReactomeClient
 
 @pytest.fixture
 def cache_dir():
-    """Get the cache directory path (base directory, not per-process)"""
+    """Get the cache directory path (base directory, not per-process)."""
+    import os
+    override = os.environ.get("MEDICAL_MCPS_CACHE_DIR")
+    if override:
+        return Path(override)
     return Path.home() / ".cache" / "medical-mcps" / "api_cache"
 
 
 @pytest.fixture
 def get_cache_file_path():
-    """Get the actual cache file path for current process"""
+    """Get the actual cache file path for current process."""
     import os
 
     process_id = os.getpid()
-    proc_cache_dir = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{process_id}"
+    override = os.environ.get("MEDICAL_MCPS_CACHE_DIR")
+    if override:
+        proc_cache_dir = Path(override) / f"proc_{process_id}"
+    else:
+        proc_cache_dir = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{process_id}"
     return lambda api_name: proc_cache_dir / f"{api_name.lower()}.db"
 
 

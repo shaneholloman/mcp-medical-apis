@@ -51,3 +51,7 @@ todo.md
 
 workbench/**
 .ai/
+.agents/
+
+# Downloaded data (FDA Orange Book flat files)
+data/orangebook/

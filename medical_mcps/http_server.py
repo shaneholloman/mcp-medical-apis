@@ -37,6 +37,7 @@ from .servers import (  # noqa: E402
     biothings_server,
     chembl_server,
     ctg_server,
+    fda_orphan_server,
     gwas_server,
     kegg_server,
     myvariant_server,
@@ -45,10 +46,12 @@ from .servers import (  # noqa: E402
     omim_server,
     openfda_server,
     opentargets_server,
+    patent_server,
     pathwaycommons_server,
     pubmed_server,
     reactome_server,
     uniprot_server,
+    uspto_ppubs_server,
 )
 from .servers import (  # noqa: E402
     neo4j_server as everycure_kg_server,
@@ -116,11 +119,14 @@ async def lifespan(app: Starlette):
     logger.info("  - ClinicalTrials.gov: /tools/ctg/mcp")
     logger.info("  - PubMed: /tools/pubmed/mcp")
     logger.info("  - OpenFDA: /tools/openfda/mcp")
+    logger.info("  - Patent (FDA-focused): /tools/patent/mcp")
     logger.info("  - MyVariant: /tools/myvariant/mcp")
     logger.info("  - BioThings: /tools/biothings/mcp")
     logger.info("  - NCI Clinical Trials: /tools/nci/mcp (requires API key)")
     logger.info("  - Node Normalization: /tools/nodenorm/mcp")
     logger.info("  - Every Cure Matrix Knowledge Graph: /tools/everycure-kg/mcp")
+    logger.info("  - USPTO PPUBS (Patent Public Search): /tools/uspto-ppubs/mcp")
+    logger.info("  - FDA Orphan Drug: /tools/fda-orphan/mcp")
 
     # Initialize all session managers using AsyncExitStack
     async with contextlib.AsyncExitStack() as stack:
@@ -137,11 +143,14 @@ async def lifespan(app: Starlette):
         await stack.enter_async_context(ctg_server.ctg_mcp.session_manager.run())
         await stack.enter_async_context(pubmed_server.pubmed_mcp.session_manager.run())
         await stack.enter_async_context(openfda_server.openfda_mcp.session_manager.run())
+        await stack.enter_async_context(patent_server.patent_mcp.session_manager.run())
         await stack.enter_async_context(myvariant_server.myvariant_mcp.session_manager.run())
         await stack.enter_async_context(biothings_server.biothings_mcp.session_manager.run())
         await stack.enter_async_context(nci_server.nci_mcp.session_manager.run())
         await stack.enter_async_context(everycure_kg_server.everycure_kg_mcp.session_manager.run())
         await stack.enter_async_context(nodenorm_server.nodenorm_mcp.session_manager.run())
+        await stack.enter_async_context(uspto_ppubs_server.uspto_ppubs_mcp.session_manager.run())
+        await stack.enter_async_context(fda_orphan_server.fda_orphan_mcp.session_manager.run())
         await stack.enter_async_context(unified_mcp.session_manager.run())
         yield
 
@@ -169,6 +178,7 @@ app = Starlette(
         Mount("/tools/ctg", app=ctg_server.ctg_mcp.streamable_http_app()),
         Mount("/tools/pubmed", app=pubmed_server.pubmed_mcp.streamable_http_app()),
         Mount("/tools/openfda", app=openfda_server.openfda_mcp.streamable_http_app()),
+        Mount("/tools/patent", app=patent_server.patent_mcp.streamable_http_app()),
         Mount( "/tools/myvariant", app=myvariant_server.myvariant_mcp.streamable_http_app()),
         Mount( "/tools/biothings", app=biothings_server.biothings_mcp.streamable_http_app()),
         Mount("/tools/nci", app=nci_server.nci_mcp.streamable_http_app()),
@@ -177,6 +187,8 @@ app = Starlette(
             app=everycure_kg_server.everycure_kg_mcp.streamable_http_app(),
         ),
         Mount( "/tools/nodenorm", app=nodenorm_server.nodenorm_mcp.streamable_http_app()),
+        Mount("/tools/uspto-ppubs", app=uspto_ppubs_server.uspto_ppubs_mcp.streamable_http_app()),
+        Mount("/tools/fda-orphan", app=fda_orphan_server.fda_orphan_mcp.streamable_http_app()),
     ],
     lifespan=lifespan,
 )
@@ -225,6 +237,8 @@ def entry_point():
     pubmed_server.pubmed_mcp.settings.port = port
     openfda_server.openfda_mcp.settings.host = host
     openfda_server.openfda_mcp.settings.port = port
+    patent_server.patent_mcp.settings.host = host
+    patent_server.patent_mcp.settings.port = port
     myvariant_server.myvariant_mcp.settings.host = host
     myvariant_server.myvariant_mcp.settings.port = port
     biothings_server.biothings_mcp.settings.host = host
@@ -233,6 +247,10 @@ def entry_point():
     nci_server.nci_mcp.settings.port = port
     everycure_kg_server.everycure_kg_mcp.settings.host = host
     everycure_kg_server.everycure_kg_mcp.settings.port = port
+    uspto_ppubs_server.uspto_ppubs_mcp.settings.host = host
+    uspto_ppubs_server.uspto_ppubs_mcp.settings.port = port
+    fda_orphan_server.fda_orphan_mcp.settings.host = host
+    fda_orphan_server.fda_orphan_mcp.settings.port = port
     unified_mcp.settings.host = host
     unified_mcp.settings.port = port
 
@@ -250,6 +268,7 @@ def entry_point():
     logger.info(f"  - ClinicalTrials.gov: http://{host}:{port}/tools/ctg/mcp")
     logger.info(f"  - PubMed: http://{host}:{port}/tools/pubmed/mcp")
     logger.info(f"  - OpenFDA: http://{host}:{port}/tools/openfda/mcp")
+    logger.info(f"  - Patent (FDA-focused): http://{host}:{port}/tools/patent/mcp")
     logger.info(f"  - MyVariant: http://{host}:{port}/tools/myvariant/mcp")
     logger.info(f"  - BioThings: http://{host}:{port}/tools/biothings/mcp")
     logger.info(f"  - NCI Clinical Trials: http://{host}:{port}/tools/nci/mcp")

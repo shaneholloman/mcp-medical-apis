@@ -1,0 +1,195 @@
+---
+test_name: USPTO PPUBS Patent Public Search Tools Test Suite
+
+marks:
+  - tavern
+  - usefixtures:
+      - server_process
+
+stages:
+  - name: Search granted patents via dedicated PPUBS endpoint
+    request:
+      url: "http://localhost:8000/tools/uspto-ppubs/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        method: "tools/call"
+        params:
+          name: "uspto_ppubs_search_patents"
+          arguments:
+            query: "pembrolizumab"
+            limit: 3
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "USPTO_PPUBS"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "USPTO_PPUBS"
+              data:
+                type: list
+                min_length: 1
+              metadata:
+                type: dict
+                required:
+                  - total
+                  - offset
+                  - limit
+                  - query
+                  - sources
+      json:
+        jsonrpc: "2.0"
+        id: 1
+        result:
+          content:
+            - type: "text"
+          isError: false
+
+  - name: Search granted patents via unified MCP endpoint
+    request:
+      url: "http://localhost:8000/tools/unified/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        method: "tools/call"
+        params:
+          name: "uspto_ppubs_search_patents"
+          arguments:
+            query: "pembrolizumab"
+            limit: 2
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "USPTO_PPUBS"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "USPTO_PPUBS"
+              data:
+                type: list
+                min_length: 1
+              metadata:
+                type: dict
+                required:
+                  - total
+                  - sources
+      json:
+        jsonrpc: "2.0"
+        id: 2
+        result:
+          content:
+            - type: "text"
+          isError: false
+
+  - name: Search published patent applications (pre-grant)
+    request:
+      url: "http://localhost:8000/tools/uspto-ppubs/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        method: "tools/call"
+        params:
+          name: "uspto_ppubs_search_applications"
+          arguments:
+            query: "pembrolizumab"
+            limit: 3
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "USPTO_PPUBS"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "USPTO_PPUBS"
+              data:
+                type: list
+              metadata:
+                type: dict
+                required:
+                  - total
+                  - sources
+      json:
+        jsonrpc: "2.0"
+        id: 3
+        result:
+          content:
+            - type: "text"
+          isError: false
+
+  - name: Search with field qualifier syntax TTL/(term) returns results
+    request:
+      url: "http://localhost:8000/tools/uspto-ppubs/mcp"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json, text/event-stream"
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        method: "tools/call"
+        params:
+          name: "uspto_ppubs_search_patents"
+          arguments:
+            query: "TTL/(aspirin)"
+            limit: 3
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      save:
+        $ext:
+          function: tests.tavern_utils:parse_and_validate_mcp_json
+          extra_kwargs:
+            expected_api_source: "USPTO_PPUBS"
+      verify_response_with:
+        - function: tests.tavern_utils:validate_saved_json
+          extra_kwargs:
+            variable_name: "parsed_json"
+            expected_body:
+              api_source: "USPTO_PPUBS"
+              data:
+                type: list
+                min_length: 1
+              metadata:
+                type: dict
+      json:
+        jsonrpc: "2.0"
+        id: 4
+        result:
+          content:
+            - type: "text"
+          isError: false

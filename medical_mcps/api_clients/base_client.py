@@ -29,8 +29,13 @@ from ..settings import settings
 logger = logging.getLogger(__name__)
 
 # Default cache directory - use per-process subdirectory to avoid SQLite locking issues
+# Override via MEDICAL_MCPS_CACHE_DIR env var (useful for tests or non-standard home dirs)
 _process_id = os.getpid()
-CACHE_DIR = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{_process_id}"
+_cache_base = os.environ.get("MEDICAL_MCPS_CACHE_DIR")
+if _cache_base:
+    CACHE_DIR = Path(_cache_base) / f"proc_{_process_id}"
+else:
+    CACHE_DIR = Path.home() / ".cache" / "medical-mcps" / "api_cache" / f"proc_{_process_id}"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Cache TTL: 30 days in seconds
